@@ -189,10 +189,12 @@
 
 <!-- Style -->
 <style>
+    /* Header gradient */
     .bg-gradient-primary {
         background: linear-gradient(90deg, #005C99, #0099CC);
     }
 
+    /* Table row warna */
     .table-row-odd {
         background-color: #ffffff;
     }
@@ -201,11 +203,43 @@
         background-color: #f5f7fa;
     }
 
+    /* Hover tabel tanpa animasi */
     #kontrakTable tbody tr:hover {
         background-color: #e9ecef !important;
-        transition: 0.2s ease-in-out;
+        transition: none !important;
+        /* hapus animasi */
     }
 
+    /* Semua tombol tanpa animasi */
+    .btn,
+    .btn-xs,
+    .btn-sm {
+        transition: none !important;
+        /* hapus animasi */
+        transform: none !important;
+        /* hapus efek membesar */
+        box-shadow: none !important;
+        /* hapus shadow saat klik/fokus */
+    }
+
+    /* Hapus efek hover/fokus pada tombol */
+    .btn:hover,
+    .btn:focus,
+    .btn:active,
+    .btn:focus-visible,
+    .btn-xs:hover,
+    .btn-xs:focus,
+    .btn-xs:active,
+    .btn-xs:focus-visible,
+    .btn-sm:hover,
+    .btn-sm:focus,
+    .btn-sm:active,
+    .btn-sm:focus-visible {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Tombol kecil */
     .btn-xs {
         padding: 2px 6px;
         font-size: 11px;
@@ -216,6 +250,7 @@
         font-size: 12px;
     }
 
+    /* Padding dan font table */
     #kontrakTable tbody tr td {
         padding-top: 2px !important;
         padding-bottom: 2px !important;

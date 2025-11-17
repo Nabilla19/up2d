@@ -359,7 +359,7 @@
             </ul>
           </div>
           <?php
-          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak']);
+          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak', 'rekomposisi', 'rekap_prk']);
           ?>
           <li class="nav-item">
             <a href="#menuAnggaran"
@@ -377,6 +377,7 @@
             </a>
             <div class="collapse <?= $anggaran_active ? 'show' : '' ?>" id="menuAnggaran">
               <ul class="nav ms-4">
+
                 <li class="nav-item">
                   <a class="nav-link <?= ($this->uri->segment(1) == 'input_kontrak') ? 'active' : '' ?>"
                     href="<?= base_url('input_kontrak'); ?>">
@@ -385,8 +386,8 @@
                 </li>
 
                 <li class="nav-item">
-                  <a class="nav-link <?= ($this->uri->segment(3) == 'rekomposisi') ? 'active' : '' ?>"
-                    href="<?= base_url('anggaran/investasi/rekomposisi'); ?>">
+                  <a class="nav-link <?= ($this->uri->segment(1) == 'rekomposisi') ? 'active' : '' ?>"
+                    href="<?= base_url('rekomposisi'); ?>">
                     <i class="fas fa-random me-2"></i> Rekomposisi
                   </a>
                 </li>
@@ -400,11 +401,12 @@
 
                 <!-- Rekap PRK -->
                 <li class="nav-item">
-                  <a class="nav-link <?= ($this->uri->segment(3) == 'rekap_prk') ? 'active' : '' ?>"
-                    href="<?= base_url('anggaran/investasi/rekap_prk'); ?>">
+                  <a class="nav-link <?= ($this->uri->segment(1) == 'rekap_prk') ? 'active' : '' ?>"
+                    href="<?= base_url('rekap_prk'); ?>">
                     <i class="fas fa-clipboard-list me-2"></i> Rekap PRK
                   </a>
                 </li>
+
 
                 <!-- Prognosa -->
                 <li class="nav-item">
