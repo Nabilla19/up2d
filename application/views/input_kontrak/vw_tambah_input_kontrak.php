@@ -87,13 +87,13 @@
                         <!-- Renc Akhir Kontrak -->
                         <div class="col-md-4">
                             <label class="form-label">Renc Akhir Kontrak</label>
-                            <input type="text" name="RENC_AKHIR_KONTRAK" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="RENC_AKHIR_KONTRAK" class="form-control">
                         </div>
 
                         <!-- Tgl ND/AMS -->
                         <div class="col-md-4">
                             <label class="form-label">Tgl ND/AMS</label>
-                            <input type="text" name="TGL_ND_AMS" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="TGL_ND_AMS" class="form-control">
                         </div>
 
                         <!-- Nomor ND/AMS -->
@@ -117,7 +117,7 @@
                         <!-- Prognosa -->
                         <div class="col-md-4">
                             <label class="form-label">Prognosa</label>
-                            <input type="text" name="PROGNOSA" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="PROGNOSA" class="form-control">
                         </div>
 
                         <!-- No SPK/SPB/Kontrak -->
@@ -135,13 +135,13 @@
                         <!-- Tgl Kontrak -->
                         <div class="col-md-4">
                             <label class="form-label">Tgl Kontrak</label>
-                            <input type="text" name="TGL_KONTRAK" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="TGL_KONTRAK" class="form-control">
                         </div>
 
                         <!-- Tgl Akhir Kontrak -->
                         <div class="col-md-4">
                             <label class="form-label">Tgl Akhir Kontrak</label>
-                            <input type="text" name="TGL_AKHIR_KONTRAK" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="TGL_AKHIR_KONTRAK" class="form-control">
                         </div>
 
                         <!-- Nilai Kontrak Total -->
@@ -159,7 +159,7 @@
                         <!-- Tgl Bayar -->
                         <div class="col-md-4">
                             <label class="form-label">Tgl Bayar</label>
-                            <input type="text" name="TGL_BAYAR" class="form-control" placeholder="dd/mm/yyyy">
+                            <input type="date" name="TGL_BAYAR" class="form-control">
                         </div>
 
                         <!-- Anggaran Terpakai -->
@@ -205,13 +205,13 @@
                         <!-- Bulan Renc Bayar -->
                         <div class="col-md-6">
                             <label class="form-label">Bulan Renc Bayar</label>
-                            <input type="text" name="BULAN_RENC_BAYAR" class="form-control" placeholder="mm/yy">
+                            <input type="month" name="BULAN_RENC_BAYAR" class="form-control">
                         </div>
 
                         <!-- Bulan Bayar -->
                         <div class="col-md-6">
                             <label class="form-label">Bulan Bayar</label>
-                            <input type="text" name="BULAN_BAYAR" class="form-control" placeholder="mm/yy">
+                            <input type="month" name="BULAN_BAYAR" class="form-control">
                         </div>
 
                         <!-- Tombol Submit -->
