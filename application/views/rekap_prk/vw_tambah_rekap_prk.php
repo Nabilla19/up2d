@@ -34,10 +34,10 @@
                         <!-- Jenis Anggaran -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Jenis Anggaran</label>
-                            <select name="JENIS_ANGGARAN" class="form-select modern-select" required>
+                            <select name="JENIS_ANGGARAN" id="jenisAnggaran" class="form-select modern-select" required onchange="loadNomorPRK()">
                                 <option value="">-- Pilih Jenis Anggaran --</option>
-                                <option value="CAPEX">INVESTASI</option>
-                                <option value="OPEX">OPERASI</option>
+                                <option value="INVESTASI">INVESTASI</option>
+                                <option value="OPERASI">OPERASI</option>
                             </select>
                         </div>
 
@@ -45,10 +45,7 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Nomor PRK</label>
                             <select name="NOMOR_PRK" id="nomorPRK" class="form-select modern-select" required>
-                                <option value="">-- Pilih Nomor PRK --</option>
-                                <?php foreach ($prk_list as $p): ?>
-                                    <option value="<?= $p['NOMOR_PRK']; ?>"><?= $p['NOMOR_PRK']; ?></option>
-                                <?php endforeach; ?>
+                                <option value="">-- Pilih Jenis Anggaran Dulu --</option>
                             </select>
                         </div>
 
@@ -142,3 +139,66 @@
         background: linear-gradient(90deg, #005C99, #0099CC);
     }
 </style>
+
+<script>
+    $(document).ready(function() {
+
+        // Saat jenis anggaran berubah
+        $("select[name='JENIS_ANGGARAN']").change(function() {
+            let jenisDipilih = $(this).val();
+
+            // Reset PRK dropdown
+            $("#nomorPRK").html('<option value="">Memuat...</option>');
+
+            // Request ke controller
+            $.ajax({
+                url: "<?= base_url('rekap_prk/get_prk'); ?>",
+                type: "POST",
+                data: {
+                    jenis: jenisDipilih
+                },
+                dataType: "json",
+                success: function(response) {
+
+                    // Jika tidak ada data
+                    if (response.length === 0) {
+                        $("#nomorPRK").html('<option value="">Tidak ada PRK</option>');
+                        return;
+                    }
+
+                    let options = '<option value="">-- Pilih Nomor PRK --</option>';
+
+                    response.forEach(function(row) {
+                        options += `<option value="${row.NOMOR_PRK}">${row.NOMOR_PRK}</option>`;
+                    });
+
+                    $("#nomorPRK").html(options);
+                }
+            });
+        });
+
+    });
+
+    // Saat nomor PRK dipilih
+    $("#nomorPRK").on("change", function() {
+        let nomor = $(this).val();
+
+        $("textarea[name='URAIAN_PRK']").val("Memuat...");
+
+        $.ajax({
+            url: "<?= base_url('rekap_prk/get_uraian'); ?>",
+            type: "POST",
+            data: {
+                nomor_prk: nomor
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response && response.PRK) {
+                    $("textarea[name='URAIAN_PRK']").val(response.PRK);
+                } else {
+                    $("textarea[name='URAIAN_PRK']").val("");
+                }
+            }
+        });
+    });
+</script>

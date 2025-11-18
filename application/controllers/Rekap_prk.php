@@ -20,31 +20,28 @@ class Rekap_prk extends CI_Controller
         $offset   = (int) ($this->input->get('page') ?? 0);
         $keyword  = $this->input->get('keyword', true);
 
-        // Total data
         if ($keyword) {
             $total_rows = count($this->prk->get_all_prk($keyword));
         } else {
             $total_rows = $this->db->count_all('prk_data');
         }
 
-        // Pagination setting
         $config = [
-            'base_url'            => base_url('rekap_prk'),
-            'total_rows'          => $total_rows,
-            'per_page'            => $per_page,
-            'page_query_string'   => true,
+            'base_url'             => base_url('rekap_prk'),
+            'total_rows'           => $total_rows,
+            'per_page'             => $per_page,
+            'page_query_string'    => true,
             'query_string_segment' => 'page',
-            'reuse_query_string'  => true,
-            'full_tag_open'       => '<nav><ul class="pagination pagination-sm">',
-            'full_tag_close'      => '</ul></nav>',
-            'cur_tag_open'        => '<li class="page-item active"><span class="page-link">',
-            'cur_tag_close'       => '</span></li>',
-            'num_tag_open'        => '<li class="page-item"><span class="page-link">',
-            'num_tag_close'       => '</span></li>',
+            'reuse_query_string'   => true,
+            'full_tag_open'        => '<nav><ul class="pagination pagination-sm">',
+            'full_tag_close'       => '</ul></nav>',
+            'cur_tag_open'         => '<li class="page-item active"><span class="page-link">',
+            'cur_tag_close'        => '</span></li>',
+            'num_tag_open'         => '<li class="page-item"><span class="page-link">',
+            'num_tag_close'        => '</span></li>',
         ];
         $this->pagination->initialize($config);
 
-        // Ambil data
         $prk_data = $this->prk->get_prk_paginated($per_page, $offset, $keyword);
 
         $data = [
@@ -77,7 +74,8 @@ class Rekap_prk extends CI_Controller
 
         $data = [
             'page_title' => 'Tambah PRK',
-            'page_icon'  => 'fas fa-file-invoice-dollar'
+            'page_icon'  => 'fas fa-file-invoice-dollar',
+            'prk_list'   => $this->prk->get_all_rekomposisi_prk() // ⬅️ PERBAIKAN UTAMA
         ];
 
         if ($this->form_validation->run() === false) {
@@ -87,7 +85,6 @@ class Rekap_prk extends CI_Controller
             return;
         }
 
-        // Simpan
         $insert_data = $this->_collect_prk_post();
         $this->prk->insert_prk($insert_data);
 
@@ -114,11 +111,11 @@ class Rekap_prk extends CI_Controller
 
         $this->_set_rules();
 
-        // Data dikirim ke view
         $data = [
-            'rekap'      => $rekap,     // FIX → variabel yang dicari view
+            'rekap'     => $rekap,
             'page_title' => 'Edit PRK',
-            'page_icon'  => 'fas fa-file-invoice-dollar'
+            'page_icon' => 'fas fa-file-invoice-dollar',
+            'prk_list'  => $this->prk->get_all_rekomposisi_prk() // ⬅️ PERBAIKAN UNTUK EDIT
         ];
 
         if ($this->form_validation->run() === false) {
@@ -128,7 +125,6 @@ class Rekap_prk extends CI_Controller
             return;
         }
 
-        // Update data
         $update_data = $this->_collect_prk_post();
         $this->prk->update_prk($id, $update_data);
 
@@ -171,13 +167,13 @@ class Rekap_prk extends CI_Controller
         }
 
         $data = [
-            'rekap'      => $rekap,
+            'rekap'     => $rekap,
             'page_title' => 'Detail PRK',
-            'page_icon'  => 'fas fa-file-invoice-dollar'
+            'page_icon' => 'fas fa-file-invoice-dollar'
         ];
 
         $this->load->view('layout/header', $data);
-        $this->load->view('rekap_prk/vw_detail_prk', $data);
+        $this->load->view('rekap_prk/vw_detail_rekap_prk', $data);
         $this->load->view('layout/footer');
     }
 
@@ -206,7 +202,7 @@ class Rekap_prk extends CI_Controller
     }
 
     // ====================================================
-    // MENGAMBIL DATA POST
+    // AMBIL POST DATA
     // ====================================================
     private function _collect_prk_post()
     {
@@ -223,5 +219,23 @@ class Rekap_prk extends CI_Controller
             'TERBAYAR'       => $this->input->post('TERBAYAR'),
             'KE_TAHUN_2026'  => $this->input->post('KE_TAHUN_2026'),
         ];
+    }
+
+
+    public function get_prk()
+    {
+        $jenis = $this->input->post('jenis');
+
+        $data = $this->prk->get_prk_by_jenis($jenis);
+
+        echo json_encode($data);
+    }
+
+    public function get_uraian()
+    {
+        $nomor = $this->input->post('nomor_prk');
+        $data = $this->prk->get_uraian_prk($nomor);
+
+        echo json_encode($data);
     }
 }

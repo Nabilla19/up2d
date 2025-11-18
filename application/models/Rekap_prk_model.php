@@ -72,4 +72,33 @@ class Rekap_prk_model extends CI_Model
 
         return $this->db->get($this->table, $limit, $start)->result_array();
     }
+
+    public function get_all_rekomposisi_prk()
+    {
+        return $this->db->select('NOMOR_PRK')
+            ->from('rekomposisi')
+            ->group_by('NOMOR_PRK')
+            ->order_by('NOMOR_PRK', 'ASC')
+            ->get()
+            ->result_array();
+    }
+    public function get_prk_by_jenis($jenis)
+    {
+        return $this->db->select('NOMOR_PRK')
+            ->from('rekomposisi')
+            ->where('JENIS_ANGGARAN', $jenis)
+            ->group_by('NOMOR_PRK')
+            ->order_by('NOMOR_PRK', 'ASC')
+            ->get()
+            ->result_array();
+    }
+
+    public function get_uraian_prk($nomor_prk)
+    {
+        return $this->db->select('PRK')
+            ->from('rekomposisi')
+            ->where('NOMOR_PRK', $nomor_prk)
+            ->get()
+            ->row_array();
+    }
 }
