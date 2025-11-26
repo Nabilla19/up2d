@@ -1,178 +1,178 @@
-<div class="main-content">
-    <section class="section">
-        <div class="section-body">
-            <div class="container-fluid">
-                <div class="row">
-                    <!-- Konten Utama -->
-                    <div class="container mt-3">
-                        <h1 class="h3 mb-4 text-gray-800"><?= $judul; ?></h1>
-                        <div class="row justify-content-center">
-                            <div class="col-md-10">
-                                <div class="card shadow">
-                                    <div class="card-header bg-primary text-white font-weight-bold">
-                                        Form Tambah Data Gardu Induk
-                                    </div>
+<main class="main-content position-relative border-radius-lg ">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl"
+        id="navbarBlur" data-scroll="false">
+        <div class="container-fluid py-1 px-3">
+            <h6 class="font-weight-bolder text-white mb-0">
+                <i class="fas fa-building me-2 text-success"></i> Tambah Gardu Induk
+            </h6>
+        </div>
+    </nav>
 
-                                    <div class="card-body">
-                                        <form action="<?= base_url('Gardu_induk/tambah'); ?>" method="POST">
+    <!-- CONTENT -->
+    <div class="container-fluid py-4">
+        <div class="card shadow border-0 rounded-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <strong>Form Tambah Gardu Induk</strong>
+            </div>
 
-                                            <!-- ID_GI -->
-                                            <!-- <div class="form-group mb-3">
-                                                <label for="ID_GI">ID Gardu Induk</label>
-                                                <input type="number" name="ID_GI" class="form-control" id="ID_GI"
-                                                    placeholder="Masukkan ID Gardu Induk" required>
-                                            </div> -->
+            <div class="card-body">
+                <form action="<?= base_url('Gardu_induk/tambah'); ?>" method="POST">
 
-                                            <!-- UNIT_LAYANAN -->
-                                            <div class="form-group mb-3">
-                                                <label for="UNIT_LAYANAN">Unit Layanan</label>
-                                                <input type="text" name="UNIT_LAYANAN" class="form-control"
-                                                    id="UNIT_LAYANAN" placeholder="Masukkan Unit Layanan" required>
-                                            </div>
+                    <div class="row g-3">
 
-                                            <!-- GARDU_INDUK -->
-                                            <div class="form-group mb-3">
-                                                <label for="GARDU_INDUK">Nama Gardu Induk</label>
-                                                <input type="text" name="GARDU_INDUK" class="form-control"
-                                                    id="GARDU_INDUK" placeholder="Masukkan Nama Gardu Induk" required>
-                                            </div>
+                        <!-- Kolom sesuai tabel -->
 
-                                            <!-- Koordinat -->
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="LONGITUDEX">Longitude (X)</label>
-                                                    <input type="text" name="LONGITUDEX" class="form-control"
-                                                        id="LONGITUDEX" placeholder="Contoh: 101.123456">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="LATITUDEY">Latitude (Y)</label>
-                                                    <input type="text" name="LATITUDEY" class="form-control"
-                                                        id="LATITUDEY" placeholder="Contoh: -0.567890">
-                                                </div>
-                                            </div>
-
-                                            <!-- STATUS_OPERASI -->
-                                            <div class="form-group mb-3">
-                                                <label for="STATUS_OPERASI">Status Operasi</label>
-                                                <select name="STATUS_OPERASI" id="STATUS_OPERASI" class="form-control">
-                                                    <option value="">-- Pilih Status --</option>
-                                                    <option value="OPERATING">OPERATING</option>
-                                                    <option value="NOT READY">NOT READY</option>
-                                                    <option value="INACTIVE">INACTIVE</option>
-                                                    <option value="REQOPERATING">REQOPERATING</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- Data Teknis -->
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="JML_TD">Jumlah TD</label>
-                                                    <input type="number" name="JML_TD" id="JML_TD" class="form-control" placeholder="Masukkan jumlah TD">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="INC">INC</label>
-                                                    <input type="number" name="INC" id="INC" class="form-control" placeholder="Masukkan nilai INC">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="OGF">OGF</label>
-                                                    <input type="number" name="OGF" id="OGF" class="form-control" placeholder="Masukkan nilai OGF">
-                                                </div>
-                                            </div>
-
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="SPARE">Spare</label>
-                                                    <input type="number" name="SPARE" id="SPARE" class="form-control" placeholder="Masukkan jumlah spare">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="COUPLE">Couple</label>
-                                                    <input type="number" name="COUPLE" id="COUPLE" class="form-control" placeholder="Masukkan jumlah couple">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="BUS_RISER">Bus Riser</label>
-                                                    <input type="number" name="BUS_RISER" id="BUS_RISER" class="form-control" placeholder="Masukkan bus riser">
-                                                </div>
-                                            </div>
-
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="BBVT">BBVT</label>
-                                                    <input type="number" name="BBVT" id="BBVT" class="form-control" placeholder="Masukkan BBVT">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="PS">PS</label>
-                                                    <input type="number" name="PS" id="PS" class="form-control" placeholder="Masukkan PS">
-                                                </div>
-                                            </div>
-
-                                            <!-- STATUS_SCADA -->
-                                            <div class="form-group mb-3">
-                                                <label for="STATUS_SCADA">Status SCADA</label>
-                                                <select name="STATUS_SCADA" id="STATUS_SCADA" class="form-control">
-                                                    <option value="">-- Pilih Status SCADA --</option>
-                                                    <option value="INTEGRASI">INTEGRASI</option>
-                                                    <option value="NON INTEGRASI">NON INTEGRASI</option>
-                                                </select>
-                                            </div>
-
-                                            <!-- IP dan RTU -->
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="IP_GATEWAY">IP Gateway</label>
-                                                    <input type="text" name="IP_GATEWAY" id="IP_GATEWAY" class="form-control" placeholder="Contoh: 192.168.0.1">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="IP_RTU">IP RTU</label>
-                                                    <input type="text" name="IP_RTU" id="IP_RTU" class="form-control" placeholder="Contoh: 192.168.0.10">
-                                                </div>
-                                            </div>
-
-                                            <div class="form-row mb-3">
-                                                <div class="col">
-                                                    <label for="MERK_RTU">Merk RTU</label>
-                                                    <input type="text" name="MERK_RTU" id="MERK_RTU" class="form-control" placeholder="Masukkan merk RTU">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="SN_RTU">SN RTU</label>
-                                                    <input type="text" name="SN_RTU" id="SN_RTU" class="form-control" placeholder="Masukkan serial number RTU">
-                                                </div>
-                                                <div class="col">
-                                                    <label for="THN_INTEGRASI">Tahun Integrasi</label>
-                                                    <input type="text" name="THN_INTEGRASI" id="THN_INTEGRASI" class="form-control" placeholder="Contoh: 2023">
-                                                </div>
-                                            </div>
-
-                                            <!-- Tombol -->
-                                            <div class="mt-4">
-                                                <a href="<?= base_url('Gardu_induk'); ?>" class="btn btn-danger">
-                                                    <i class="fas fa-times me-1"></i> Batal
-                                                </a>
-                                                <button type="submit" name="tambah" class="btn btn-primary float-right">
-                                                    <i class="fas fa-save me-1"></i> Simpan Data
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="col-md-6">
+                            <label class="form-label">UP3 2D</label>
+                            <input type="text" name="UP3_2D" class="form-control">
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Unit Name UP3</label>
+                            <input type="text" name="UNITNAME_UP3" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">CX Unit</label>
+                            <input type="text" name="CXUNIT" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Unit Name</label>
+                            <input type="text" name="UNITNAME" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="LOCATION" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">SSOT Number</label>
+                            <input type="text" name="SSOTNUMBER" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Description</label>
+                            <input type="text" name="DESCRIPTION" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            <input type="text" name="STATUS" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">TUJD Number</label>
+                            <input type="text" name="TUJDNUMBER" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Asset Class HI</label>
+                            <input type="text" name="ASSETCLASSHI" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">S Address Code</label>
+                            <input type="text" name="SADDRESSCODE" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Classification Desc</label>
+                            <input type="text" name="CXCLASSIFICATIONDESC" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Penyulang</label>
+                            <input type="text" name="PENYULANG" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Parent</label>
+                            <input type="text" name="PARENT" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Parent Description</label>
+                            <input type="text" name="PARENT_DESCRIPTION" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Install Date</label>
+                            <input type="text" name="INSTALLDATE" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Actual Opr Date</label>
+                            <input type="text" name="ACTUALOPRDATE" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Change Date</label>
+                            <input type="text" name="CHANGEDATE" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Change By</label>
+                            <input type="text" name="CHANGEBY" class="form-control">
+                        </div>
+
+                        <!-- Koordinat -->
+                        <div class="col-md-3">
+                            <label class="form-label">Latitude (Y)</label>
+                            <input type="text" name="LATITUDEY" class="form-control">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Longitude (X)</label>
+                            <input type="text" name="LONGITUDEX" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Formatted Address</label>
+                            <input type="text" name="FORMATTEDADDRESS" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Street Address</label>
+                            <input type="text" name="STREETADDRESS" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" name="CITY" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Is Asset</label>
+                            <input type="text" name="ISASSET" class="form-control">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Status Kepemilikan</label>
+                            <input type="text" name="STATUS_KEPEMILIKAN" class="form-control">
+                        </div>
+
                     </div>
-                </div>
+
+                    <!-- BUTTON -->
+                    <div class="mt-4">
+                        <a href="<?= base_url('Gardu_induk'); ?>" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Batal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Simpan Data
+                        </button>
+                    </div>
+
+                </form>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</main>
 
-<!-- Style tambahan -->
 <style>
-    .card {
-        border-radius: 10px;
-    }
-
-    .card-header {
-        font-size: 1rem;
-    }
-
     .form-control {
         border-radius: 8px;
     }

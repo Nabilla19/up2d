@@ -358,17 +358,8 @@
 
             </ul>
           </div>
-          <?php endif; ?>
-
           <?php
-          // Menu Anggaran untuk: Admin, Pemeliharaan (Har), Fasilitas Operasi, Perencanaan, Guest (view only)
-          $role = $this->session->userdata('user_role');
-          $is_guest = $this->session->userdata('is_guest');
-          $allowed_anggaran_roles = ['admin', 'administrator', 'pemeliharaan', 'fasilitas operasi', 'perencanaan', 'guest'];
-          if ($is_guest || in_array(strtolower($role), $allowed_anggaran_roles)):
-          ?>
-          <?php
-          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak', 'rekomposisi', 'rekap_prk']);
+          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak','monitoring', 'rekomposisi', 'rekap_prk']);
           ?>
           <li class="nav-item">
             <a href="#menuAnggaran"
@@ -402,8 +393,8 @@
                 </li>
 
                 <li class="nav-item">
-                  <a class="nav-link <?= ($this->uri->segment(3) == 'monitoring') ? 'active' : '' ?>"
-                    href="<?= base_url('anggaran/investasi/monitoring'); ?>">
+                  <a class="nav-link <?= ($this->uri->segment(1) == 'monitoring') ? 'active' : '' ?>"
+                    href="<?= base_url('monitoring'); ?>">
                     <i class="fas fa-chart-line me-2"></i> Monitoring
                   </a>
                 </li>

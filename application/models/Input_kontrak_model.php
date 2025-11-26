@@ -3,7 +3,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Input_kontrak_model extends CI_Model
 {
-    private $table = 'anggaran_op'; // nama tabel sesuai database
+    private $table = 'input_kontrak'; // nama tabel sesuai database
 
     public function count_all()
     {

@@ -70,7 +70,7 @@
                         <!-- NODIN / Surat -->
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">NODIN / Surat</label>
-                            <input type="text" name="NODIN_SRT" class="form-control modern-input">
+                            <input type="text" name="NODIN_SRT" class="form-control modern-input money-input">
                         </div>
 
                         <!-- Kontrak -->

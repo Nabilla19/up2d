@@ -79,7 +79,7 @@
                                         <td class="text-sm"><?= htmlentities($row['URAIAN_PRK']); ?></td>
                                         <td class="text-sm"><?= number_format($row['PAGU_SKK_IO'], 2, ',', '.'); ?></td>
                                         <td class="text-sm"><?= number_format($row['RENC_KONTRAK'], 2, ',', '.'); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['NODIN_SRT']); ?></td>
+                                        <td class="text-sm"><?= number_format($row['NODIN_SRT'], 0, ',', '.'); ?></td>
                                         <td class="text-sm"><?= number_format($row['KONTRAK'], 2, ',', '.'); ?></td>
                                         <td class="text-sm"><?= number_format($row['SISA'], 2, ',', '.'); ?></td>
                                         <td class="text-sm"><?= number_format($row['RENCANA_BAYAR'], 2, ',', '.'); ?></td>

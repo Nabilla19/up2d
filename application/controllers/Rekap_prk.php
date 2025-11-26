@@ -52,7 +52,7 @@ class Rekap_prk extends CI_Controller
             'keyword'   => $keyword,
             'start_no'  => $offset + 1,
             'page_title' => 'Data PRK',
-            'page_icon' => 'fas fa-file-invoice-dollar'
+            'page_icon' => 'fas fa-clipboard-list me-2'
         ];
 
         $this->load->view('layout/header', $data);
