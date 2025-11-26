@@ -358,8 +358,9 @@
 
             </ul>
           </div>
+          
           <?php
-          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak', 'rekomposisi', 'rekap_prk']);
+          $anggaran_active = in_array($this->uri->segment(1), ['anggaran', 'input_kontrak','monitoring', 'rekomposisi', 'rekap_prk']);
           ?>
           <li class="nav-item">
             <a href="#menuAnggaran"
@@ -393,8 +394,8 @@
                 </li>
 
                 <li class="nav-item">
-                  <a class="nav-link <?= ($this->uri->segment(3) == 'monitoring') ? 'active' : '' ?>"
-                    href="<?= base_url('anggaran/investasi/monitoring'); ?>">
+                  <a class="nav-link <?= ($this->uri->segment(1) == 'monitoring') ? 'active' : '' ?>"
+                    href="<?= base_url('monitoring'); ?>">
                     <i class="fas fa-chart-line me-2"></i> Monitoring
                   </a>
                 </li>
