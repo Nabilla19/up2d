@@ -4,7 +4,7 @@
 		id="navbarBlur" data-scroll="false">
 		<div class="container-fluid py-1 px-3">
 			<h6 class="font-weight-bolder text-white mb-0">
-				<i class="fas fa-bolt me-2 text-warning"></i> Tambah Gardu Induk
+				<i class="fas fa-building me-2 text-warning"></i> Tambah Data Unit
 			</h6>
 		</div>
 	</nav>
@@ -13,13 +13,19 @@
 	<div class="container-fluid py-4">
 		<div class="card shadow border-0 rounded-4">
 			<div class="card-header bg-gradient-primary text-white">
-				<strong>Form Tambah Gardu Induk</strong>
+				<strong>Form Tambah Unit</strong>
 			</div>
 
 			<div class="card-body">
-				<form action="<?= base_url('Gardu_induk/tambah'); ?>" method="POST">
+				<form action="<?= base_url('Unit/tambah'); ?>" method="POST">
 
 					<div class="row g-3">
+
+						<!-- Unit Pelaksana -->
+						<div class="col-md-6">
+							<label class="form-label">Unit Pelaksana</label>
+							<input type="text" name="UNIT_PELAKSANA" class="form-control" required>
+						</div>
 
 						<!-- Unit Layanan -->
 						<div class="col-md-6">
@@ -27,116 +33,29 @@
 							<input type="text" name="UNIT_LAYANAN" class="form-control" required>
 						</div>
 
-						<!-- Nama Gardu -->
+						<!-- Longitude -->
 						<div class="col-md-6">
-							<label class="form-label">Nama Gardu Induk</label>
-							<input type="text" name="GARDU_INDUK" class="form-control" required>
-						</div>
-
-						<!-- Koordinat -->
-						<div class="col-md-3">
 							<label class="form-label">Longitude (X)</label>
 							<input type="text" name="LONGITUDEX" class="form-control">
 						</div>
 
-						<div class="col-md-3">
+						<!-- Latitude -->
+						<div class="col-md-6">
 							<label class="form-label">Latitude (Y)</label>
 							<input type="text" name="LATITUDEY" class="form-control">
 						</div>
 
-						<!-- Status Operasi -->
-						<div class="col-md-6">
-							<label class="form-label">Status Operasi</label>
-							<select name="STATUS_OPERASI" class="form-control">
-								<option value="">-- Pilih Status --</option>
-								<option value="OPERATING">OPERATING</option>
-								<option value="NOT READY">NOT READY</option>
-								<option value="INACTIVE">INACTIVE</option>
-								<option value="REQOPERATING">REQOPERATING</option>
-							</select>
+						<!-- Address -->
+						<div class="col-md-12">
+							<label class="form-label">Alamat</label>
+							<input type="text" name="ADDRESS" class="form-control">
 						</div>
 
-						<!-- Data teknis -->
-						<div class="col-md-2">
-							<label class="form-label">Jumlah TD</label>
-							<input type="number" name="JML_TD" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">INC</label>
-							<input type="number" name="INC" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">OGF</label>
-							<input type="number" name="OGF" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">Spare</label>
-							<input type="number" name="SPARE" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">Couple</label>
-							<input type="number" name="COUPLE" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">Bus Riser</label>
-							<input type="number" name="BUS_RISER" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">BBVT</label>
-							<input type="number" name="BBVT" class="form-control">
-						</div>
-
-						<div class="col-md-2">
-							<label class="form-label">PS</label>
-							<input type="number" name="PS" class="form-control">
-						</div>
-
-						<!-- Status SCADA -->
-						<div class="col-md-4">
-							<label class="form-label">Status SCADA</label>
-							<select name="STATUS_SCADA" class="form-control">
-								<option value="">-- Pilih Status SCADA --</option>
-								<option value="INTEGRASI">INTEGRASI</option>
-								<option value="NON INTEGRASI">NON INTEGRASI</option>
-							</select>
-						</div>
-
-						<!-- IP & RTU -->
-						<div class="col-md-4">
-							<label class="form-label">IP Gateway</label>
-							<input type="text" name="IP_GATEWAY" class="form-control">
-						</div>
-
-						<div class="col-md-4">
-							<label class="form-label">IP RTU</label>
-							<input type="text" name="IP_RTU" class="form-control">
-						</div>
-
-						<div class="col-md-4">
-							<label class="form-label">Merk RTU</label>
-							<input type="text" name="MERK_RTU" class="form-control">
-						</div>
-
-						<div class="col-md-4">
-							<label class="form-label">SN RTU</label>
-							<input type="text" name="SN_RTU" class="form-control">
-						</div>
-
-						<div class="col-md-4">
-							<label class="form-label">Tahun Integrasi</label>
-							<input type="text" name="THN_INTEGRASI" class="form-control">
-						</div>
 					</div>
 
 					<!-- BUTTON -->
 					<div class="mt-4">
-						<a href="<?= base_url('Gardu_induk'); ?>" class="btn btn-secondary">
+						<a href="<?= base_url('Unit'); ?>" class="btn btn-secondary">
 							<i class="fas fa-times me-1"></i> Batal
 						</a>
 						<button type="submit" class="btn btn-primary">
