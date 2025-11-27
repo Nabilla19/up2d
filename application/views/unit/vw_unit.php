@@ -48,7 +48,7 @@
                     <table class="table align-items-center mb-0" id="unitTable">
                         <thead class="bg-light">
                             <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-b
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unit Pelaksana</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Unit Layanan</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Longitude (X)</th>
