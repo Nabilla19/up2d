@@ -483,4 +483,123 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
+  <!-- Global Script: Better Sidebar State Management -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Pattern untuk action buttons
+      const actionPatterns = ['/tambah', '/import', '/export_csv', '/export', '/download'];
+
+      // 1. Apply target="_blank" ke action buttons
+      function applyTargetBlank() {
+        const allLinks = document.querySelectorAll('a[href]');
+        allLinks.forEach(link => {
+          const href = link.getAttribute('href') || '';
+          const isActionButton = actionPatterns.some(pattern => href.includes(pattern));
+          if (isActionButton && !href.startsWith('javascript:') && href !== '#') {
+            if (!link.hasAttribute('target')) {
+              link.setAttribute('target', '_blank');
+              link.setAttribute('rel', 'noopener noreferrer');
+            }
+          }
+        });
+      }
+
+      // 2. Maintain submenu state dan highlight item yang aktif
+      function restoreSubmenuState() {
+        // Ambil URI segment
+        const currentUri = '<?= $this->uri->segment(1); ?>';
+        const uriSegment2 = '<?= $this->uri->segment(2); ?>';
+        
+        // Map untuk submenu - sesuaikan dengan module yang ada
+        const assetModules = ['unit', 'ulp', 'gardu_induk', 'gi_cell', 'gardu_hubung', 'gh_cell', 'pembangkit', 'kit_cell', 'pemutus', 'assets'];
+        const pustakaModules = ['sop', 'bpm', 'ik', 'road_map', 'spln'];
+        const operasiModules = ['operasi', 'single_line_diagram'];
+        const anggaranModules = ['anggaran', 'input_kontrak', 'monitoring', 'rekomposisi', 'rekap_prk'];
+
+        let activeSubmenuId = null;
+        let activeModuleId = null;
+        
+        // Tentukan submenu dan module mana yang harus aktif
+        const currentUriLower = currentUri.toLowerCase();
+        
+        if (assetModules.includes(currentUriLower)) {
+          activeSubmenuId = 'menuAsset';
+          activeModuleId = currentUriLower;
+        } else if (pustakaModules.includes(currentUriLower)) {
+          activeSubmenuId = 'menuPustaka';
+          activeModuleId = currentUriLower;
+        } else if (operasiModules.includes(currentUriLower)) {
+          activeSubmenuId = 'menuOperasi';
+          activeModuleId = currentUriLower;
+        } else if (anggaranModules.includes(currentUriLower)) {
+          activeSubmenuId = 'menuAnggaran';
+          activeModuleId = currentUriLower;
+        }
+
+        // 2a. Buka submenu yang sesuai
+        if (activeSubmenuId) {
+          const submenu = document.getElementById(activeSubmenuId);
+          const toggler = document.querySelector('a[aria-controls="' + activeSubmenuId + '"]');
+          
+          if (submenu) {
+            submenu.classList.add('show');
+          }
+          if (toggler) {
+            toggler.classList.add('active', 'text-dark', 'bg-light');
+            toggler.setAttribute('aria-expanded', 'true');
+          }
+        }
+
+        // 2b. Highlight item submenu yang aktif
+        if (activeModuleId) {
+          // Hapus highlight dari semua item submenu
+          document.querySelectorAll('.submenu-list .nav-link').forEach(link => {
+            link.classList.remove('active', 'bg-primary', 'text-white');
+          });
+
+          // Hapus highlight dari menu anggaran (yang tidak di dalam submenu-list)
+          document.querySelectorAll('.nav.ms-4 .nav-link').forEach(link => {
+            link.classList.remove('active');
+          });
+
+          // Cari dan highlight item yang sesuai dengan module saat ini
+          let activeItem = null;
+
+          // Cari di .submenu-list
+          activeItem = document.querySelector(
+            '.submenu-list a[href*="' + activeModuleId + '"]'
+          );
+
+          // Jika tidak ketemu di submenu-list, cari di menu anggaran (nav.ms-4)
+          if (!activeItem) {
+            activeItem = document.querySelector(
+              '.nav.ms-4 a[href*="' + activeModuleId + '"]'
+            );
+          }
+          
+          if (activeItem) {
+            // Jika di dalam submenu-list
+            if (activeItem.closest('.submenu-list')) {
+              activeItem.classList.add('active', 'bg-primary', 'text-white');
+            }
+            // Jika di menu anggaran
+            else if (activeItem.closest('.nav.ms-4')) {
+              activeItem.classList.add('active');
+            }
+          }
+        }
+      }
+
+      // Jalankan pada page load
+      applyTargetBlank();
+      restoreSubmenuState();
+
+      // Observer untuk dynamic content
+      const observer = new MutationObserver(applyTargetBlank);
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
+
 </body>
+
+</html>
