@@ -506,14 +506,16 @@
         const currentUri = '<?= $this->uri->segment(1); ?>';
         const currentUriLower = currentUri.toLowerCase();
         
-        // Map untuk submenu
+        // Map untuk submenu - tambahkan pengaduan
         const assetModules = ['unit', 'ulp', 'gardu_induk', 'gi_cell', 'gardu_hubung', 'gh_cell', 'pembangkit', 'kit_cell', 'pemutus', 'assets'];
         const pustakaModules = ['sop', 'bpm', 'ik', 'road_map', 'spln'];
         const operasiModules = ['operasi', 'single_line_diagram'];
         const anggaranModules = ['anggaran', 'input_kontrak', 'monitoring', 'rekomposisi', 'rekap_prk'];
+        const pengaduanModules = ['pengaduan']; // Tambahkan untuk menu pengaduan
 
         let activeSubmenuId = null;
         let activeModuleId = null;
+        let isTopLevelMenu = false; // Flag untuk menu top-level (tidak dalam submenu)
         
         // Tentukan submenu dan module mana yang harus aktif
         if (assetModules.includes(currentUriLower)) {
@@ -527,6 +529,10 @@
           activeModuleId = currentUriLower;
         } else if (anggaranModules.includes(currentUriLower)) {
           activeSubmenuId = 'menuAnggaran';
+          activeModuleId = currentUriLower;
+        } else if (pengaduanModules.includes(currentUriLower)) {
+          // Pengaduan adalah menu top-level, bukan submenu
+          isTopLevelMenu = true;
           activeModuleId = currentUriLower;
         }
 
@@ -554,6 +560,11 @@
           // Hapus highlight dari menu anggaran
           document.querySelectorAll('.nav.ms-4 .nav-link').forEach(link => {
             link.classList.remove('active');
+          });
+
+          // Hapus highlight dari menu top-level (pengaduan, dashboard, profile)
+          document.querySelectorAll('.navbar-nav > .nav-item > a.nav-link').forEach(link => {
+            link.classList.remove('active', 'bg-primary', 'text-white');
           });
 
           let activeItem = null;
@@ -594,12 +605,32 @@
               }
             }
           }
+
+          // Jika menu top-level (pengaduan), highlight di navbar-nav
+          if (!activeItem && isTopLevelMenu) {
+            const topLevelLinks = document.querySelectorAll('.navbar-nav > .nav-item > a.nav-link');
+            for (let link of topLevelLinks) {
+              const href = link.getAttribute('href') || '';
+              const hrefLower = href.toLowerCase();
+              
+              if (
+                hrefLower.includes('/' + activeModuleId) ||
+                hrefLower.endsWith('/' + activeModuleId)
+              ) {
+                activeItem = link;
+                break;
+              }
+            }
+          }
           
           // Tambahkan highlight ke item yang cocok
           if (activeItem) {
             if (activeItem.closest('.submenu-list')) {
               activeItem.classList.add('active', 'bg-primary', 'text-white');
             } else if (activeItem.closest('.nav.ms-4')) {
+              activeItem.classList.add('active');
+            } else if (isTopLevelMenu) {
+              // Untuk menu top-level seperti pengaduan
               activeItem.classList.add('active');
             }
           }
