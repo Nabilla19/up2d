@@ -41,7 +41,7 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputUnit" onkeyup="searchTableUnit()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Unit...">
+                    <input type="text" id="searchInputUnit" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Unit..." value="<?= isset($q) ? html_escape($q) : '' ?>">
                 </div>
 
                 <div class="table-responsive p-0">
@@ -63,10 +63,15 @@
                                     <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
                                 </tr>
                             <?php else: ?>
-                                <?php $no = $start_no;
-                                foreach ($unit as $row): ?>
-                                    <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $no++; ?></td>
+                                <?php foreach ($unit as $i => $row): ?>
+                                    <?php
+                                        // Tentukan nomor tampil dari map posisi atau fallback
+                                        $displayNo = (!empty($q) && !empty($positions) && isset($positions[$row['ID_UNIT']])) 
+                                            ? $positions[$row['ID_UNIT']] 
+                                            : ($start_no + $i);
+                                    ?>
+                                    <tr class="<?= ($displayNo % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
+                                        <td class="text-sm"><?= $displayNo; ?></td>
                                         <td class="text-sm"><?= htmlentities($row['UNIT_PELAKSANA']); ?></td>
                                         <td class="text-sm"><?= htmlentities($row['UNIT_LAYANAN']); ?></td>
                                         <td class="text-sm"><?= htmlentities($row['LONGITUDEX']); ?></td>
@@ -99,21 +104,35 @@
 <script>
     function changePerPageUnit(perPage) {
         const url = new URL(window.location.href);
+        const q = document.getElementById('searchInputUnit').value.trim();
         url.searchParams.set('per_page', perPage);
         url.searchParams.set('page', '1');
+        if (q) {
+            url.searchParams.set('q', q);
+        } else {
+            url.searchParams.delete('q'); // hapus q jika kosong
+        }
         window.location.href = url.toString();
     }
 
-    function searchTableUnit() {
+    (function(){
         const input = document.getElementById('searchInputUnit');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('unitTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+        input.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const q = input.value.trim();
+                const url = new URL(window.location.href);
+                if (q) {
+                    url.searchParams.set('q', q);
+                    url.searchParams.set('page', '1');
+                } else {
+                    url.searchParams.delete('q'); // hapus q jika kosong
+                }
+                window.location.href = url.toString();
+            }
+        });
+    })();
 </script>
 
 <!-- Style (sama persis seperti halaman Gardu Induk) -->

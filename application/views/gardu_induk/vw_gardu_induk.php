@@ -40,9 +40,13 @@
                             <option value="100" <?= ($per_page == 100) ? 'selected' : ''; ?>>100</option>
                             <option value="500" <?= ($per_page == 500) ? 'selected' : ''; ?>>500</option>
                         </select>
-                        <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
+                        <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputGI" onkeyup="searchTableGI()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Gardu Induk...">
+
+                    <!-- Search (server-side seperti Unit, Enter untuk submit) -->
+                    <input type="text" id="searchInputGI" class="form-control form-control-sm rounded-3"
+                        style="max-width: 300px;" placeholder="Cari data Gardu Induk..."
+                        value="<?= isset($q) ? html_escape($q) : '' ?>">
                 </div>
 
                 <div class="table-responsive p-0">
@@ -64,26 +68,31 @@
                                     <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
                                 </tr>
                             <?php else: ?>
-                                <?php $no = $start_no;
-                                foreach ($gardu_induk as $row): ?>
-                                    <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $no++; ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNITNAME_UP3']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNITNAME']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['SSOTNUMBER']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['DESCRIPTION']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['CITY']); ?></td>
+                                <?php foreach ($gardu_induk as $i => $row): ?>
+                                    <?php
+                                    // Nomor tampil: posisi global saat search, fallback nomor pagination
+                                    $displayNo = (!empty($q) && !empty($positions) && isset($positions[$row['SSOTNUMBER']]))
+                                        ? $positions[$row['SSOTNUMBER']]
+                                        : ($start_no + $i);
+                                    ?>
+                                    <tr class="<?= ($displayNo % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
+                                        <td class="text-sm"><?= $displayNo; ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['UNITNAME_UP3'] ?? ''); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['UNITNAME'] ?? ''); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['SSOTNUMBER'] ?? ''); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['DESCRIPTION'] ?? ''); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['CITY'] ?? ''); ?></td>
                                         <td class="text-center">
-                                            <a href="<?= base_url('Gardu_induk/detail/' . urlencode($row['SSOTNUMBER'])); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail">
+                                            <a href="<?= base_url('Gardu_induk/detail/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail">
                                                 <i class="fas fa-info-circle"></i>
                                             </a>
                                             <?php if (can_edit()): ?>
-                                                <a href="<?= base_url('Gardu_induk/edit/' . urlencode($row['SSOTNUMBER'])); ?>" class="btn btn-warning btn-xs text-white me-1" title="Edit">
+                                                <a href="<?= base_url('Gardu_induk/edit/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-warning btn-xs text-white me-1" title="Edit">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
                                             <?php endif; ?>
                                             <?php if (can_delete()): ?>
-                                                <a href="<?= base_url('Gardu_induk/hapus/' . urlencode($row['SSOTNUMBER'])); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus">
+                                                <a href="<?= base_url('Gardu_induk/hapus/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus">
                                                     <i class="fas fa-trash"></i>
                                                 </a>
                                             <?php endif; ?>
@@ -105,23 +114,43 @@
 
 <!-- Script -->
 <script>
+    // Per-page: reset ke halaman 1 via URI segment (bukan ?page=1)
     function changePerPageGI(perPage) {
-        const url = new URL(window.location.href);
+        const url = new URL("<?= site_url('gardu_induk/index/1'); ?>");
+        const q = document.getElementById('searchInputGI').value.trim();
+
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
+
+        if (q) url.searchParams.set('q', q);
+        else url.searchParams.delete('q');
+
         window.location.href = url.toString();
     }
 
-    function searchTableGI() {
+    // Search: Enter untuk submit (server-side)
+    (function() {
         const input = document.getElementById('searchInputGI');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('giTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const q = input.value.trim();
+
+                const url = new URL("<?= site_url('gardu_induk/index/1'); ?>");
+
+                // pertahankan per_page yang aktif
+                const current = new URL(window.location.href);
+                const per = current.searchParams.get('per_page');
+                if (per) url.searchParams.set('per_page', per);
+
+                if (q) url.searchParams.set('q', q);
+                else url.searchParams.delete('q');
+
+                window.location.href = url.toString();
+            }
+        });
+    })();
 </script>
 
 <!-- Style -->
@@ -214,6 +243,7 @@
         box-shadow: none !important;
         outline: none !important;
     }
+
     .no-anim:active,
     .no-anim:focus,
     .no-anim *:active,
@@ -223,6 +253,7 @@
         box-shadow: none !important;
         outline: none !important;
     }
+
     /* Hide common ripple elements if a JS plugin adds them */
     .no-anim .ripple,
     .no-anim .waves-ripple,

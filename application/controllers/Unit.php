@@ -74,23 +74,24 @@ class Unit extends CI_Controller
     public function index()
     {
         $data['title'] = 'Data Unit';
-        
-        // Navbar data
         $data['page_title'] = 'Data Unit';
         $data['page_icon'] = 'fas fa-building';
 
-        // Konfigurasi paginasi
-        $config['base_url'] = site_url('unit/index');
-    $config['total_rows'] = $this->Unit_model->count_all_unit();
-    // gunakan default terpusat dari config
-    $allowedPerPage = [5,10,25,50,100,500];
-    $requestedPer = (int) $this->input->get('per_page');
-    $defaultPer = (int) $this->config->item('default_per_page');
-    $config['per_page'] = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
+        // Ambil query search dari GET, sanitasi
+        $q = trim($this->input->get('q', TRUE) ?? '');
+        $data['q'] = $q;
+
+        // Pagination config
+        $config['base_url'] = site_url('Unit/index');
+        $config['total_rows'] = $this->Unit_model->count_all_unit($q);
+        $allowedPerPage = [5, 10, 25, 50, 100, 500];
+        $requestedPer = (int) $this->input->get('per_page');
+        $defaultPer = (int) $this->config->item('default_per_page') ?: 10;
+        $config['per_page'] = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
         $config["uri_segment"] = 3;
         $config['use_page_numbers'] = TRUE;
 
-        // Customizing pagination links
+        // Pagination styling
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
         $config['full_tag_close'] = '</ul></nav>';
         $config['first_link'] = 'First';
@@ -111,24 +112,27 @@ class Unit extends CI_Controller
         $config['num_tag_close'] = '</li>';
         $config['attributes'] = array('class' => 'page-link');
 
-        // Ambil nomor halaman dari URI, default ke 1 jika tidak ada
+        // Ambil page number
         $page = ($this->uri->segment(3)) ? (int)$this->uri->segment(3) : 1;
-        if ($page <= 0) {
-            $page = 1;
-        }
-
-        // Hitung offset
+        if ($page <= 0) $page = 1;
         $offset = ($page - 1) * $config['per_page'];
 
-        // Inisialisasi paginasi
         $this->pagination->initialize($config);
 
-        // Ambil data untuk halaman saat ini
-    $data['unit'] = $this->Unit_model->get_unit($config['per_page'], $offset);
+        // Ambil data
+        $data['unit'] = $this->Unit_model->get_unit($config['per_page'], $offset, $q);
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
-    $data['per_page'] = $config['per_page'];
-    $data['total_rows'] = $config['total_rows'];
+        $data['per_page'] = $config['per_page'];
+        $data['total_rows'] = $config['total_rows'];
+
+        // Map posisi global jika ada search
+        if (!empty($q) && !empty($data['unit'])) {
+            $ids = array_column($data['unit'], 'ID_UNIT');
+            $data['positions'] = $this->Unit_model->get_positions_for_ids($ids);
+        } else {
+            $data['positions'] = [];
+        }
 
         $this->load->view('layout/header');
         $this->load->view('unit/vw_unit', $data);
