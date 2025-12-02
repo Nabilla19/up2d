@@ -25,12 +25,27 @@
 
                         <div class="col-md-6">
                             <label class="form-label">UP3 2D</label>
-                            <input type="text" name="UP3_2D" class="form-control">
+                            <select name="UP3_2D" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih UP3 2D --</option>
+                                <option value="UP2D.6456">UP2D.6456</option>
+                                <option value="UP3.6411">UP3.6411</option>
+                                <option value="UP3.6412">UP3.6412</option>
+                                <option value="UP3.6413">UP3.6413</option>
+                                <option value="UP3.6414">UP3.6414</option>
+                                <option value="UP3.6415">UP3.6415</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Unit Name UP3</label>
-                            <input type="text" name="UNITNAME_UP3" class="form-control">
+                            <select name="UNITNAME_UP3" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih Unit Name UP3 --</option>
+                                <option value="TANJUNG PINANG">TANJUNG PINANG</option>
+                                <option value="PEKANBARU">PEKANBARU</option>
+                                <option value="DUMAI">DUMAI</option>
+                                <option value="RENGAT">RENGAT</option>
+                                <option value="BANGKINANG">BANGKINANG</option>
+                            </select>
                         </div>
 
                         <div class="col-md-4">

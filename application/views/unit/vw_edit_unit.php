@@ -12,10 +12,39 @@
             <div class="card-body">
                 <form action="<?= base_url('Unit/edit/' . urlencode($unit['ID_UNIT'] ?? '')); ?>" method="post">
                     <div class="row g-3">
+
                         <div class="col-md-6">
                             <label class="form-label">Unit Pelaksana</label>
-                            <input type="text" class="form-control" name="UNIT_PELAKSANA" value="<?= htmlentities($unit['UNIT_PELAKSANA'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
+                            <select class="form-control" name="UNIT_PELAKSANA" required>
+                                <option value="" disabled>-- Pilih Unit Pelaksana --</option>
+
+                                <option value="TANJUNG PINANG"
+                                    <?= (isset($unit['UNIT_PELAKSANA']) && $unit['UNIT_PELAKSANA'] == 'TANJUNG PINANG') ? 'selected' : '' ?>>
+                                    TANJUNG PINANG
+                                </option>
+
+                                <option value="PEKANBARU"
+                                    <?= (isset($unit['UNIT_PELAKSANA']) && $unit['UNIT_PELAKSANA'] == 'PEKANBARU') ? 'selected' : '' ?>>
+                                    PEKANBARU
+                                </option>
+
+                                <option value="DUMAI"
+                                    <?= (isset($unit['UNIT_PELAKSANA']) && $unit['UNIT_PELAKSANA'] == 'DUMAI') ? 'selected' : '' ?>>
+                                    DUMAI
+                                </option>
+
+                                <option value="RENGAT"
+                                    <?= (isset($unit['UNIT_PELAKSANA']) && $unit['UNIT_PELAKSANA'] == 'RENGAT') ? 'selected' : '' ?>>
+                                    RENGAT
+                                </option>
+
+                                <option value="BANGKINANG"
+                                    <?= (isset($unit['UNIT_PELAKSANA']) && $unit['UNIT_PELAKSANA'] == 'BANGKINANG') ? 'selected' : '' ?>>
+                                    BANGKINANG
+                                </option>
+                            </select>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Unit Layanan</label>
                             <input type="text" class="form-control" name="UNIT_LAYANAN" value="<?= htmlentities($unit['UNIT_LAYANAN'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>

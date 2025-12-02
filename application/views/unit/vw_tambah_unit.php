@@ -24,7 +24,14 @@
 						<!-- Unit Pelaksana -->
 						<div class="col-md-6">
 							<label class="form-label">Unit Pelaksana</label>
-							<input type="text" name="UNIT_PELAKSANA" class="form-control" required>
+							<select name="UNIT_PELAKSANA" class="form-control" required>
+								<option value="" disabled selected>-- Pilih Unit Pelaksana --</option>
+								<option value="TANJUNG PINANG">TANJUNG PINANG</option>
+								<option value="PEKANBARU">PEKANBARU</option>
+								<option value="DUMAI">DUMAI</option>
+								<option value="RENGAT">RENGAT</option>
+								<option value="BANGKINANG">BANGKINANG</option>
+							</select>
 						</div>
 
 						<!-- Unit Layanan -->
