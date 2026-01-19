@@ -57,6 +57,7 @@ class Login extends CI_Controller {
                 'user_id'    => $user['id'],
                 'user_role'  => isset($user['role']) ? $user['role'] : null,
                 'role'       => isset($user['role']) ? $user['role'] : null, // untuk activity logger
+                'role_id'    => isset($user['role_id']) ? $user['role_id'] : null,
                 'logged_in'  => TRUE,
             ]);
             // record successful login (increments login_count and updates last_login if columns exist)

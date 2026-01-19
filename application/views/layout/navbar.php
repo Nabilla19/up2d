@@ -6,7 +6,9 @@
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
         <li class="breadcrumb-item text-sm">
-          <a class="opacity-5 text-white" href="<?= base_url('dashboard'); ?>">Dashboard</a>
+          <a class="opacity-5 text-white" href="<?= isset($parent_page_url) ? $parent_page_url : base_url('dashboard'); ?>">
+            <?= isset($parent_page_title) ? $parent_page_title : 'Dashboard'; ?>
+          </a>
         </li>
         <li class="breadcrumb-item text-sm text-white active" aria-current="page">
           <?= isset($page_title) ? $page_title : 'Page'; ?>
@@ -27,7 +29,9 @@
 
         <!-- Profile / Sign In -->
         <li class="nav-item d-flex align-items-center me-3">
-          <a href="<?= base_url('pages/profile'); ?>"
+          <?php $profileHref = $this->session->userdata('logged_in') ? 'javascript:;' : base_url('login'); ?>
+          <?php $profileAttr = $this->session->userdata('logged_in') ? 'data-bs-toggle="modal" data-bs-target="#profileModal"' : ''; ?>
+          <a href="<?= $profileHref ?>" <?= $profileAttr ?>
              class="nav-link text-white font-weight-bold px-0 d-flex align-items-center"
              title="Profile">
             <i class="fas fa-user text-white me-2"></i>
@@ -44,12 +48,6 @@
           </a>
         </li>
 
-        <!-- Settings -->
-        <li class="nav-item px-2 d-flex align-items-center me-3">
-          <a href="javascript:;" class="nav-link text-white p-0" title="Settings">
-            <i class="fas fa-cog text-white fixed-plugin-button-nav cursor-pointer"></i>
-          </a>
-        </li>
 
         <?php
           $user_role = $this->session->userdata('user_role');
@@ -66,7 +64,9 @@
 
         <!-- Notification Bell -->
         <li class="nav-item dropdown pe-2 d-flex align-items-center">
-          <a href="<?= base_url('Notifikasi'); ?>" class="nav-link text-white p-0 position-relative" title="Lihat Notifikasi">
+          <?php $notifHref = $this->session->userdata('logged_in') ? 'javascript:;' : base_url('login'); ?>
+          <?php $notifAttr = $this->session->userdata('logged_in') ? 'data-bs-toggle="modal" data-bs-target="#notificationModal"' : ''; ?>
+          <a href="<?= $notifHref ?>" <?= $notifAttr ?> class="nav-link text-white p-0 position-relative" title="Lihat Notifikasi">
             <i class="fas fa-bell text-white cursor-pointer" style="font-size: 18px;"></i>
             <span id="notifBadge"
                   class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"

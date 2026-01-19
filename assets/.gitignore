@@ -1,2 +1,2 @@
 .DS_Store
-application/config/google_service_account.json
+# application/config/google_service_account.json

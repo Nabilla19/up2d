@@ -32,19 +32,24 @@ class Ik extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data IK';
         $data['page_icon'] = 'fas fa-info-circle';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         // Konfigurasi pagination dengan pilihan per-page dari query string
         $allowedPerPage = [5, 10, 25, 50, 100, 500];
         $requestedPer = (int) $this->input->get('per_page');
-    $defaultPer = 5;
+        $defaultPer = 5;
         $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
 
+        // Server-side search (q)
+        $q = trim($this->input->get('q', TRUE) ?? '');
+
         $config['base_url'] = site_url('ik/index');
-        $config['total_rows'] = $this->ikModel->count_all_ik();
+        $config['total_rows'] = $this->ikModel->count_all_ik($q);
         $config['per_page'] = $per_page;
         $config['uri_segment'] = 3;
         $config['use_page_numbers'] = TRUE;
-        // biarkan query string (per_page) dipertahankan pada link pagination
+        // biarkan query string (per_page, q) dipertahankan pada link pagination
         $config['reuse_query_string'] = TRUE;
 
         // Tampilan pagination
@@ -68,11 +73,12 @@ class Ik extends CI_Controller
         $this->pagination->initialize($config);
 
 
-    $data['ik'] = $this->ikModel->get_ik($config['per_page'], $offset);
+    $data['ik'] = $this->ikModel->get_ik($config['per_page'], $offset, $q);
     $data['pagination'] = $this->pagination->create_links();
     $data['start_no'] = $offset + 1;
     $data['per_page'] = $per_page;
     $data['total_rows'] = $config['total_rows'];
+    $data['q'] = $q;
 
         $this->load->view('layout/header', $data);
         $this->load->view('ik/vw_ik', $data);
@@ -90,6 +96,8 @@ class Ik extends CI_Controller
         }
 
         $data['judul'] = 'Tambah IK';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         if (!$this->input->post()) {
             $this->load->view('layout/header', $data);
@@ -148,6 +156,8 @@ class Ik extends CI_Controller
         }
 
         $data['judul'] = 'Edit IK';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
         $data['ik'] = $this->ikModel->get_ik_by_id($id);
 
         if (!$data['ik']) {

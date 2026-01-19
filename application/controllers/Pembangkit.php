@@ -6,7 +6,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
  *
  * @property CI_Input $input
  * @property CI_Session $session
- * @property Pembangkit_model $pembangkitModel
+ * @property Pembangkit_model $pembangkit_model
  * @property CI_Pagination $pagination
  * @property CI_URI $uri
  * @property CI_Config $config
@@ -16,33 +16,72 @@ class Pembangkit extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        // Load model
-        $this->load->model('Pembangkit_model');
-        // Load helper dan library
+        // ✅ Pakai alias biar konsisten & aman dari case-sensitive
+        $this->load->model('Pembangkit_model', 'pembangkit_model');
+
         $this->load->helper(['url', 'form']);
         $this->load->library(['session', 'pagination']);
     }
 
-    // Halaman utama - tampilkan semua data pembangkit
     public function index()
     {
         $data['title'] = 'Data Pembangkit';
-        
-        // Navbar data
+
         $data['page_title'] = 'Data Pembangkit';
-        $data['page_icon'] = 'fas fa-industry';
+        $data['page_icon']  = 'fas fa-industry';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
+
+        // ✅ ambil search dari query string
+        // PERSISTENCE: Search
+        if ($this->input->get('search') !== null) {
+            $search = trim($this->input->get('search', TRUE));
+            $this->session->set_userdata('pembangkit_search', $search);
+        } else {
+            $search = $this->session->userdata('pembangkit_search') ?? '';
+        }
+        $data['search'] = $search;
 
         // Konfigurasi paginasi
         $config['base_url'] = site_url('pembangkit/index');
-        $config['total_rows'] = $this->Pembangkit_model->count_all_pembangkit();
-        // Per-page selector (from ?per_page), use config default_per_page
+
+        // ✅ total rows harus ikut search
+        $config['total_rows'] = $this->pembangkit_model->count_all_pembangkit($search);
+
+        // Per-page selector (from ?per_page)
+        // PERSISTENCE: Per Page
         $allowedPerPage = [5, 10, 25, 50, 100, 500];
-        $requestedPer = (int) $this->input->get('per_page');
-        $defaultPer = (int) $this->config->item('default_per_page');
-        $perPage = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
+        if ($this->input->get('per_page') !== null) {
+            $requestedPer = (int)$this->input->get('per_page');
+            $this->session->set_userdata('pembangkit_per_page', $requestedPer);
+        }
+
+        $savedPer = (int)$this->session->userdata('pembangkit_per_page');
+        $defaultPer = (int)$this->config->item('default_per_page');
+        if($defaultPer <= 0) $defaultPer = 10;
+        
+        if ($savedPer > 0) {
+            $perPage = in_array($savedPer, $allowedPerPage) ? $savedPer : $defaultPer;
+        } else {
+            $perPage = $defaultPer;
+        }
+        $this->session->set_userdata('pembangkit_per_page', $perPage);
+
         $config['per_page'] = $perPage;
+
+        // page numbers via URI segment
         $config["uri_segment"] = 3;
         $config['use_page_numbers'] = TRUE;
+
+        // ✅ pastikan query string (search/per_page) ikut kebawa ke link pagination
+        $config['reuse_query_string'] = TRUE;
+
+        // suffix + first_url (biar First/links juga bawa query string)
+        $query = $this->input->get(NULL, TRUE);
+        if (!empty($query)) {
+            $config['suffix'] = '?' . http_build_query($query, '', '&');
+            $config['first_url'] = $config['base_url'] . $config['suffix'];
+        }
 
         // Customizing pagination links
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
@@ -65,9 +104,9 @@ class Pembangkit extends CI_Controller
         $config['num_tag_close'] = '</li>';
         $config['attributes'] = array('class' => 'page-link');
 
-        // Ambil nomor halaman dari URI
+        // Ambil nomor halaman dari URI (segment 3)
         $page_segment = $this->uri->segment(3);
-        $page = (is_numeric($page_segment) && $page_segment > 0) ? (int)$page_segment : 1;
+        $page = (is_numeric($page_segment) && (int)$page_segment > 0) ? (int)$page_segment : 1;
         if ($page <= 0) {
             $page = 1;
         }
@@ -78,19 +117,19 @@ class Pembangkit extends CI_Controller
         // Inisialisasi paginasi
         $this->pagination->initialize($config);
 
-        // Ambil data untuk halaman saat ini
-        $data['pembangkit'] = $this->Pembangkit_model->get_pembangkit($config['per_page'], $offset);
+        // ✅ get data ikut search
+        $data['pembangkit'] = $this->pembangkit_model->get_pembangkit($config['per_page'], $offset, $search);
+
         $data['pagination'] = $this->pagination->create_links();
-        $data['start_no'] = $offset + 1;
+        $data['start_no']   = $offset + 1;
         $data['total_rows'] = $config['total_rows'];
-        $data['per_page'] = $perPage;
+        $data['per_page']   = $perPage;
 
         $this->load->view('layout/header');
         $this->load->view('pembangkit/vw_pembangkit', $data);
         $this->load->view('layout/footer');
     }
 
-    // Tambah data baru
     public function tambah()
     {
         if (!can_create()) {
@@ -117,18 +156,19 @@ class Pembangkit extends CI_Controller
                 'THN_INTEGRASI'  => $this->input->post('THN_INTEGRASI'),
             ];
 
-            $this->Pembangkit_model->insert_pembangkit($insertData);
+            $this->pembangkit_model->insert_pembangkit($insertData);
             $this->session->set_flashdata('success', 'Data pembangkit berhasil ditambahkan!');
             redirect('Pembangkit');
         } else {
             $data['title'] = 'Tambah Data Pembangkit';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('pembangkit/vw_tambah_pembangkit', $data);
             $this->load->view('layout/footer');
         }
     }
 
-    // Edit data pembangkit
     public function edit($id)
     {
         if (!can_edit()) {
@@ -136,7 +176,7 @@ class Pembangkit extends CI_Controller
             redirect($this->router->fetch_class());
         }
 
-        $data['pembangkit'] = $this->Pembangkit_model->get_pembangkit_by_id($id);
+        $data['pembangkit'] = $this->pembangkit_model->get_pembangkit_by_id($id);
         if (empty($data['pembangkit'])) {
             show_404();
         }
@@ -160,9 +200,8 @@ class Pembangkit extends CI_Controller
                 'THN_INTEGRASI'  => $this->input->post('THN_INTEGRASI'),
             ];
 
-            $update_success = $this->Pembangkit_model->update_pembangkit($id, $updateData);
+            $update_success = $this->pembangkit_model->update_pembangkit($id, $updateData);
 
-            // Log aktivitas update
             if ($update_success) {
                 log_update('pembangkit', $id, $updateData['PEMBANGKIT']);
             }
@@ -171,27 +210,29 @@ class Pembangkit extends CI_Controller
             redirect('Pembangkit');
         } else {
             $data['title'] = 'Edit Data Pembangkit';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('pembangkit/vw_edit_pembangkit', $data);
             $this->load->view('layout/footer');
         }
     }
 
-    // Detail data pembangkit
     public function detail($id)
     {
-        $data['pembangkit'] = $this->Pembangkit_model->get_pembangkit_by_id($id);
+        $data['pembangkit'] = $this->pembangkit_model->get_pembangkit_by_id($id);
         if (empty($data['pembangkit'])) {
             show_404();
         }
 
         $data['title'] = 'Detail Data Pembangkit';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('pembangkit/vw_detail_pembangkit', $data);
         $this->load->view('layout/footer');
     }
 
-    // Hapus data pembangkit
     public function hapus($id)
     {
         if (!can_delete()) {
@@ -199,13 +240,11 @@ class Pembangkit extends CI_Controller
             redirect($this->router->fetch_class());
         }
 
-        // Get data before delete for logging
-        $pembangkit = $this->Pembangkit_model->get_pembangkit_by_id($id);
+        $pembangkit = $this->pembangkit_model->get_pembangkit_by_id($id);
         $pembangkit_name = $pembangkit ? ($pembangkit['PEMBANGKIT'] ?? 'ID-' . $id) : 'ID-' . $id;
 
-        $delete_success = $this->Pembangkit_model->delete_pembangkit($id);
+        $delete_success = $this->pembangkit_model->delete_pembangkit($id);
 
-        // Log aktivitas delete
         if ($delete_success) {
             log_delete('pembangkit', $id, $pembangkit_name);
         }
@@ -214,10 +253,14 @@ class Pembangkit extends CI_Controller
         redirect('Pembangkit');
     }
 
-    // Export Pembangkit data to CSV
     public function export_csv()
-    {
-        $all = $this->Pembangkit_model->get_all_pembangkit();
+    {        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+        $all = $this->pembangkit_model->get_all_pembangkit();
         $label = 'Data Pembangkit';
         $filename = $label . ' ' . date('d-m-Y') . '.csv';
 
@@ -225,7 +268,6 @@ class Pembangkit extends CI_Controller
         header('Content-Disposition: attachment; filename="' . $filename . '"');
 
         $output = fopen('php://output', 'w');
-        // UTF-8 BOM for Excel
         fwrite($output, "\xEF\xBB\xBF");
 
         if (empty($all)) {

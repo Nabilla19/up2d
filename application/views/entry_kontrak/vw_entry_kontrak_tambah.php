@@ -162,48 +162,31 @@ $show_kku_section       = $is_admin;
                                 </select>
                             </div>
 
+                            <!-- ✅ Harga HPE + Prognosa Kontrak (Prognosa tepat dibawah HPE) -->
                             <div class="col-md-4">
                                 <label>Harga HPE</label>
                                 <input type="text" name="harga_hpe" class="form-control" placeholder="contoh: 12.000.000">
+
+                                <div class="mt-3">
+                                    <label>Prognosa Kontrak</label>
+                                    <input type="date" name="prognosa_kontrak" class="form-control">
+                                </div>
                             </div>
+
                             <div class="col-md-4">
                                 <label>Harga HPS</label>
                                 <input type="text" name="harga_hps" class="form-control" placeholder="contoh: 125.000.000">
                             </div>
+
                             <div class="col-md-4">
                                 <label>Harga Nego</label>
                                 <input type="text" name="harga_nego" class="form-control" placeholder="contoh: 500.000">
                             </div>
 
-                            <div class="col-md-4">
-                                <label>No Kontrak</label>
-                                <input type="text" name="no_kontrak" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Vendor</label>
-                                <input type="text" name="vendor" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Tanggal Kontrak</label>
-                                <input type="date" name="tgl_kontrak" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Akhir Kontrak</label>
-                                <input type="date" name="end_kontrak" class="form-control">
-                            </div>
-                            <div class="col-md-4">
-                                <label>Nilai Kontrak</label>
-                                <input type="text" name="nilai_kontrak" class="form-control" placeholder="contoh: 240.000.000">
-                            </div>
-
-                            <div class="col-md-12">
-                                <label>Kendala Kontrak</label>
-                                <textarea name="kendala_kontrak" class="form-control"></textarea>
-                            </div>
-
+                            <!-- ✅ Tahapan Pengadaan diposisikan sebelum kolom kontrak -->
                             <div class="col-md-4">
                                 <label>Tahapan Pengadaan</label>
-                                <select name="tahapan_pengadaan" class="form-select">
+                                <select name="tahapan_pengadaan" id="tahapan_pengadaan" class="form-select">
                                     <option value="">-- Pilih --</option>
                                     <option>Proses CDA</option>
                                     <option>Proses TTD Vendor</option>
@@ -223,12 +206,40 @@ $show_kku_section       = $is_admin;
                                     <option>Masa Sanggah</option>
                                     <option>Gagal Lelang</option>
                                 </select>
+                                <small class="text-muted d-block mt-1">
+                                    Jika memilih selain 4 tahapan (CDA/TTD Vendor/TTD Pengguna/Pengadaan Selesai), kolom kontrak akan otomatis nonaktif.
+                                </small>
                             </div>
 
+                            <div class="col-md-8"></div>
+
+                            <!-- ✅ Kolom Kontrak (akan disabled/enable via JS) -->
                             <div class="col-md-4">
-                                <label>Prognosa Kontrak</label>
-                                <input type="date" name="prognosa_kontrak" class="form-control">
+                                <label>No Kontrak</label>
+                                <input type="text" name="no_kontrak" class="form-control kontrak-field" id="no_kontrak">
                             </div>
+                            <div class="col-md-4">
+                                <label>Vendor</label>
+                                <input type="text" name="vendor" class="form-control kontrak-field" id="vendor">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Tanggal Kontrak</label>
+                                <input type="date" name="tgl_kontrak" class="form-control kontrak-field" id="tgl_kontrak">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Akhir Kontrak</label>
+                                <input type="date" name="end_kontrak" class="form-control kontrak-field" id="end_kontrak">
+                            </div>
+                            <div class="col-md-4">
+                                <label>Nilai Kontrak</label>
+                                <input type="text" name="nilai_kontrak" class="form-control kontrak-field" id="nilai_kontrak" placeholder="contoh: 240.000.000">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label>Kendala Kontrak</label>
+                                <textarea name="kendala_kontrak" class="form-control kontrak-field" id="kendala_kontrak"></textarea>
+                            </div>
+
                         </div>
                     <?php endif; ?>
 
@@ -306,7 +317,37 @@ $show_kku_section       = $is_admin;
         });
     }
 
+    // ✅ rule tahapan pengadaan yang mengaktifkan kolom kontrak
+    function isTahapanKontrak(val) {
+        val = (val || '').toString().trim();
+        return [
+            'Proses CDA',
+            'Proses TTD Vendor',
+            'Proses TTD Pengguna',
+            'Pengadaan Selesai'
+        ].indexOf(val) !== -1;
+    }
+
+    // ✅ toggle enable/disable kolom kontrak
+    function toggleKontrakFields() {
+        var tahapan = $('#tahapan_pengadaan').val();
+        var allow = isTahapanKontrak(tahapan);
+
+        // jika tidak allow -> disable semua field kontrak
+        $('.kontrak-field').each(function() {
+            $(this).prop('disabled', !allow);
+        });
+    }
+
     $(document).ready(function() {
+        // init kontrak fields state
+        toggleKontrakFields();
+
+        // on change tahapan
+        $('#tahapan_pengadaan').on('change', function() {
+            toggleKontrakFields();
+        });
+
         $('#jenis_anggaran').change(function() {
             const jenis = $(this).val();
             resetMasterFields();

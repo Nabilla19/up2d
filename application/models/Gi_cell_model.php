@@ -11,15 +11,32 @@ class Gi_cell_model extends CI_Model
         return $this->db->get($this->table)->result_array();
     }
 
-    public function get_gi_cell($limit, $offset)
+    // Mengambil data gi_cell berdasarkan limit dan offset, serta pencarian
+    public function get_gi_cell($limit, $offset, $search = '')
     {
-        $this->db->limit($limit, $offset);
-        return $this->db->get($this->table)->result_array();
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('UNITNAME', $search); // Pencarian berdasarkan nama unit
+            $this->db->or_like('SSOTNUMBER', $search); // Pencarian berdasarkan SSOTNUMBER
+            $this->db->or_like('DESCRIPTION', $search); // Pencarian berdasarkan deskripsi
+            $this->db->group_end();
+        }
+        $this->db->limit($limit, $offset); // Batasi jumlah data berdasarkan per_page dan offset
+        $query = $this->db->get($this->table);
+        return $query->result_array(); // Mengembalikan hasil data
     }
 
-    public function count_all_gi_cell()
+    // Menghitung jumlah data GI Cell dengan pencarian
+    public function count_all_gi_cell($search = '')
     {
-        return $this->db->count_all($this->table);
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('UNITNAME', $search); // Pencarian berdasarkan nama unit
+            $this->db->or_like('SSOTNUMBER', $search); // Pencarian berdasarkan SSOTNUMBER
+            $this->db->or_like('DESCRIPTION', $search); // Pencarian berdasarkan deskripsi
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results($this->table); // Menghitung total data yang sesuai dengan pencarian
     }
 
     // Mengambil data gi_cell berdasarkan SSOTNUMBER (primary key business)

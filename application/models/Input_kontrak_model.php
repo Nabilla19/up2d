@@ -5,17 +5,33 @@ class Input_kontrak_model extends CI_Model
 {
     private $table = 'input_kontrak'; // nama tabel sesuai database
 
-    public function count_all()
+    public function count_all($search = null)
     {
-        return $this->db->count_all($this->table);
+        if ($search === null || $search === '') {
+            return $this->db->count_all($this->table);
+        }
+
+        // safe like using escape
+        $s = '%' . $this->db->escape_like_str($search) . '%';
+        $sql = "SELECT COUNT(*) as cnt FROM `" . $this->db->escape_str($this->table) . "` WHERE `USER` LIKE ? OR `REKANAN` LIKE ? OR `SKKO` LIKE ? OR `URAIAN KONTRAK / PEKERJAAN` LIKE ?";
+        $q = $this->db->query($sql, [$s, $s, $s, $s]);
+        $row = $q->row_array();
+        return (int)($row['cnt'] ?? 0);
     }
 
-    public function get_limit($limit, $offset)
+    public function get_limit($limit, $offset, $search = null)
     {
-        return $this->db
-            ->limit($limit, $offset)
-            ->get($this->table)
-            ->result_array();
+        if ($search === null || $search === '') {
+            return $this->db
+                ->limit($limit, $offset)
+                ->get($this->table)
+                ->result_array();
+        }
+
+        $s = '%' . $this->db->escape_like_str($search) . '%';
+        $sql = "SELECT * FROM `" . $this->db->escape_str($this->table) . "` WHERE `USER` LIKE ? OR `REKANAN` LIKE ? OR `SKKO` LIKE ? OR `URAIAN KONTRAK / PEKERJAAN` LIKE ? LIMIT ? OFFSET ?";
+        $q = $this->db->query($sql, [$s, $s, $s, $s, (int)$limit, (int)$offset]);
+        return $q->result_array();
     }
 
     public function get_all()

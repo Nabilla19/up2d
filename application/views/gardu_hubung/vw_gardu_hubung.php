@@ -1,7 +1,6 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
 
-    <!-- Content -->
     <div class="container-fluid py-4">
         <?php if ($this->session->flashdata('success')): ?>
             <div class="alert alert-success text-white">
@@ -9,21 +8,29 @@
             </div>
         <?php endif; ?>
 
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger text-white">
+                <?= $this->session->flashdata('error'); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Gardu Hubung</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-code-branch me-2"></i>Tabel Data Gardu Hubung</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Gardu_hubung/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/gardu_hubung') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/gardu_hubung?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Gardu_hubung/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('gardu_hubung/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -41,7 +48,25 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputGH" onkeyup="searchTableGH()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Gardu Hubung...">
+
+                    <!-- ✅ SEARCH SERVER-SIDE (bukan filter JS) -->
+                    <form method="get" action="<?= base_url('Gardu_hubung/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('gardu_hubung/index'); ?>', 'searchInputGH', 'q');">
+                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+
+                        <input type="text"
+                               id="searchInputGH"
+                               name="q"
+                               value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                               class="form-control form-control-sm rounded-3"
+                               style="max-width: 300px;"
+                               placeholder="Cari data Gardu Hubung...">
+
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('Gardu_hubung/index?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -60,7 +85,13 @@
                         <tbody>
                             <?php if (empty($gardu_hubung)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="7" class="text-center text-secondary py-4">
+                                        <?php if (!empty($search)): ?>
+                                            Tidak ada data yang cocok dengan pencarian: <b><?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?></b>
+                                        <?php else: ?>
+                                            Belum ada data
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = $start_no;
@@ -104,102 +135,15 @@
 <!-- Script -->
 <script>
     function changePerPageGH(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('gardu_hubung/index'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
+        
+        const input = document.getElementById('searchInputGH');
+        if (input) {
+            const q = input.value.trim();
+            if (q) url.searchParams.set('q', q);
+        }
         window.location.href = url.toString();
     }
-
-    function searchTableGH() {
-        const input = document.getElementById('searchInputGH');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('ghTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
 </script>
-
-<!-- Style -->
-<style>
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.75rem 1rem;
-    }
-
-    .card-header h6 {
-        color: #fff;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .breadcrumb .breadcrumb-item.active,
-    .breadcrumb .breadcrumb-item a.opacity-5,
-    .breadcrumb .breadcrumb-item.text-white {
-        color: #ffffff !important;
-    }
-
-    .bg-gradient-primary {
-        background: linear-gradient(90deg, #005C99, #0099CC);
-    }
-
-    .table-row-odd {
-        background-color: #ffffff;
-    }
-
-    .table-row-even {
-        background-color: #f5f7fa;
-    }
-
-    #ghTable tbody tr:hover {
-        background-color: #e9ecef !important;
-        transition: 0.2s ease-in-out;
-    }
-
-    .btn-xs {
-        padding: 2px 6px;
-        font-size: 11px;
-        border-radius: 4px;
-    }
-
-    .btn-xs i {
-        font-size: 12px;
-    }
-
-    /* padding sel tabel */
-    #ghTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #ghTable tbody td.text-center {
-        vertical-align: middle !important;
-        text-align: center !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
-    }
-
-    #ghTable tbody td.text-center .btn {
-        margin: 2px 3px;
-    }
-
-    #ghTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
-    }
-
-    #ghTable tbody tr {
-        line-height: 1.15;
-    }
-
-    .no-anim,
-    .no-anim * { transition: none !important; animation: none !important; transform: none !important; box-shadow: none !important; outline: none !important; }
-    .no-anim:active, .no-anim:focus, .no-anim *:active, .no-anim *:focus { transform: none !important; box-shadow: none !important; outline: none !important; }
-    .no-anim .ripple, .no-anim .waves-ripple, .no-anim .wave, .no-anim .ink { display: none !important; }
-</style>

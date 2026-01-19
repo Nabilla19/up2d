@@ -24,44 +24,70 @@ class Gardu_hubung extends CI_Controller
     public function index()
     {
         $data['title'] = 'Data Gardu Hubung';
-        
+
         // Navbar data
         $data['page_title'] = 'Data Gardu Hubung';
-        $data['page_icon'] = 'fas fa-network-wired';
+        $data['page_icon']  = 'fas fa-network-wired';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
 
-    // Handle per_page dari query string (gunakan config default_per_page)
-    $allowedPerPage = [5,10,25,50,100,500];
-    $requestedPer = (int) $this->input->get('per_page');
-    $defaultPer = (int) $this->config->item('default_per_page');
-    $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
+        // ✅ ambil search dari querystring
+        // PERSISTENCE: Search
+        // View uses name="q". Controller should check 'q' first.
+        $q_param = $this->input->get('q', TRUE); 
+        if ($q_param === null) $q_param = $this->input->get('search', TRUE);
+
+        if ($q_param !== null) {
+            $search = trim($q_param);
+            $this->session->set_userdata('gh_search', $search);
+        } else {
+            $search = $this->session->userdata('gh_search') ?? '';
+        }
+        $data['search'] = $search;
+
+        // ✅ Handle per_page dari query string (gunakan config default_per_page)
+        // PERSISTENCE: Per Page
+        $allowedPerPage = [5, 10, 25, 50, 100, 500];
+        if ($this->input->get('per_page') !== null) {
+            $requestedPer = (int)$this->input->get('per_page');
+            $this->session->set_userdata('gh_per_page', $requestedPer);
+        }
+
+        $savedPer = (int)$this->session->userdata('gh_per_page');
+        $defaultPer = (int) $this->config->item('default_per_page');
+        if($defaultPer <= 0) $defaultPer = 10;
+        
+        $per_page = ($savedPer > 0 && in_array($savedPer, $allowedPerPage)) ? $savedPer : $defaultPer;
+        $this->session->set_userdata('gh_per_page', $per_page);
 
         // Konfigurasi paginasi
-        $config['base_url'] = site_url('gardu_hubung/index');
-        $config['total_rows'] = $this->Gardu_hubung_model->count_all_gardu_hubung();
-        $config['per_page'] = $per_page;
-        $config["uri_segment"] = 3;
-        $config['use_page_numbers'] = TRUE;
+        $config['base_url']        = site_url('gardu_hubung/index');
+        $config['total_rows']      = $this->Gardu_hubung_model->count_all_gardu_hubung($search); // ✅ ikut search
+        $config['per_page']        = $per_page;
+        $config['uri_segment']     = 3;
+        $config['use_page_numbers']= TRUE;
+        $config['reuse_query_string'] = TRUE;
 
         // Customizing pagination links
-        $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
-        $config['full_tag_close'] = '</ul></nav>';
-        $config['first_link'] = 'First';
-        $config['first_tag_open'] = '<li class="page-item">';
+        $config['full_tag_open']   = '<nav><ul class="pagination justify-content-end">';
+        $config['full_tag_close']  = '</ul></nav>';
+        $config['first_link']      = 'First';
+        $config['first_tag_open']  = '<li class="page-item">';
         $config['first_tag_close'] = '</li>';
-        $config['last_link'] = 'Last';
-        $config['last_tag_open'] = '<li class="page-item">';
-        $config['last_tag_close'] = '</li>';
-        $config['next_link'] = '&raquo';
-        $config['next_tag_open'] = '<li class="page-item">';
-        $config['next_tag_close'] = '</li>';
-        $config['prev_link'] = '&laquo';
-        $config['prev_tag_open'] = '<li class="page-item">';
-        $config['prev_tag_close'] = '</li>';
-        $config['cur_tag_open'] = '<li class="page-item active"><a class="page-link" href="#">';
-        $config['cur_tag_close'] = '</a></li>';
-        $config['num_tag_open'] = '<li class="page-item">';
-        $config['num_tag_close'] = '</li>';
-        $config['attributes'] = array('class' => 'page-link');
+        $config['last_link']       = 'Last';
+        $config['last_tag_open']   = '<li class="page-item">';
+        $config['last_tag_close']  = '</li>';
+        $config['next_link']       = '&raquo';
+        $config['next_tag_open']   = '<li class="page-item">';
+        $config['next_tag_close']  = '</li>';
+        $config['prev_link']       = '&laquo';
+        $config['prev_tag_open']   = '<li class="page-item">';
+        $config['prev_tag_close']  = '</li>';
+        $config['cur_tag_open']    = '<li class="page-item active"><a class="page-link" href="#">';
+        $config['cur_tag_close']   = '</a></li>';
+        $config['num_tag_open']    = '<li class="page-item">';
+        $config['num_tag_close']   = '</li>';
+        $config['attributes']      = array('class' => 'page-link');
 
         // Ambil nomor halaman dari URI
         $page_segment = $this->uri->segment(3);
@@ -76,12 +102,12 @@ class Gardu_hubung extends CI_Controller
         // Inisialisasi paginasi
         $this->pagination->initialize($config);
 
-        // Ambil data untuk halaman saat ini
-    $data['gardu_hubung'] = $this->Gardu_hubung_model->get_gardu_hubung($config['per_page'], $offset);
-        $data['pagination'] = $this->pagination->create_links();
-        $data['start_no'] = $offset + 1;
-    $data['per_page'] = $per_page;
-    $data['total_rows'] = $config['total_rows'];
+        // ✅ Ambil data untuk halaman saat ini (ikut search)
+        $data['gardu_hubung'] = $this->Gardu_hubung_model->get_gardu_hubung($config['per_page'], $offset, $search);
+        $data['pagination']   = $this->pagination->create_links();
+        $data['start_no']     = $offset + 1;
+        $data['per_page']     = $per_page;
+        $data['total_rows']   = $config['total_rows'];
 
         $this->load->view('layout/header');
         $this->load->view('gardu_hubung/vw_gardu_hubung', $data);
@@ -96,7 +122,6 @@ class Gardu_hubung extends CI_Controller
         }
         if ($this->input->post()) {
             $insertData = [
-                // Only fields that exist in database gh (40+ columns)
                 'UP3_2D' => $this->input->post('UP3_2D'),
                 'UNITNAME_UP3' => $this->input->post('UNITNAME_UP3'),
                 'CXUNIT' => $this->input->post('CXUNIT'),
@@ -131,11 +156,14 @@ class Gardu_hubung extends CI_Controller
                 'STATUS_RC' => $this->input->post('STATUS_RC'),
                 'TYPE_GARDU' => $this->input->post('TYPE_GARDU')
             ];
+
             $this->Gardu_hubung_model->insert_gardu_hubung($insertData);
             $this->session->set_flashdata('success', 'Data Gardu Hubung berhasil ditambahkan!');
             redirect('Gardu_hubung');
         } else {
             $data['title'] = 'Tambah Data Gardu Hubung';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gardu_hubung/vw_tambah_gardu_hubung', $data);
             $this->load->view('layout/footer');
@@ -148,10 +176,10 @@ class Gardu_hubung extends CI_Controller
             $this->session->set_flashdata('error', 'Anda tidak memiliki akses untuk mengubah data');
             redirect('Gardu_hubung');
         }
+
         $data['gardu_hubung'] = $this->Gardu_hubung_model->get_gardu_hubung_by_id($id);
         if (empty($data['gardu_hubung'])) { show_404(); }
 
-    // Ensure keys exist for the edit view (only fields that exist in database - 33 columns)
         $expected = ['UP3_2D','UNITNAME_UP3','CXUNIT','UNITNAME','LOCATION','SSOTNUMBER','DESCRIPTION','STATUS','TUJDNUMBER','ASSETCLASSHI','SADDRESSCODE','CXCLASSIFICATIONDESC','PENYULANG','PARENT','PARENT_DESCRIPTION','INSTALLDATE','ACTUALOPRDATE','CHANGEDATE','CHANGEBY','LATITUDEY','LONGITUDEX','FORMATTEDADDRESS','STREETADDRESS','CITY','ISASSET','STATUS_KEPEMILIKAN','EXTERNALREFID','JENIS_PELAYANAN','NO_SLO','OWNERSYSID','SLOACTIVEDATE','STATUS_RC','TYPE_GARDU'];
         foreach ($expected as $k) {
             if (!array_key_exists($k, $data['gardu_hubung'])) {
@@ -160,10 +188,9 @@ class Gardu_hubung extends CI_Controller
         }
 
         if ($this->input->post()) {
-            // allow changing SSOTNUMBER; use original_SSOTNUMBER for WHERE
             $original = $this->input->post('original_SSOTNUMBER') ? $this->input->post('original_SSOTNUMBER') : $id;
+
             $updateData = [
-                // Only fields that exist in database gh (40 columns)
                 'UP3_2D' => $this->input->post('UP3_2D'),
                 'UNITNAME_UP3' => $this->input->post('UNITNAME_UP3'),
                 'CXUNIT' => $this->input->post('CXUNIT'),
@@ -198,17 +225,14 @@ class Gardu_hubung extends CI_Controller
                 'STATUS_RC' => $this->input->post('STATUS_RC'),
                 'TYPE_GARDU' => $this->input->post('TYPE_GARDU')
             ];
-            $update_success = $this->Gardu_hubung_model->update_gardu_hubung($original, $updateData);
-            
-            // Log aktivitas update
-            if ($update_success) {
-                log_update('gardu_hubung', $original, $updateData['GARDU_HUBUNG']);
-            }
-            
+
+            $this->Gardu_hubung_model->update_gardu_hubung($original, $updateData);
             $this->session->set_flashdata('success', 'Data Gardu Hubung berhasil diperbarui!');
             redirect('Gardu_hubung');
         } else {
             $data['title'] = 'Edit Data Gardu Hubung';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gardu_hubung/vw_edit_gardu_hubung', $data);
             $this->load->view('layout/footer');
@@ -219,7 +243,10 @@ class Gardu_hubung extends CI_Controller
     {
         $data['gardu_hubung'] = $this->Gardu_hubung_model->get_gardu_hubung_by_id($id);
         if (empty($data['gardu_hubung'])) { show_404(); }
+
         $data['title'] = 'Detail Data Gardu Hubung';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('gardu_hubung/vw_detail_gardu_hubung', $data);
         $this->load->view('layout/footer');
@@ -231,25 +258,21 @@ class Gardu_hubung extends CI_Controller
             $this->session->set_flashdata('error', 'Anda tidak memiliki akses untuk menghapus data');
             redirect('Gardu_hubung');
         }
-        
-        // Get data before delete for logging
-        $gardu = $this->Gardu_hubung_model->get_gardu_hubung_by_id($id);
-        $gardu_name = $gardu ? ($gardu['GARDU_HUBUNG'] ?? 'ID-' . $id) : 'ID-' . $id;
-        
-        $delete_success = $this->Gardu_hubung_model->delete_gardu_hubung($id);
-        
-        // Log aktivitas delete
-        if ($delete_success) {
-            log_delete('gardu_hubung', $id, $gardu_name);
-        }
-        
+
+        $this->Gardu_hubung_model->delete_gardu_hubung($id);
         $this->session->set_flashdata('success', 'Data Gardu Hubung berhasil dihapus!');
         redirect('Gardu_hubung');
     }
 
-    // Export Gardu Hubung data to CSV
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $all = $this->Gardu_hubung_model->get_all_gardu_hubung();
         $label = 'Data Gardu Hubung';
         $filename = $label . ' ' . date('d-m-Y') . '.csv';

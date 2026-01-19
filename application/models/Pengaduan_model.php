@@ -60,8 +60,27 @@ class Pengaduan_model extends CI_Model
         return $this->db->get($this->table)->result_array();
     }
 
-    public function get_pengaduan_paginated($limit, $start)
+    public function count_all_pengaduan($search = null)
     {
+        if (!empty($search)) {
+            $this->db->like('NAMA_UP3', $search);
+            $this->db->or_like('JENIS_PENGADUAN', $search);
+            $this->db->or_like('STATUS', $search);
+            $this->db->or_like('PIC', $search);
+            return $this->db->count_all_results($this->table);
+        }
+        return $this->db->count_all($this->table);
+    }
+
+    public function get_pengaduan_paginated($limit, $start, $search = null)
+    {
+        if (!empty($search)) {
+            $this->db->like('NAMA_UP3', $search);
+            $this->db->or_like('JENIS_PENGADUAN', $search);
+            $this->db->or_like('STATUS', $search);
+            $this->db->or_like('PIC', $search);
+        }
+
         $this->db->order_by('ID_PENGADUAN', 'DESC'); // urutkan dari terbaru ke lama
         return $this->db->get('pengaduan', $limit, $start)->result_array();
     }

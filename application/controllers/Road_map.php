@@ -32,6 +32,8 @@ class Road_map extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data Road Map';
         $data['page_icon'] = 'fas fa-road';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         // Konfigurasi pagination
         $config['base_url'] = site_url('road_map/index');
@@ -86,6 +88,8 @@ class Road_map extends CI_Controller
         }
 
         $data['judul'] = 'Tambah Road Map';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         if (!$this->input->post()) {
             $this->load->view('layout/header', $data);
@@ -144,6 +148,8 @@ class Road_map extends CI_Controller
         }
 
         $data['judul'] = 'Edit Road Map';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
         $data['road_map'] = $this->roadmapModel->get_roadmap_by_id($id);
 
         if (!$data['road_map']) {

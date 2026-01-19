@@ -11,7 +11,7 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">
+                <h6 class="mb-0 d-flex align-items-center text-white">
                     <i class="fas fa-project-diagram me-2"></i> Tabel Data Single Line Diagram
                 </h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
@@ -132,11 +132,20 @@
     }
 
     function changePerPageSld(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('single_line_diagram/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
+
+    (function() {
+        const input = document.getElementById('searchInputSLD');
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('single_line_diagram/index/1'); ?>", 'searchInputSLD', 'q');
+            }
+        });
+    })();
 
     function searchTableSld() {
         const input = document.getElementById('searchInputSLD');

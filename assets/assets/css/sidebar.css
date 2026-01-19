@@ -60,17 +60,20 @@ html, body { overflow-x: hidden; }
 /* Styling sidebar - revert mendekati kondisi awal */
 #sidenav-main {
   width: var(--sidenav-width) !important; /* Lebar sidebar */
-  border-radius: 1rem !important;
+  border-radius: 0 !important;
   /* Isi penuh tinggi viewport, dikurangi margin Y (.my-3 = 1rem + 1rem) */
-  height: calc(100vh - 2rem) !important;
-  min-height: calc(100vh - 2rem) !important;
-  margin-top: 1rem !important;
-  margin-bottom: 1rem !important;
-  background-color: #fff !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  background-color: #f8f9fa !important;
   overflow-y: auto; /* biar sidebar yang scroll kalau konten panjang */
   box-sizing: border-box;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  border-right: 1px solid #e9ecef;
   transition: all 0.3s ease;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Override aturan Argon yang membatasi tinggi collapse area sidebar */

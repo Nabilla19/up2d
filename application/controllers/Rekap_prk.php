@@ -52,6 +52,8 @@ class Rekap_prk extends CI_Controller
 
         $data = [
             'page_title' => 'Rekap PRK',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'page_icon'  => 'fas fa-clipboard-list me-2',
             'per_page'   => $per_page,
             'total_rows' => $total_rows,
@@ -91,6 +93,8 @@ class Rekap_prk extends CI_Controller
 
         $data = [
             'page_title' => 'Detail Rekap PRK',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'page_icon'  => 'fas fa-info-circle me-2',
             'row' => $row
         ];
@@ -102,6 +106,13 @@ class Rekap_prk extends CI_Controller
 
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $keyword = $this->input->get('keyword', true);
         $jenis   = $this->input->get('jenis_anggaran', true);
 
@@ -110,6 +121,8 @@ class Rekap_prk extends CI_Controller
 
         $query = $this->prk->export_all($keyword, $jenis);
         $csv   = $this->dbutil->csv_from_result($query);
+        // prepend BOM so Excel recognizes UTF-8
+        $csv = "\xEF\xBB\xBF" . $csv;
 
         force_download('rekap_prk.csv', $csv);
     }

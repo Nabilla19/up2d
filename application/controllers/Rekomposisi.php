@@ -39,14 +39,31 @@ class Rekomposisi extends CI_Controller
 
     public function index()
     {
-        $per_page = (int)($this->input->get('per_page') ?? 5);
-        if ($per_page <= 0) $per_page = 5;
+        // --- PERSISTENCE LOGIC ---
+        
+        // Keyword
+        if ($this->input->get('keyword') !== null) {
+            $keyword = trim($this->input->get('keyword', true));
+            $this->session->set_userdata('rekom_keyword', $keyword);
+        } else {
+            $keyword = $this->session->userdata('rekom_keyword') ?? '';
+        }
 
-        // offset (bukan nomor halaman)
+        // Per Page
+        if ($this->input->get('per_page') !== null) {
+            $per_page = (int)$this->input->get('per_page');
+            $this->session->set_userdata('rekom_per_page', $per_page);
+        } else {
+            $per_page = (int)($this->session->userdata('rekom_per_page') ?? 5);
+        }
+        if ($per_page <= 0) $per_page = 5;
+        // Keep session updated
+        $this->session->set_userdata('rekom_per_page', $per_page);
+
+        // offset (bukan nomor halaman, melainkan record index start)
+        // Controller ini menggunakan logic ?page=OFFSET (CodeIgniter standard query string pagination)
         $page_offset = (int)($this->input->get('page') ?? 0);
         if ($page_offset < 0) $page_offset = 0;
-
-        $keyword = $this->input->get('keyword', true);
 
         $total_rows = $this->rekom->count_all($keyword);
 
@@ -76,7 +93,12 @@ class Rekomposisi extends CI_Controller
             'pagination'  => $this->pagination->create_links(),
             'total_rows'  => $total_rows,
             'per_page'    => $per_page,
-            'start_no'    => $page_offset + 1
+            'start_no'    => $page_offset + 1,
+            'page_title' => 'Rekomposisi',
+            'page_icon'  => 'fas fa-layer-group',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
+            'keyword'     => $keyword // Pass to view
         ];
 
         $this->load->view('layout/header', $data);
@@ -91,7 +113,11 @@ class Rekomposisi extends CI_Controller
         $this->_rules();
 
         if ($this->form_validation->run() === false) {
-            $this->load->view('layout/header');
+            $data['page_title'] = 'Tambah Rekomposisi';
+            $data['page_icon'] = 'fas fa-plus-circle';
+            $data['parent_page_title'] = 'Anggaran';
+            $data['parent_page_url'] = '#';
+            $this->load->view('layout/header', $data);
             $this->load->view('rekomposisi/vw_tambah_rekomposisi');
             $this->load->view('layout/footer');
             return;
@@ -135,6 +161,10 @@ class Rekomposisi extends CI_Controller
 
         if ($this->form_validation->run() === false) {
             $data['rekomposisi'] = $row;
+            $data['page_title'] = 'Edit Rekomposisi';
+            $data['page_icon'] = 'fas fa-edit';
+            $data['parent_page_title'] = 'Anggaran';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header', $data);
             $this->load->view('rekomposisi/vw_edit_rekomposisi', $data);
             $this->load->view('layout/footer');

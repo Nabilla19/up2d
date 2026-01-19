@@ -17,8 +17,11 @@ class Bpm_model extends CI_Model
     /**
      * Ambil data BPM dengan limit dan offset (untuk pagination)
      */
-    public function get_bpm($limit, $offset)
+    public function get_bpm($limit, $offset, $search = null)
     {
+        if (!empty($search)) {
+            $this->db->like('NAMA_FILE', $search);
+        }
         $this->db->order_by('CREATED_AT', 'DESC');
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
@@ -27,8 +30,12 @@ class Bpm_model extends CI_Model
     /**
      * Hitung total data BPM
      */
-    public function count_all_bpm()
+    public function count_all_bpm($search = null)
     {
+        if (!empty($search)) {
+            $this->db->like('NAMA_FILE', $search);
+            return $this->db->count_all_results($this->table);
+        }
         return $this->db->count_all($this->table);
     }
 

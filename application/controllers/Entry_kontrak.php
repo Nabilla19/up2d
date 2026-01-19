@@ -77,6 +77,22 @@ class Entry_kontrak extends CI_Controller
         ], true);
     }
 
+    /**
+     * ✅ RULE BARU:
+     * Field kontrak (no_kontrak, vendor, tgl_kontrak, end_kontrak, nilai_kontrak, kendala_kontrak)
+     * hanya boleh diisi jika tahapan_pengadaan termasuk 4 pilihan ini.
+     */
+    private function _kontrak_enabled_by_tahapan($tahapan)
+    {
+        $t = trim((string)$tahapan);
+        return in_array($t, [
+            'Proses CDA',
+            'Proses TTD Vendor',
+            'Proses TTD Pengguna',
+            'Pengadaan Selesai',
+        ], true);
+    }
+
     private function _auto_status($tgl_nd_ams, $nomor_nd_ams, $tgl_kontrak, $end_kontrak)
     {
         $today = date('Y-m-d');
@@ -218,6 +234,8 @@ class Entry_kontrak extends CI_Controller
 
         $data = [
             'page_title'   => 'Entry Kontrak',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'rows'         => $rows,
             'pagination'   => $this->pagination->create_links(),
             'total_rows'   => $total_rows,
@@ -250,6 +268,8 @@ class Entry_kontrak extends CI_Controller
 
         $data = [
             'page_title'     => 'Tambah Entry Kontrak',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'jenis_anggaran' => $this->rekom->get_jenis_anggaran(),
             'role_raw'       => $role_raw,
             'role_label'     => $this->_role_label($role_raw),
@@ -297,12 +317,23 @@ class Entry_kontrak extends CI_Controller
         $tgl_kontrak  = null;
         $end_kontrak  = null;
 
+        // ✅ tambahan: baca tahapan pengadaan (admin saja akan punya nilai)
+        $tahapan_pengadaan_post = null;
+
         if ($this->_is_admin($role_raw)) {
             $tgl_nd_ams   = $this->input->post('tgl_nd_ams', true);
             $nomor_nd_ams = $this->input->post('nomor_nd_ams', true);
 
-            $tgl_kontrak = $this->input->post('tgl_kontrak', true);
-            $end_kontrak = $this->input->post('end_kontrak', true);
+            $tahapan_pengadaan_post = $this->input->post('tahapan_pengadaan', true);
+
+            // tgl kontrak hanya dihitung jika tahapan termasuk 4
+            if ($this->_kontrak_enabled_by_tahapan($tahapan_pengadaan_post)) {
+                $tgl_kontrak = $this->input->post('tgl_kontrak', true);
+                $end_kontrak = $this->input->post('end_kontrak', true);
+            } else {
+                $tgl_kontrak = null;
+                $end_kontrak = null;
+            }
         }
 
         $status_auto = $this->_auto_status($tgl_nd_ams, $nomor_nd_ams, $tgl_kontrak, $end_kontrak);
@@ -335,6 +366,8 @@ class Entry_kontrak extends CI_Controller
             'prognosa_kontrak'  => $this->_is_admin($role_raw) ? $this->input->post('prognosa_kontrak', true) : null,
 
             'status_kontrak'  => $status_auto,
+
+            // default sesuai code lama:
             'no_kontrak'      => $this->_is_admin($role_raw) ? $this->input->post('no_kontrak', true) : null,
             'vendor'          => $this->_is_admin($role_raw) ? $this->input->post('vendor', true) : null,
             'tgl_kontrak'     => $tgl_kontrak,
@@ -364,6 +397,20 @@ class Entry_kontrak extends CI_Controller
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
+        // ✅ enforce backend: jika tahapan bukan 4 pilihan, kontrak dipaksa NULL (agar tidak masuk list KKU)
+        if ($this->_is_admin($role_raw)) {
+            $tah = $data['tahapan_pengadaan'] ?? null;
+            if (!$this->_kontrak_enabled_by_tahapan($tah)) {
+                $data['no_kontrak'] = null;
+                $data['vendor'] = null;
+                $data['tgl_kontrak'] = null;
+                $data['end_kontrak'] = null;
+                $data['nilai_kontrak'] = null;
+                $data['kendala_kontrak'] = null;
+                $data['anggaran_terpakai'] = null;
+            }
+        }
+
         $this->kontrak->insert($data);
 
         $this->_log('create', 'entry_kontrak', null, $data['judul_drp'] ?? null);
@@ -379,6 +426,8 @@ class Entry_kontrak extends CI_Controller
 
         $data = [
             'page_title' => 'Detail Entry Kontrak',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'row'        => $row,
             'role_raw'   => $this->_get_role_raw(),
             'role_label' => $this->_role_label($this->_get_role_raw()),
@@ -422,6 +471,8 @@ class Entry_kontrak extends CI_Controller
 
         $data = [
             'page_title'     => 'Edit Entry Kontrak',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'row'            => $row,
             'jenis_anggaran' => $this->rekom->get_jenis_anggaran(),
             'role_raw'       => $role_raw,
@@ -538,6 +589,19 @@ class Entry_kontrak extends CI_Controller
 
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
+
+            // ✅ enforce backend (admin juga) sesuai rule tahapan_pengadaan
+            $tah = $data['tahapan_pengadaan'] ?? null;
+            if (!$this->_kontrak_enabled_by_tahapan($tah)) {
+                $data['no_kontrak'] = null;
+                $data['vendor'] = null;
+                $data['tgl_kontrak'] = null;
+                $data['end_kontrak'] = null;
+                $data['nilai_kontrak'] = null;
+                $data['kendala_kontrak'] = null;
+                $data['anggaran_terpakai'] = null;
+            }
+
         } elseif ($this->_is_originator($role_raw)) {
 
             $this->form_validation->set_rules('jenis_anggaran', 'Jenis Anggaran', 'required');
@@ -573,6 +637,7 @@ class Entry_kontrak extends CI_Controller
 
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
+
         } elseif ($this->_is_perencanaan($role_raw)) {
 
             $data = [
@@ -581,6 +646,7 @@ class Entry_kontrak extends CI_Controller
                 'keterangan'   => $this->input->post('keterangan', true),
                 'updated_at'   => date('Y-m-d H:i:s'),
             ];
+
         } elseif ($this->_is_pengadaan($role_raw)) {
 
             $data = [
@@ -603,6 +669,19 @@ class Entry_kontrak extends CI_Controller
 
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
+
+            // ✅ enforce backend: selain 4 tahapan => kontrak dipaksa NULL (agar tidak masuk list KKU)
+            $tah = $data['tahapan_pengadaan'] ?? null;
+            if (!$this->_kontrak_enabled_by_tahapan($tah)) {
+                $data['no_kontrak'] = null;
+                $data['vendor'] = null;
+                $data['tgl_kontrak'] = null;
+                $data['end_kontrak'] = null;
+                $data['nilai_kontrak'] = null;
+                $data['kendala_kontrak'] = null;
+                $data['anggaran_terpakai'] = null;
+            }
+
         } elseif ($this->_is_kku($role_raw)) {
 
             $data = [
@@ -625,6 +704,7 @@ class Entry_kontrak extends CI_Controller
 
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
+
         } else {
             show_error('Role tidak diizinkan update.', 403);
         }
@@ -723,6 +803,13 @@ class Entry_kontrak extends CI_Controller
 
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $ctx  = $this->_get_all_rows_for_current_list_export();
         $rows = $ctx['rows'];
 
@@ -778,6 +865,12 @@ class Entry_kontrak extends CI_Controller
 
     public function export_gsheet()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengekspor data ke Google Sheets.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
         if (!class_exists(\Google\Client::class)) {
             $autoload = FCPATH . 'vendor/autoload.php';
             if (file_exists($autoload)) {

@@ -13,7 +13,7 @@
 
             <!-- HEADER -->
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Input Kontrak</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-file-signature me-2"></i>Tabel Data Input Kontrak</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php 
                     // Debug
@@ -27,9 +27,11 @@
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Input_kontrak/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('input_kontrak/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
 
                 </div>
             </div>
@@ -50,7 +52,10 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputKontrak" onkeyup="searchTableKontrak()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data kontrak...">
+                    <form method="get" action="<?= site_url('input_kontrak/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('input_kontrak/index/1'); ?>', 'searchInputKontrak', 'search');">
+                        <input type="text" id="searchInputKontrak" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data kontrak...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                    </form>
                 </div>
 
                 <!-- TABLE -->
@@ -170,21 +175,8 @@
 <!-- Script -->
 <script>
     function changePerPageKontrak(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
-    }
-
-    function searchTableKontrak() {
-        const input = document.getElementById('searchInputKontrak');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('kontrakTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
+        const base = "<?= site_url('input_kontrak/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 </script>
 

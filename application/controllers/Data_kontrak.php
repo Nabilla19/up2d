@@ -233,28 +233,95 @@ class Data_kontrak extends CI_Controller
     // =========================
     // LIST
     // =========================
-    public function index()
+    // =========================
+    // LIST
+    // =========================
+    public function index($start = 0)
     {
         $role = $this->_role();
 
-        // pastikan perencanaan termasuk role yg dapat melihat list
         $allowed_view_roles = [
-            'admin',
-            'administrator',
-            'pemeliharaan',
-            'fasilitas operasi',
-            'har',
-            'k3l & kam',
-            'perencanaan',
-            'kku',
-            'pengadaan keuangan',
+            'admin', 'administrator', 'pemeliharaan', 'fasilitas operasi',
+            'har', 'k3l & kam', 'perencanaan', 'kku', 'pengadaan keuangan',
         ];
 
         if (!in_array($role, $allowed_view_roles, true)) {
             return $this->_forbidden();
         }
 
-        $data['kontrak'] = $this->M_data_kontrak->get_all();
+        // --- 1. HANDLING FILTER & PAGINATION PERSISTENCE ---
+        
+        // Search Query (q)
+        if ($this->input->get('q') !== null) {
+            $q = $this->input->get('q');
+            $this->session->set_userdata('kontrak_q', $q);
+        } else {
+            if ($this->session->userdata('kontrak_q')) {
+                $q = $this->session->userdata('kontrak_q');
+            } else {
+                $q = '';
+            }
+        }
+
+        // Per Page Limit
+        if ($this->input->get('per_page') !== null) {
+            $per_page = (int)$this->input->get('per_page');
+            $this->session->set_userdata('kontrak_per_page', $per_page);
+        } else {
+            if ($this->session->userdata('kontrak_per_page')) {
+                $per_page = (int)$this->session->userdata('kontrak_per_page');
+            } else {
+                $per_page = 10; // Default limit
+            }
+        }
+
+        // --- 2. CONFIGURAION PAGINATION ---
+        $this->load->library('pagination');
+        
+        $config['base_url'] = base_url('data_kontrak/index');
+        $config['total_rows'] = $this->M_data_kontrak->count_all($q);
+        $config['per_page'] = $per_page;
+        $config['uri_segment'] = 3; // segment 3 is $start (offset)
+        $config['reuse_query_string'] = TRUE;
+
+        // Styling Bootstrap 5 (Simple)
+        $config['full_tag_open']    = '<nav><ul class="pagination pagination-sm justify-content-end">';
+        $config['full_tag_close']   = '</ul></nav>';
+        $config['first_link']       = 'First';
+        $config['last_link']        = 'Last';
+        $config['first_tag_open']   = '<li class="page-item">';
+        $config['first_tag_close']  = '</li>';
+        $config['prev_link']        = '&laquo';
+        $config['prev_tag_open']    = '<li class="page-item">';
+        $config['prev_tag_close']   = '</li>';
+        $config['next_link']        = '&raquo';
+        $config['next_tag_open']    = '<li class="page-item">';
+        $config['next_tag_close']   = '</li>';
+        $config['last_tag_open']    = '<li class="page-item">';
+        $config['last_tag_close']   = '</li>';
+        $config['cur_tag_open']     = '<li class="page-item active"><a class="page-link" href="#">';
+        $config['cur_tag_close']    = '</a></li>';
+        $config['num_tag_open']     = '<li class="page-item">';
+        $config['num_tag_close']    = '</li>';
+        $config['attributes']       = array('class' => 'page-link');
+
+        $this->pagination->initialize($config);
+
+        // --- 3. FETCH DATA ---
+        $data['kontrak'] = $this->M_data_kontrak->get_limit($per_page, $start, $q);
+        
+        // Metadata for View
+        $data['q'] = $q;
+        $data['per_page'] = $per_page;
+        $data['start_no'] = $start + 1;
+        $data['total_rows'] = $config['total_rows'];
+        $data['pagination'] = $this->pagination->create_links();
+
+        $data['page_title'] = 'Data Kontrak';
+        $data['page_icon'] = 'fas fa-file-contract';
+        $data['parent_page_title'] = 'Anggaran';
+        $data['parent_page_url'] = '#';
+
         $this->load->view('layout/header');
         $this->load->view('Anggaran/input_kontrak/data_kontrak', $data);
         $this->load->view('layout/footer');
@@ -274,7 +341,11 @@ class Data_kontrak extends CI_Controller
         $data['jenis_anggaran'] = $this->M_data_kontrak->get_jenis_anggaran();
         $data['role_name'] = $this->session->userdata('role_name') ?? '';
 
-        $this->load->view('layout/header');
+        $data['page_title'] = 'Tambah Data Kontrak';
+        $data['page_icon'] = 'fas fa-plus';
+        $data['parent_page_title'] = 'Anggaran';
+        $data['parent_page_url'] = '#';
+        $this->load->view('layout/header', $data);
         $this->load->view('Anggaran/input_kontrak/tambah_kontrak', $data);
         $this->load->view('layout/footer');
     }
@@ -439,6 +510,10 @@ class Data_kontrak extends CI_Controller
     public function detail($id)
     {
         $data['kontrak'] = $this->M_data_kontrak->get_by_id((int)$id);
+        $data['page_title'] = 'Detail Data Kontrak';
+        $data['page_icon'] = 'fas fa-info-circle';
+        $data['parent_page_title'] = 'Anggaran';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('Anggaran/input_kontrak/detail_kontrak', $data);
         $this->load->view('layout/footer');
@@ -467,7 +542,11 @@ class Data_kontrak extends CI_Controller
         $data['kontrak']        = $this->M_data_kontrak->get_by_id((int)$id);
         $data['jenis_anggaran'] = $this->M_data_kontrak->get_jenis_anggaran();
 
-        $this->load->view('layout/header');
+        $data['page_title'] = 'Edit Data Kontrak';
+        $data['page_icon'] = 'fas fa-edit';
+        $data['parent_page_title'] = 'Anggaran';
+        $data['parent_page_url'] = '#';
+        $this->load->view('layout/header', $data);
         $this->load->view('Anggaran/input_kontrak/edit_kontrak', $data);
         $this->load->view('layout/footer');
     }
@@ -611,6 +690,13 @@ class Data_kontrak extends CI_Controller
 
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $rows = $this->M_data_kontrak->get_all();
 
         $filename = 'data_kontrak_' . date('Ymd_His') . '.csv';

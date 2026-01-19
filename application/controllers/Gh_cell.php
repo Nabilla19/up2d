@@ -7,6 +7,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property CI_Pagination $pagination
  * @property CI_URI $uri
  * @property Gh_cell_model $Gh_cell_model
+ * @property CI_Config $config
  */
 class Gh_cell extends CI_Controller
 {
@@ -28,19 +29,41 @@ class Gh_cell extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data GH Cell';
         $data['page_icon'] = 'fas fa-square';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
+
+        // ✅ PERBAIKAN: ambil kata kunci search dari query string
+        $search = $this->input->get('search', TRUE);
 
         // Konfigurasi paginasi
         $config['base_url'] = site_url('gh_cell/index');
-        $config['total_rows'] = $this->Gh_cell_model->count_all_gh_cell();
+
+        // ✅ PERBAIKAN: total_rows dihitung sesuai search
+        $config['total_rows'] = $this->Gh_cell_model->count_all_gh_cell($search);
+
         // per_page can be overridden via query string ?per_page=10
         $allowed = [5, 10, 25, 50, 100, 500];
-        $per_page = (int) $this->input->get('per_page') ?: 5;
-        if (!in_array($per_page, $allowed)) {
-            $per_page = 5;
-        }
+        $requestedPer = (int) $this->input->get('per_page');
+
+        // default per page: ambil dari config jika ada, fallback 10
+        $defaultPer = (int) $this->config->item('default_per_page');
+        if ($defaultPer <= 0) $defaultPer = 10;
+
+        $per_page = in_array($requestedPer, $allowed) ? $requestedPer : $defaultPer;
+
         $config['per_page'] = $per_page;
         $config["uri_segment"] = 3;
         $config['use_page_numbers'] = TRUE;
+
+        // ✅ PERBAIKAN: pagination harus ikut membawa query string (?search=...&per_page=...)
+        $config['reuse_query_string'] = TRUE;
+
+        // ✅ PERBAIKAN: suffix + first_url supaya link pagination tetap bawa GET param
+        $query = $this->input->get(NULL, TRUE);
+        if (!empty($query)) {
+            $config['suffix'] = '?' . http_build_query($query, '', '&');
+            $config['first_url'] = $config['base_url'] . $config['suffix'];
+        }
 
         // Customizing pagination links
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
@@ -76,12 +99,16 @@ class Gh_cell extends CI_Controller
         // Inisialisasi paginasi
         $this->pagination->initialize($config);
 
-        // Ambil data untuk halaman saat ini
-        $data['gh_cell'] = $this->Gh_cell_model->get_gh_cell($config['per_page'], $offset);
+        // ✅ PERBAIKAN: ambil data sesuai search
+        $data['gh_cell'] = $this->Gh_cell_model->get_gh_cell($config['per_page'], $offset, $search);
+
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
         $data['per_page'] = $config['per_page'];
         $data['total_rows'] = $config['total_rows'];
+
+        // ✅ PERBAIKAN: kirim search ke view supaya input search tetap terisi
+        $data['search'] = $search;
 
         $this->load->view('layout/header');
         $this->load->view('gh_cell/vw_gh_cell', $data);
@@ -140,6 +167,8 @@ class Gh_cell extends CI_Controller
             redirect('Gh_cell');
         } else {
             $data['title'] = 'Tambah Data GH Cell';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gh_cell/vw_tambah_gh_cell', $data);
             $this->load->view('layout/footer');
@@ -206,6 +235,8 @@ class Gh_cell extends CI_Controller
             redirect('Gh_cell');
         } else {
             $data['title'] = 'Edit Data GH Cell';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gh_cell/vw_edit_gh_cell', $data);
             $this->load->view('layout/footer');
@@ -217,13 +248,12 @@ class Gh_cell extends CI_Controller
     {
         $data['gh_cell'] = $this->Gh_cell_model->get_gh_cell_by_id($id);
         if (empty($data['gh_cell'])) {
-            echo "<pre>Data tidak ditemukan:";
-            print_r($id);
-            print_r($data['gh_cell']);
-            exit;
+            show_404();
         }
 
         $data['title'] = 'Detail Data GH Cell';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('gh_cell/vw_detail_gh_cell', $data);
         $this->load->view('layout/footer');
@@ -245,6 +275,13 @@ class Gh_cell extends CI_Controller
     // Export GH Cell data to CSV
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $all = $this->Gh_cell_model->get_all_gh_cell();
         $label = 'Data GH Cell';
         $filename = $label . ' ' . date('d-m-Y') . '.csv';

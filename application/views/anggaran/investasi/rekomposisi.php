@@ -1,19 +1,20 @@
 <main class="main-content position-relative border-radius-lg ">
   <?php $this->load->view('layout/navbar'); ?>
 
+  <!-- Content -->
   <div class="container-fluid py-4">
     <?php if (!empty($error)): ?>
-      <div class="alert alert-danger"><?= htmlentities($error) ?></div>
+      <div class="alert alert-danger text-white"><?= htmlentities($error) ?></div>
     <?php endif; ?>
 
     <div class="card mb-4 shadow border-0 rounded-4">
       <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-        <h6 class="mb-0">Data Rekomposisi</h6>
+        <h6 class="mb-0 text-white"><i class="fas fa-chart-line me-2"></i>Data Rekomposisi</h6>
         <div class="d-flex align-items-center">
-          <a href="<?= base_url('anggaran/investasi/add_rekomposisi'); ?>" class="btn btn-sm btn-light text-primary me-2">
+          <a href="<?= base_url('anggaran/investasi/add_rekomposisi'); ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
             <i class="fas fa-plus me-1"></i> Tambah
           </a>
-          <a href="#" class="btn btn-sm btn-light text-secondary" onclick="downloadCSVProgressKontrak()">
+          <a href="#" class="btn btn-sm btn-light text-secondary d-flex align-items-center no-anim" onclick="downloadCSVProgressKontrak()">
             <i class="fas fa-file-csv me-1"></i> Download CSV
           </a>
         </div>
@@ -66,7 +67,7 @@
         </div>
         <div class="card-footer d-flex justify-content-end">
           <nav>
-            <ul class="pagination pagination-sm mb-0 asset-pagination" id="paginationProgressKontrak"></ul>
+            <ul class="pagination pagination-sm mb-0" id="paginationProgressKontrak"></ul>
           </nav>
         </div>
       </div>

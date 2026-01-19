@@ -1,19 +1,35 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
 
+    <!-- Content -->
     <div class="container-fluid py-4">
         <?php if (!empty($error)): ?>
-            <div class="alert alert-danger"><?= htmlentities($error) ?></div>
+            <div class="alert alert-danger text-white">
+                <?= htmlentities($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('success')): ?>
+            <div class="alert alert-success text-white">
+                <?= $this->session->flashdata('success'); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger text-white">
+                <?= $this->session->flashdata('error'); ?>
+            </div>
         <?php endif; ?>
 
         <div class="card mb-4 shadow border-0 rounded-4">
+            <!-- HEADER -->
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0">Data Rekomposisi</h6>
-                <div class="d-flex align-items-center">
-                    <a href="<?= base_url('anggaran/operasi/add_rekomposisi'); ?>" class="btn btn-sm btn-light text-primary me-2">
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-chart-line me-2"></i>Data Rekomposisi</h6>
+                <div class="d-flex align-items-center" style="padding-top: 16px;">
+                    <a href="<?= base_url('anggaran/operasi/add_rekomposisi'); ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                         <i class="fas fa-plus me-1"></i> Tambah
                     </a>
-                    <a href="#" class="btn btn-sm btn-light text-secondary" onclick="downloadCSVProgressKontrak()">
+                    <a href="#" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim" onclick="downloadCSVProgressKontrak(); return false;">
                         <i class="fas fa-file-csv me-1"></i> Download CSV
                     </a>
                 </div>
@@ -25,13 +41,13 @@
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
                         <select id="perPageSelectProgressKontrak" class="form-select form-select-sm" style="width: 80px; padding-right: 2rem;" onchange="changePerPageProgressKontrak(this.value)">
                             <option value="5">5</option>
-                            <option value="10">10</option>
+                            <option value="10" selected>10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
                             <option value="100">100</option>
                             <option value="200">200</option>
                         </select>
-                        <span class="ms-3 text-sm">dari <?= count($rows) ?> data</span>
+                        <span class="ms-3 text-sm">dari <?= count($rows) ?? 0; ?> data</span>
                     </div>
                     <input type="text" id="searchInputProgressKontrak" onkeyup="searchTableProgressKontrak()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Rekomposisi...">
                 </div>
@@ -51,12 +67,12 @@
                         </thead>
                         <tbody>
                             <?php if (empty($rows)): ?>
-                                <tr><td colspan="<?= max(1, count($fields)) ?>" class="text-center text-secondary py-4">Belum ada data</td></tr>
+                                <tr><td colspan="<?= max(1, count($fields ?? [])) ?>" class="text-center text-secondary py-4">Belum ada data</td></tr>
                             <?php else: ?>
                                 <?php foreach ($rows as $r): ?>
                                     <tr>
                                         <?php foreach ($fields as $f): ?>
-                                            <td class="text-sm"><?= isset($r[$f]) ? htmlentities((string)$r[$f]) : '' ?></td>
+                                            <td class="text-sm"><?= isset($r[$f]) ? htmlentities((string)$r[$f]) : '-' ?></td>
                                         <?php endforeach; ?>
                                     </tr>
                                 <?php endforeach; ?>
@@ -66,7 +82,7 @@
                 </div>
                 <div class="card-footer d-flex justify-content-end">
                     <nav>
-                        <ul class="pagination pagination-sm mb-0 asset-pagination" id="paginationProgressKontrak"></ul>
+                        <ul class="pagination pagination-sm mb-0" id="paginationProgressKontrak"></ul>
                     </nav>
                 </div>
             </div>

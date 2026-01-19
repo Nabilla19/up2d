@@ -38,7 +38,7 @@ function sum12($r)
         <div class="card mb-4 shadow border-0 rounded-4">
 
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Prognosa (VW_PROGNOSA)</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-chart-line me-2"></i>Tabel Prognosa (VW_PROGNOSA)</h6>
 
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <a href="<?= base_url('prognosa/export_csv?' . http_build_query($_GET)); ?>"
@@ -170,9 +170,10 @@ function sum12($r)
 
 <script>
     function changePerPage(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('prognosa'); ?>"; // uses page query string
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '0');
+        url.searchParams.set('page', 0);
         window.location.href = url.toString();
     }
 </script>

@@ -31,16 +31,28 @@ class Gardu_induk extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data Gardu Induk';
         $data['page_icon'] = 'fas fa-bolt';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
 
         // === Search query (sama seperti Unit) ===
-        $q = trim($this->input->get('q', TRUE) ?? '');
+        // === Handle Persistence ===
+        // Search
+        if ($this->input->get('q') !== null) {
+            $q = trim($this->input->get('q', TRUE));
+            $this->session->set_userdata('gardu_q', $q);
+        } else {
+            $q = $this->session->userdata('gardu_q') ?? '';
+        }
         $data['q'] = $q;
 
-        // Handle per_page dari query string (gunakan config default_per_page)
-        $allowedPerPage = [5, 10, 25, 50, 100, 500];
-        $requestedPer = (int) $this->input->get('per_page');
-        $defaultPer = (int) $this->config->item('default_per_page') ?: 10;
-        $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
+        // Per Page
+        if ($this->input->get('per_page') !== null) {
+            $per_page = (int)$this->input->get('per_page');
+            $this->session->set_userdata('gardu_per_page', $per_page);
+        } else {
+            $per_page = (int)($this->session->userdata('gardu_per_page') ?? 10);
+        }
+        $this->session->set_userdata('gardu_per_page', $per_page);
 
         // Konfigurasi paginasi
         $config['base_url'] = site_url('gardu_induk/index');
@@ -114,6 +126,8 @@ class Gardu_induk extends CI_Controller
         }
 
         $data['judul'] = 'Tambah Data Gardu Induk';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
 
         if ($this->input->post()) {
             $dataInput = [
@@ -160,6 +174,8 @@ class Gardu_induk extends CI_Controller
     public function detail($id)
     {
         $data['judul'] = 'Detail Gardu Induk';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $data['gardu_induk'] = $this->garduModel->get_gardu_induk_by_id($id);
 
         if (!$data['gardu_induk']) {
@@ -268,6 +284,13 @@ class Gardu_induk extends CI_Controller
     // Export semua data gardu induk ke CSV (human-friendly filename)
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $all = $this->garduModel->get_all_gardu_induk();
 
         $label = 'Data Gardu Induk';
@@ -313,6 +336,8 @@ class Gardu_induk extends CI_Controller
         }
 
         $data['judul'] = 'Edit Data Gardu Induk';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $data['gardu_induk'] = $this->garduModel->get_gardu_induk_by_id($id);
 
         if (!$data['gardu_induk']) {

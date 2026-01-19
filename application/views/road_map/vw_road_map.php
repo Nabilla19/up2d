@@ -18,7 +18,7 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Road Map</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-map me-2"></i>Tabel Data Road Map</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Road_map/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
@@ -132,11 +132,20 @@
     }
 
     function changePerPageRoadMap(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('road_map/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
+
+    (function() {
+        const input = document.getElementById('searchInputRoadMap');
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('road_map/index/1'); ?>", 'searchInputRoadMap', 'q');
+            }
+        });
+    })();
 
     function searchTableRoadMap() {
         const input = document.getElementById('searchInputRoadMap');

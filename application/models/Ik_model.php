@@ -17,8 +17,11 @@ class Ik_model extends CI_Model
     /**
      * Ambil data IK dengan limit dan offset (untuk pagination)
      */
-    public function get_ik($limit, $offset)
+    public function get_ik($limit, $offset, $search = null)
     {
+        if (!empty($search)) {
+            $this->db->like('NAMA_FILE', $search);
+        }
         $this->db->order_by('CREATED_AT', 'DESC');
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
@@ -27,9 +30,12 @@ class Ik_model extends CI_Model
     /**
      * Hitung total data IK
      */
-    public function count_all_ik()
+    public function count_all_ik($search = null)
     {
-        return $this->db->count_all($this->table);
+        if (!empty($search)) {
+            $this->db->like('NAMA_FILE', $search);
+        }
+        return $this->db->count_all_results($this->table);
     }
 
     /**

@@ -1,5 +1,6 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
+    <?php $this->load->view('layout/navbar'); ?>
 
     <!-- Content -->
     <div class="container-fluid py-4">
@@ -18,7 +19,7 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data BPM</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-diagram-project me-2"></i>Tabel Data BPM</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Bpm/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
@@ -132,22 +133,27 @@
     }
 
     function changePerPageBpm(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('bpm/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 
-    function searchTableBpm() {
+    (function() {
         const input = document.getElementById('searchInputBpm');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('bpmTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('bpm/index/1'); ?>", 'searchInputBpm', 'q');
+            }
+        });
+    })();
+
+    /* Restore rounded buttons like other pages */
+    (function(){
+        const style = document.createElement('style');
+        style.innerHTML = '.btn-xs { border-radius: 20px !important; }';
+        document.head.appendChild(style);
+    })();
 </script>
 
 <!-- Style (disamakan dengan halaman SOP) -->

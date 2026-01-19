@@ -18,7 +18,7 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data SPLN</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-newspaper me-2"></i>Tabel Data SPLN</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Spln/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
@@ -131,126 +131,18 @@
     }
 
     function changePerPageSpln(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('spln/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 
-    function searchTableSpln() {
+    (function() {
         const input = document.getElementById('searchInputSpln');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('splnTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('spln/index/1'); ?>", 'searchInputSpln', 'search');
+            }
+        });
+    })();
 </script>
-
-<!-- Style (disamakan dengan halaman SOP) -->
-<style>
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.75rem 1rem;
-    }
-
-    .card-header h6 {
-        color: #fff;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .breadcrumb .breadcrumb-item.active,
-    .breadcrumb .breadcrumb-item a.opacity-5,
-    .breadcrumb .breadcrumb-item.text-white {
-        color: #ffffff !important;
-    }
-
-    .bg-gradient-primary {
-        background: linear-gradient(90deg, #005C99, #0099CC);
-    }
-
-    .table-row-odd {
-        background-color: #ffffff;
-    }
-
-    .table-row-even {
-        background-color: #f5f7fa;
-    }
-
-    #splnTable tbody tr:hover {
-        background-color: #e9ecef !important;
-        transition: 0.2s ease-in-out;
-    }
-
-    .btn-xs {
-        padding: 2px 6px;
-        font-size: 11px;
-        border-radius: 4px;
-    }
-
-    .btn-xs i {
-        font-size: 12px;
-    }
-
-    #splnTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #splnTable tbody td.text-center {
-        vertical-align: middle !important;
-        text-align: center !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
-    }
-
-    #splnTable tbody td.text-center .btn {
-        margin: 2px 3px;
-    }
-
-    #splnTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
-    }
-
-    #splnTable tbody tr {
-        line-height: 1.15;
-    }
-
-    /* Disable click/hover animations for elements with .no-anim */
-    .no-anim,
-    .no-anim * {
-        transition: none !important;
-        -webkit-transition: none !important;
-        -moz-transition: none !important;
-        -o-transition: none !important;
-        animation: none !important;
-        -webkit-animation: none !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    .no-anim:active,
-    .no-anim:focus,
-    .no-anim *:active,
-    .no-anim *:focus {
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    .no-anim .ripple,
-    .no-anim .waves-ripple,
-    .no-anim .wave,
-    .no-anim .ink {
-        display: none !important;
-    }
-</style>

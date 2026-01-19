@@ -22,7 +22,9 @@
   <link href="<?= base_url('assets/assets/css/nucleo-svg.css'); ?>" rel="stylesheet" />
   <link id="pagestyle" href="<?= base_url('assets/assets/css/argon-dashboard.css?v=2.1.0'); ?>" rel="stylesheet" />
   <link rel="stylesheet" href="<?= base_url('assets/assets/css/sidebar.css'); ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/assets/css/sidebar-collapsed.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/assets/css/pln-theme.css'); ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/assets/css/responsive.css'); ?>">>>
 
   <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -119,6 +121,9 @@
   $pustaka_routes = ['sop', 'bpm', 'ik', 'road_map', 'spln'];
   $operasi_routes = ['operasi', 'single_line_diagram'];
   $anggaran_routes = ['anggaran', 'data_kontrak', 'monitoring', 'rekomposisi', 'rekap_prk', 'entry_kontrak', 'prognosa'];
+  $transport_routes = ['transport'];
+  
+  $role_id = $this->session->userdata('role_id');
   ?>
 
   <!-- Sidebar -->
@@ -150,7 +155,7 @@
         </li>
 
         <!-- Asset -->
-        <?php if ($role !== 'k3l & kam'): ?>
+        <?php if ($role !== 'k3l & kam' && $role_id != 19): ?>
           <?php $asset_active = in_array($seg1, $asset_routes, true); ?>
           <li class="nav-item">
             <a href="#menuAsset"
@@ -223,7 +228,7 @@
         <?php endif; ?>
 
         <!-- Pengaduan -->
-        <?php if ($role !== 'operasi sistem distribusi' && $role !== 'k3l & kam'): ?>
+        <?php if ($role !== 'operasi sistem distribusi' && $role !== 'k3l & kam' && $role_id != 19): ?>
           <li class="nav-item">
             <a class="nav-link <?= ($seg1 == 'pengaduan') ? 'active' : '' ?>" href="<?= base_url('pengaduan'); ?>">
               <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
@@ -235,6 +240,7 @@
         <?php endif; ?>
 
         <!-- Pustaka -->
+        <?php if ($role_id != 19): ?>
         <?php $pustaka_active = in_array($seg1, $pustaka_routes, true); ?>
         <li class="nav-item">
           <a href="#menuPustaka" class="nav-link d-flex align-items-center justify-content-between <?= $pustaka_active ? 'active' : '' ?>"
@@ -283,9 +289,10 @@
             </ul>
           </div>
         </li>
+        <?php endif; ?>
 
         <!-- Operasi -->
-        <?php if ($role !== 'perencanaan' && $role !== 'pemeliharaan' && $role !== 'fasilitas operasi' && $role !== 'k3l & kam'): ?>
+        <?php if ($role !== 'perencanaan' && $role !== 'pemeliharaan' && $role !== 'fasilitas operasi' && $role !== 'k3l & kam' && $role_id != 19): ?>
           <?php $operasi_active = in_array($seg1, $operasi_routes, true); ?>
           <li class="nav-item">
             <a href="#menuOperasi" class="nav-link d-flex align-items-center justify-content-between <?= $operasi_active ? 'active' : '' ?>"
@@ -313,7 +320,7 @@
         <?php endif; ?>
 
         <!-- Anggaran (DISIMPANHILANGKAN UNTUK ROLE UP3) -->
-        <?php if (!$is_up3): ?>
+        <?php if (!$is_up3 && $role_id != 19): ?>
           <?php $anggaran_active = in_array($seg1, $anggaran_routes, true); ?>
           <li class="nav-item">
             <a href="#menuAnggaran" class="nav-link d-flex align-items-center justify-content-between <?= $anggaran_active ? 'active text-dark bg-light' : '' ?>"
@@ -364,6 +371,63 @@
           </li>
         <?php endif; ?>
 
+        <!-- E-Transport -->
+        <?php $transport_active = in_array($seg1, $transport_routes, true); ?>
+        <li class="nav-item">
+          <a href="#menuTransport" class="nav-link d-flex align-items-center justify-content-between <?= $transport_active ? 'active' : '' ?>"
+            data-bs-toggle="collapse" role="button" aria-expanded="<?= $transport_active ? 'true' : 'false' ?>" aria-controls="menuTransport">
+            <div class="d-flex align-items-center">
+              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="fas fa-car text-dark text-sm opacity-10" aria-hidden="true"></i>
+              </div>
+              <span class="nav-link-text ms-1">E-Transport</span>
+            </div>
+            <i class="fas fa-chevron-down text-xs me-2"></i>
+          </a>
+
+          <div class="collapse <?= $transport_active ? 'show' : '' ?>" id="menuTransport">
+            <ul class="nav flex-column submenu-list">
+              <li class="nav-item">
+                <a class="nav-link <?= ($this->uri->segment(2) == 'ajukan') ? 'active' : '' ?>" href="<?= base_url('transport/ajukan'); ?>">
+                  <i class="fas fa-plus-circle text-primary text-sm opacity-10"></i><span class="nav-link-text"> Ajukan Permohonan</span>
+                </a>
+              </li>
+
+                <li class="nav-item">
+                  <a class="nav-link <?= ($this->uri->segment(2) == 'semua_daftar') ? 'active' : '' ?>" href="<?= base_url('transport/semua_daftar'); ?>">
+                    <i class="fas fa-briefcase text-info text-sm opacity-10"></i><span class="nav-link-text"> Daftar Permohonan Unit</span>
+                  </a>
+                </li>
+
+
+
+              <?php if (in_array($role_id, [15, 16, 17, 18, 6]) || $role === 'kku'): // Asmen + Admin + KKU ?>
+                <li class="nav-item">
+                  <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'approval') ? 'active' : '' ?>" href="<?= base_url('transport/approval'); ?>">
+                    <i class="fas fa-check-double text-success text-sm opacity-10"></i><span class="nav-link-text"> Persetujuan Asmen / KKU</span>
+                  </a>
+                </li>
+              <?php endif; ?>
+
+              <?php if ($role === 'kku' || $role_id == 6): // KKU + Admin ?>
+                <li class="nav-item">
+                  <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'fleet') ? 'active' : '' ?>" href="<?= base_url('transport/fleet'); ?>">
+                    <i class="fas fa-truck-moving text-warning text-sm opacity-10"></i><span class="nav-link-text"> Manajemen Fleet (KKU)</span>
+                  </a>
+                </li>
+              <?php endif; ?>
+
+              <?php if ($role_id == 19 || $role_id == 6): // Security + Admin ?>
+                <li class="nav-item">
+                  <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'security') ? 'active' : '' ?>" href="<?= base_url('transport/security'); ?>">
+                    <i class="fas fa-shield-halved text-danger text-sm opacity-10"></i><span class="nav-link-text"> Pos Security</span>
+                  </a>
+                </li>
+              <?php endif; ?>
+            </ul>
+          </div>
+        </li>
+
         <!-- Account Pages -->
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Account Pages</h6>
@@ -389,7 +453,7 @@
 
         <?php if (isset($this->session) && $this->session->userdata('logged_in')): ?>
           <li class="nav-item">
-            <a class="nav-link" href="<?= base_url('logout'); ?>">
+            <a class="nav-link btn-logout" href="<?= base_url('logout'); ?>">
               <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="fas fa-power-off text-danger text-sm opacity-10" aria-hidden="true"></i>
               </div>
@@ -402,70 +466,4 @@
     </div>
   </aside>
 
-  <!-- Scripts: jQuery sebelum Select2, Chart.js -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- DataTables JS -->
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-
-  <script defer>
-    document.addEventListener('DOMContentLoaded', function() {
-      try {
-        const currentModule = <?= json_encode($this->uri->segment(1) ?: '') ?>;
-        const role = <?= $role_json ?: 'null' ?>;
-
-        // open-new-tab helper
-        document.querySelectorAll('a.open-new-tab[href]').forEach(link => {
-          const href = link.getAttribute('href') || '';
-          if (!href.startsWith('javascript:') && href !== '#') {
-            link.setAttribute('target', '_blank');
-            link.setAttribute('rel', 'noopener noreferrer');
-          }
-        });
-
-        // Restore collapse states
-        const groups = {
-          asset: ['unit', 'ulp', 'gardu_induk', 'gi_cell', 'gardu_hubung', 'gh_cell', 'pembangkit', 'kit_cell', 'pemutus', 'assets'],
-          pustaka: ['sop', 'bpm', 'ik', 'road_map', 'spln'],
-          operasi: ['operasi', 'single_line_diagram'],
-          anggaran: ['anggaran', 'data_kontrak', 'monitoring', 'rekomposisi', 'rekap_prk', 'entry_kontrak', 'prognosa']
-        };
-
-        const mod = String(currentModule).toLowerCase();
-
-        if (groups.asset.includes(mod)) {
-          const menu = document.getElementById('menuAsset');
-          const toggler = document.querySelector('a[aria-controls="menuAsset"]');
-          if (menu) menu.classList.add('show');
-          if (toggler) toggler.setAttribute('aria-expanded', 'true');
-        }
-        if (groups.pustaka.includes(mod)) {
-          const menu = document.getElementById('menuPustaka');
-          const toggler = document.querySelector('a[aria-controls="menuPustaka"]');
-          if (menu) menu.classList.add('show');
-          if (toggler) toggler.setAttribute('aria-expanded', 'true');
-        }
-        if (groups.operasi.includes(mod)) {
-          const menu = document.getElementById('menuOperasi');
-          const toggler = document.querySelector('a[aria-controls="menuOperasi"]');
-          if (menu) menu.classList.add('show');
-          if (toggler) toggler.setAttribute('aria-expanded', 'true');
-        }
-        if (groups.anggaran.includes(mod)) {
-          const menu = document.getElementById('menuAnggaran');
-          const toggler = document.querySelector('a[aria-controls="menuAnggaran"]');
-          if (menu) menu.classList.add('show');
-          if (toggler) toggler.setAttribute('aria-expanded', 'true');
-        }
-
-      } catch (e) {
-        console && console.error && console.error(e);
-      }
-    });
-  </script>
-
-</body>
-
-</html>
+  </aside>

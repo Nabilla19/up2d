@@ -12,17 +12,17 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Pemutus</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-power-off me-2"></i>Tabel Data Pemutus</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Pemutus/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/pemutus') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/pemutus?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Pemutus/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                    <a href="<?= base_url('pemutus/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
                         <i class="fas fa-file-csv me-1"></i> Download CSV
                     </a>
                 </div>
@@ -42,7 +42,25 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputPemutus" onkeyup="searchTablePemutus()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Pemutus...">
+
+                    <!-- ✅ SEARCH SERVER-SIDE -->
+                    <form method="get" action="<?= base_url('Pemutus/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('Pemutus/index'); ?>', 'searchInputPemutus', 'search');">
+                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+
+                        <input type="text"
+                               id="searchInputPemutus"
+                               name="search"
+                               value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                               class="form-control form-control-sm rounded-3"
+                               style="max-width: 300px;"
+                               placeholder="Cari data Pemutus...">
+
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('Pemutus/index/1?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -61,7 +79,13 @@
                         <tbody>
                             <?php if (empty($pemutus)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="7" class="text-center text-secondary py-4">
+                                        <?php if (!empty($search)): ?>
+                                            Tidak ada data yang cocok dengan pencarian: <b><?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?></b>
+                                        <?php else: ?>
+                                            Belum ada data
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = $start_no;
@@ -105,22 +129,20 @@
 <!-- Script -->
 <script>
     function changePerPagePemutus(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('Pemutus/index'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
+
+        const input = document.getElementById('searchInputPemutus');
+        if (input) {
+            const search = input.value.trim();
+            if (search) url.searchParams.set('search', search);
+        }
         window.location.href = url.toString();
     }
 
-    function searchTablePemutus() {
-        const input = document.getElementById('searchInputPemutus');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('pemutusTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            const txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+    // legacy client-side search removed; server-side search is now used via shared helpers
+
 </script>
 
 <!-- Style -->

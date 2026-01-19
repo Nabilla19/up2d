@@ -32,6 +32,8 @@ class Bpm extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data BPM';
         $data['page_icon'] = 'fas fa-project-diagram';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
     // Konfigurasi pagination dengan pilihan per-page dari query string
     $allowedPerPage = [5, 10, 25, 50, 100, 500];
@@ -39,8 +41,10 @@ class Bpm extends CI_Controller
     $defaultPer = 5;
     $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
 
+    $q = trim($this->input->get('q', TRUE) ?? '');
+
     $config['base_url'] = site_url('bpm/index');
-    $config['total_rows'] = $this->bpmModel->count_all_bpm();
+    $config['total_rows'] = $this->bpmModel->count_all_bpm($q);
     $config['per_page'] = $per_page;
     $config['uri_segment'] = 3;
     $config['use_page_numbers'] = TRUE;
@@ -65,11 +69,12 @@ class Bpm extends CI_Controller
 
         $this->pagination->initialize($config);
 
-    $data['bpm'] = $this->bpmModel->get_bpm($config['per_page'], $offset);
+    $data['bpm'] = $this->bpmModel->get_bpm($config['per_page'], $offset, $q);
     $data['pagination'] = $this->pagination->create_links();
     $data['start_no'] = $offset + 1;
     $data['per_page'] = $per_page;
     $data['total_rows'] = $config['total_rows'];
+    $data['q'] = $q;
 
         $this->load->view('layout/header', $data);
         $this->load->view('bpm/vw_bpm', $data);
@@ -87,6 +92,8 @@ class Bpm extends CI_Controller
         }
 
         $data['judul'] = 'Tambah BPM';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         if (!$this->input->post()) {
             $this->load->view('layout/header', $data);
@@ -145,6 +152,8 @@ class Bpm extends CI_Controller
         }
 
         $data['judul'] = 'Edit BPM';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
         $data['bpm'] = $this->bpmModel->get_bpm_by_id($id);
 
         if (!$data['bpm']) {

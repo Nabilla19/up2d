@@ -153,6 +153,8 @@ class Monitoring extends CI_Controller
 
         $data = [
             'page_title'      => 'Monitoring',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'per_page'        => $per_page,
             'keyword'         => $keyword,
             'total_rows'      => $total_rows,
@@ -169,6 +171,13 @@ class Monitoring extends CI_Controller
 
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $keyword = $this->input->get('keyword', true);
 
         // ✅ ambil filter kolom
@@ -184,6 +193,8 @@ class Monitoring extends CI_Controller
         header('Content-Disposition: attachment; filename=monitoring.csv');
 
         $out = fopen('php://output', 'w');
+        // BOM for Excel compatibility
+        fwrite($out, "\xEF\xBB\xBF");
 
         if (empty($rows)) {
             fputcsv($out, ['NO DATA']);
@@ -211,6 +222,8 @@ class Monitoring extends CI_Controller
 
         $data = [
             'page_title' => 'Detail Monitoring',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'row' => $row
         ];
 

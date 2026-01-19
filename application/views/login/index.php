@@ -34,9 +34,9 @@
         <div class="title">PLN UP2D RIAU</div>
       </div>
 
-  <div class="slide active" style="background-image:url('<?= base_url('assets/assets/img/login-1.jpg'); ?>');"></div>
-  <div class="slide" style="background-image:url('<?= base_url('assets/assets/img/login-2.jpg'); ?>');"></div>
-  <div class="slide" style="background-image:url('<?= base_url('assets/assets/img/login-3.jpg'); ?>');"></div>
+  <div class="slide active" style="background-image:url('<?= base_url('assets/assets/img/login-1.jpg'); ?>');" ></div>
+  <div class="slide" style="background-image:url('<?= base_url('assets/assets/img/login-2.jpg'); ?>');" ></div>
+  <div class="slide" style="background-image:url('<?= base_url('assets/assets/img/login-3.jpg'); ?>');" ></div>
       <div class="overlay"></div>
       <div class="credit">© <?= date('Y'); ?> PLN UP2D Riau</div>
     </div>

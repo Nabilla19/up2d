@@ -27,6 +27,13 @@ class Unit extends CI_Controller
     // Export semua data unit ke CSV yang kompatibel dengan Excel
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         // Ambil semua data
         $all = $this->Unit_model->get_all_units();
 
@@ -76,18 +83,39 @@ class Unit extends CI_Controller
         $data['title'] = 'Data Unit';
         $data['page_title'] = 'Data Unit';
         $data['page_icon'] = 'fas fa-building';
+        
+        // Breadcrumb: Asset / Data Unit
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#'; 
 
-        // Ambil query search dari GET, sanitasi
-        $q = trim($this->input->get('q', TRUE) ?? '');
+        // --- HANDLING PAGINATION PERSISTENCE ---
+        
+        // Search
+        if ($this->input->get('q') !== null) {
+            $q = trim($this->input->get('q', TRUE));
+            $this->session->set_userdata('unit_q', $q);
+        } else {
+            $q = $this->session->userdata('unit_q') ?? '';
+        }
         $data['q'] = $q;
+
+        // Per Page
+        if ($this->input->get('per_page') !== null) {
+            $per_page = (int)$this->input->get('per_page');
+            $this->session->set_userdata('unit_per_page', $per_page);
+        } else {
+            $per_page = (int)($this->session->userdata('unit_per_page') ?? 10);
+        }
+        $this->session->set_userdata('unit_per_page', $per_page);
 
         // Pagination config
         $config['base_url'] = site_url('Unit/index');
         $config['total_rows'] = $this->Unit_model->count_all_unit($q);
+        $config['per_page'] = $per_page;
+        $config['uri_segment'] = 3;
+        $config['reuse_query_string'] = TRUE; // important
         $allowedPerPage = [5, 10, 25, 50, 100, 500];
-        $requestedPer = (int) $this->input->get('per_page');
-        $defaultPer = (int) $this->config->item('default_per_page') ?: 10;
-        $config['per_page'] = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
+        $config['per_page'] = in_array($per_page, $allowedPerPage) ? $per_page : 10;
         $config["uri_segment"] = 3;
         $config['use_page_numbers'] = TRUE;
 
@@ -168,6 +196,8 @@ class Unit extends CI_Controller
             redirect('Unit');
         } else {
             $data['title'] = 'Tambah Data Unit';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('unit/vw_tambah_unit', $data);
             $this->load->view('layout/footer');
@@ -208,6 +238,8 @@ class Unit extends CI_Controller
             redirect('Unit');
         } else {
             $data['title'] = 'Edit Data Unit';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('unit/vw_edit_unit', $data);
             $this->load->view('layout/footer');
@@ -223,6 +255,8 @@ class Unit extends CI_Controller
         }
 
         $data['title'] = 'Detail Data Unit';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('unit/vw_detail_unit', $data);
         $this->load->view('layout/footer');

@@ -32,6 +32,8 @@ class Spln extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data SPLN';
         $data['page_icon'] = 'fas fa-bolt';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         // Konfigurasi pagination
         $config['base_url'] = site_url('spln/index');
@@ -85,6 +87,8 @@ class Spln extends CI_Controller
         }
 
         $data['judul'] = 'Tambah SPLN';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         if (!$this->input->post()) {
             $this->load->view('layout/header', $data);
@@ -143,6 +147,8 @@ class Spln extends CI_Controller
         }
 
         $data['judul'] = 'Edit SPLN';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
         $data['spln'] = $this->splnModel->get_spln_by_id($id);
 
         if (!$data['spln']) {

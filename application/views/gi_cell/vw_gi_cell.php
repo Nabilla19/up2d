@@ -1,4 +1,4 @@
-<main class="main-content position-relative border-radius-lg ">
+<main class="main-content position-relative border-radius-lg">
     <?php $this->load->view('layout/navbar'); ?>
 
     <!-- Content -->
@@ -12,19 +12,21 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data GI Penyulang</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-bolt me-2"></i>Tabel Data GI Penyulang</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('GI_cell/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/gi_cell') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/gi_cell?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('GI_cell/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('gi_cell/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -42,7 +44,12 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
                     </div>
-                    <input type="text" id="searchInput" onkeyup="searchTable()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data GI Cell...">
+
+                    <!-- Form Pencarian -->
+                    <form method="get" action="<?= site_url('gi_cell/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('gi_cell/index/1'); ?>', 'searchInputGIcell', 'search');">
+                        <input type="text" id="searchInputGIcell" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data GI Cell...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -60,17 +67,17 @@
                         <tbody>
                             <?php if (empty($gi_cell)): ?>
                                 <tr>
-                                    <td colspan="6" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="6" class="text-center text-secondary py-4">Tidak ada data yang ditemukan</td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = $start_no;
                                 foreach ($gi_cell as $row): ?>
                                     <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
                                         <td class="text-sm"><?= $no++; ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNITNAME'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['SSOTNUMBER'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['DESCRIPTION'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['NAMA_LOCATION'] ?? ''); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['UNITNAME'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['SSOTNUMBER'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['DESCRIPTION'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities($row['NAMA_LOCATION'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td class="text-center">
                                             <a href="<?= base_url('Gi_cell/detail/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail">
                                                 <i class="fas fa-info-circle"></i>
@@ -104,21 +111,8 @@
 <!-- Script -->
 <script>
     function changePerPage(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
-    }
-
-    function searchTable() {
-        const input = document.getElementById('searchInput');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('giCellTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
+        const base = "<?= site_url('gi_cell/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 </script>
 
@@ -135,12 +129,6 @@
         color: #fff;
         margin: 0;
         font-weight: 600;
-    }
-
-    .breadcrumb .breadcrumb-item.active,
-    .breadcrumb .breadcrumb-item a.opacity-5,
-    .breadcrumb .breadcrumb-item.text-white {
-        color: #ffffff !important;
     }
 
     .bg-gradient-primary {

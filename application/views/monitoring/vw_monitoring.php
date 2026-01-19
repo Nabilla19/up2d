@@ -30,7 +30,7 @@ if (!function_exists('nf')) {
         <div class="card mb-4 shadow border-0 rounded-4">
 
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0">Tabel Monitoring (VW_MONITORING_FINAL)</h6>
+                <h6 class="mb-0 text-white"><i class="fas fa-tachometer-alt me-2"></i>Tabel Monitoring (VW_MONITORING_FINAL)</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <a href="<?= base_url('entry_kontrak'); ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                         <i class="fas fa-plus me-1"></i> Entry Kontrak
@@ -41,10 +41,12 @@ if (!function_exists('nf')) {
                     $qs = $_GET ?? [];
                     $export_url = base_url('monitoring/export_csv') . (empty($qs) ? '' : ('?' . http_build_query($qs)));
                     ?>
-                    <a href="<?= $export_url; ?>"
-                        class="btn btn-sm btn-light text-primary d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Export CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= $export_url; ?>"
+                            class="btn btn-sm btn-light text-primary d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Export CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 

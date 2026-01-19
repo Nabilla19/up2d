@@ -1,4 +1,5 @@
 <main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="false">
         <div class="container-fluid py-1 px-3 d-flex justify-content-between align-items-center">
@@ -7,6 +8,9 @@
                 Notifikasi Aktivitas
             </h6>
             <div>
+                <a href="<?= base_url('dashboard'); ?>" class="btn btn-sm btn-secondary me-2 d-flex align-items-center no-anim">
+                    <i class="fas fa-arrow-left me-1"></i> Kembali
+                </a>
                 <?php if (!empty($notifikasi) && $unread_count > 0): ?>
                     <a href="<?= base_url('Notifikasi/mark_all_read'); ?>" class="btn btn-sm btn-primary">
                         <i class="ni ni-check-bold"></i> Tandai Semua Dibaca

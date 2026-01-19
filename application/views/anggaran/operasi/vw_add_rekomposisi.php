@@ -22,7 +22,7 @@
     <div class="container-fluid py-4">
         <div class="card shadow border-0 rounded-4">
             <div class="card-header bg-gradient-primary text-white">
-                <h6 class="mb-0">Form Tambah Data Rekomposisi Operasi</h6>
+                <h6 class="mb-0 text-white"><i class="fas fa-chart-line me-2"></i>Form Tambah Data Rekomposisi Operasi</h6>
             </div>
 
             <div class="card-body">

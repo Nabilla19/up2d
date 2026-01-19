@@ -49,7 +49,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Examples:	my-controller/index	-> my_controller/index
 |		my-controller/my-method	-> my_controller/my_method
 */
-$route['default_controller'] = 'welcome';
+$route['default_controller'] = 'Login';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
@@ -61,6 +61,11 @@ $route['assets/table/(:any)'] = 'assets/table/$1';
 $route['login'] = 'login/index';
 $route['login/authenticate'] = 'login/authenticate';
 $route['logout'] = 'login/logout';
+
+// Pages routes (profile / sign-up)
+$route['pages/profile'] = 'pages/profile';
+$route['pages/sign-up'] = 'pages/sign_up';
+$route['pages/sign_up'] = 'pages/sign_up';
 
 // Import routes (Phase 1: GI)
 $route['import'] = 'import/index';
@@ -85,3 +90,27 @@ $route['prognosa'] = 'prognosa/index';
 $route['prognosa/detail'] = 'prognosa/detail';
 $route['prognosa/export_csv'] = 'prognosa/export_csv';
 $route['entry_kontrak/export_gsheet'] = 'entry_kontrak/export_gsheet';
+
+// E-Transport routes
+$route['transport'] = 'Transport_request/index';
+$route['transport/ajukan'] = 'Transport_request/create';
+$route['transport/simpan'] = 'Transport_request/store';
+$route['transport/daftar_saya'] = 'Transport_request/my_requests';
+$route['transport/semua_daftar'] = 'Transport_request/all_requests';
+$route['transport/detail/(:num)'] = 'Transport_request/detail/$1';
+$route['transport/export_pdf'] = 'Transport_request/export_pdf';
+$route['transport/export_pdf/(:num)'] = 'Transport_request/export_pdf/$1';
+
+$route['transport/approval'] = 'Transport_approval/index';
+$route['transport/approve/(:num)'] = 'Transport_approval/approve/$1';
+$route['transport/reject/(:num)'] = 'Transport_approval/reject/$1';
+$route['transport/approval/edit/(:num)'] = 'Transport_approval/edit/$1';
+$route['transport/approval/update/(:num)'] = 'Transport_approval/update/$1';
+
+$route['transport/fleet'] = 'Transport_fleet/index';
+$route['transport/fleet_process/(:num)'] = 'Transport_fleet/process/$1';
+
+$route['transport/security'] = 'Transport_security/index';
+$route['transport/security_checkin/(:num)'] = 'Transport_security/checkin/$1';
+$route['transport/security_checkout/(:num)'] = 'Transport_security/checkout/$1';
+

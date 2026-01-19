@@ -174,10 +174,17 @@ $can_edit_kku         = ($is_admin || $is_kku) && $nd_complete && $kontrak_compl
                                 </select>
                             </div>
 
+                            <!-- ✅ Harga HPE + Prognosa Kontrak (Prognosa tepat dibawah HPE) -->
                             <div class="col-md-4">
                                 <label>Harga HPE</label>
                                 <input type="text" name="harga_hpe" class="form-control" value="<?= e($row['harga_hpe'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+
+                                <div class="mt-3">
+                                    <label>Prognosa Kontrak</label>
+                                    <input type="date" name="prognosa_kontrak" class="form-control" value="<?= e($row['prognosa_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+                                </div>
                             </div>
+
                             <div class="col-md-4">
                                 <label>Harga HPS</label>
                                 <input type="text" name="harga_hps" class="form-control" value="<?= e($row['harga_hps'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
@@ -187,37 +194,10 @@ $can_edit_kku         = ($is_admin || $is_kku) && $nd_complete && $kontrak_compl
                                 <input type="text" name="harga_nego" class="form-control" value="<?= e($row['harga_nego'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
                             </div>
 
-                            <div class="col-md-4">
-                                <label>No Kontrak</label>
-                                <input type="text" name="no_kontrak" class="form-control" value="<?= e($row['no_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Vendor</label>
-                                <input type="text" name="vendor" class="form-control" value="<?= e($row['vendor'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label>Tanggal Kontrak</label>
-                                <input type="date" name="tgl_kontrak" class="form-control" value="<?= e($row['tgl_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Akhir Kontrak</label>
-                                <input type="date" name="end_kontrak" class="form-control" value="<?= e($row['end_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label>Nilai Kontrak</label>
-                                <input type="text" name="nilai_kontrak" class="form-control" value="<?= e($row['nilai_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
-                            </div>
-
-                            <div class="col-md-12">
-                                <label>Kendala Kontrak</label>
-                                <textarea name="kendala_kontrak" class="form-control" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>><?= e($row['kendala_kontrak'] ?? ''); ?></textarea>
-                            </div>
-
+                            <!-- ✅ Tahapan Pengadaan diposisikan sebelum kolom kontrak -->
                             <div class="col-md-4">
                                 <label>Tahapan Pengadaan</label>
-                                <select name="tahapan_pengadaan" class="form-select" <?= $can_edit_pengadaan ? '' : 'disabled'; ?>>
+                                <select name="tahapan_pengadaan" id="tahapan_pengadaan" class="form-select" <?= $can_edit_pengadaan ? '' : 'disabled'; ?>>
                                     <option value="">-- Pilih --</option>
                                     <?php foreach (
                                         [
@@ -243,12 +223,52 @@ $can_edit_kku         = ($is_admin || $is_kku) && $nd_complete && $kontrak_compl
                                         <option value="<?= e($o); ?>" <?= sel($row['tahapan_pengadaan'] ?? '', $o); ?>><?= e($o); ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                                <small class="text-muted d-block mt-1">
+                                    Jika memilih selain 4 tahapan (CDA/TTD Vendor/TTD Pengguna/Pengadaan Selesai), kolom kontrak akan otomatis nonaktif.
+                                </small>
+                            </div>
+
+                            <div class="col-md-8"></div>
+
+                            <!-- ✅ Kolom Kontrak (akan disabled/enable via JS bila boleh edit pengadaan) -->
+                            <div class="col-md-4">
+                                <label>No Kontrak</label>
+                                <input type="text" name="no_kontrak" class="form-control kontrak-field" id="no_kontrak"
+                                    value="<?= e($row['no_kontrak'] ?? ''); ?>"
+                                    <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Vendor</label>
+                                <input type="text" name="vendor" class="form-control kontrak-field" id="vendor"
+                                    value="<?= e($row['vendor'] ?? ''); ?>"
+                                    <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
                             </div>
 
                             <div class="col-md-4">
-                                <label>Prognosa Kontrak</label>
-                                <input type="date" name="prognosa_kontrak" class="form-control" value="<?= e($row['prognosa_kontrak'] ?? ''); ?>" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+                                <label>Tanggal Kontrak</label>
+                                <input type="date" name="tgl_kontrak" class="form-control kontrak-field" id="tgl_kontrak"
+                                    value="<?= e($row['tgl_kontrak'] ?? ''); ?>"
+                                    <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
                             </div>
+                            <div class="col-md-4">
+                                <label>Akhir Kontrak</label>
+                                <input type="date" name="end_kontrak" class="form-control kontrak-field" id="end_kontrak"
+                                    value="<?= e($row['end_kontrak'] ?? ''); ?>"
+                                    <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>Nilai Kontrak</label>
+                                <input type="text" name="nilai_kontrak" class="form-control kontrak-field" id="nilai_kontrak"
+                                    value="<?= e($row['nilai_kontrak'] ?? ''); ?>"
+                                    <?= $can_edit_pengadaan ? '' : 'readonly'; ?>>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label>Kendala Kontrak</label>
+                                <textarea name="kendala_kontrak" class="form-control kontrak-field" id="kendala_kontrak" <?= $can_edit_pengadaan ? '' : 'readonly'; ?>><?= e($row['kendala_kontrak'] ?? ''); ?></textarea>
+                            </div>
+
                         </div>
                         <hr>
                     <?php endif; ?>
@@ -308,3 +328,41 @@ $can_edit_kku         = ($is_admin || $is_kku) && $nd_complete && $kontrak_compl
         </div>
     </div>
 </main>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+<script>
+    // ✅ rule tahapan pengadaan yang mengaktifkan kolom kontrak
+    function isTahapanKontrak(val) {
+        val = (val || '').toString().trim();
+        return [
+            'Proses CDA',
+            'Proses TTD Vendor',
+            'Proses TTD Pengguna',
+            'Pengadaan Selesai'
+        ].indexOf(val) !== -1;
+    }
+
+    // ✅ toggle enable/disable kolom kontrak (HANYA jika pengadaan boleh edit)
+    function toggleKontrakFields(canEditPengadaan) {
+        if (!canEditPengadaan) return;
+
+        var tahapan = $('#tahapan_pengadaan').val();
+        var allow = isTahapanKontrak(tahapan);
+
+        $('.kontrak-field').each(function() {
+            $(this).prop('disabled', !allow);
+        });
+    }
+
+    $(document).ready(function() {
+        var canEditPengadaan = <?= $can_edit_pengadaan ? 'true' : 'false'; ?>;
+
+        // init kontrak fields state
+        toggleKontrakFields(canEditPengadaan);
+
+        // on change tahapan
+        $('#tahapan_pengadaan').on('change', function() {
+            toggleKontrakFields(canEditPengadaan);
+        });
+    });
+</script>

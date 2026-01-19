@@ -1,9 +1,9 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
+    <?php $this->load->view('layout/navbar'); ?>
 
     <!-- Content -->
     <div class="container-fluid py-4">
-
         <?php if ($this->session->flashdata('success')): ?>
             <div class="alert alert-success text-white">
                 <?= $this->session->flashdata('success'); ?>
@@ -17,8 +17,9 @@
         <?php endif; ?>
 
         <div class="card mb-4 shadow border-0 rounded-4">
+            <!-- HEADER -->
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data IK</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-file-pdf me-2"></i>Tabel Data IK</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Ik/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
@@ -42,7 +43,13 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputIk" onkeyup="searchTableIk()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari IK...">
+                    <form method="get" action="<?= site_url('ik/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('ik/index/1'); ?>', 'searchInputIk', 'q');">
+                        <input type="text" id="searchInputIk" name="q" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari IK..." value="<?= htmlspecialchars($q ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($q)): ?>
+                            <a href="<?= base_url('ik/index/1'); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -72,7 +79,7 @@
                                             <?php if (!empty($row['FILE_IK'])): ?>
                                                 <span class="badge bg-gradient-info text-white p-2"><?= htmlentities($row['FILE_IK']); ?></span>
                                             <?php else: ?>
-                                                <span class="text-muted fst-italic">Tidak ada file</span>
+                                                <span class="text-muted fst-italic">-</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
@@ -111,8 +118,6 @@
     </div>
 </main>
 
-<!-- SweetAlert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmDelete(url) {
         Swal.fire({
@@ -132,126 +137,18 @@
     }
 
     function changePerPageIk(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('ik/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 
-    function searchTableIk() {
+    (function() {
         const input = document.getElementById('searchInputIk');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('ikTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('ik/index/1'); ?>", 'searchInputIk', 'q');
+            }
+        });
+    })();
 </script>
-
-<!-- Style -->
-<style>
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.75rem 1rem;
-    }
-
-    .card-header h6 {
-        color: #fff;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .breadcrumb .breadcrumb-item.active,
-    .breadcrumb .breadcrumb-item a.opacity-5,
-    .breadcrumb .breadcrumb-item.text-white {
-        color: #ffffff !important;
-    }
-
-    .bg-gradient-primary {
-        background: linear-gradient(90deg, #005C99, #0099CC);
-    }
-
-    .table-row-odd {
-        background-color: #ffffff;
-    }
-
-    .table-row-even {
-        background-color: #f5f7fa;
-    }
-
-    #ikTable tbody tr:hover {
-        background-color: #e9ecef !important;
-        transition: 0.2s ease-in-out;
-    }
-
-    .btn-xs {
-        padding: 2px 6px;
-        font-size: 11px;
-        border-radius: 4px;
-    }
-
-    .btn-xs i {
-        font-size: 12px;
-    }
-
-    #ikTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #ikTable tbody td.text-center {
-        vertical-align: middle !important;
-        text-align: center !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
-    }
-
-    #ikTable tbody td.text-center .btn {
-        margin: 2px 3px;
-    }
-
-    #ikTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
-    }
-
-    #ikTable tbody tr {
-        line-height: 1.15;
-    }
-
-    /* Disable click/hover animations for elements with .no-anim */
-    .no-anim,
-    .no-anim * {
-        transition: none !important;
-        -webkit-transition: none !important;
-        -moz-transition: none !important;
-        -o-transition: none !important;
-        animation: none !important;
-        -webkit-animation: none !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    .no-anim:active,
-    .no-anim:focus,
-    .no-anim *:active,
-    .no-anim *:focus {
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    .no-anim .ripple,
-    .no-anim .waves-ripple,
-    .no-anim .wave,
-    .no-anim .ink {
-        display: none !important;
-    }
-</style>

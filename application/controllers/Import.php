@@ -8,13 +8,10 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property CI_Session $session
  * @property ImportJob_model $ImportJob_model
  * @property CI_Upload $upload
- * @property CI_URI $uri
- * @property CI_Config $config
  * @property CI_DB_query_builder $db
  */
 class Import extends CI_Controller
 {
-
     private $entityMap = [
         'gi'           => 'gi',
         'gardu_induk'  => 'gi',
@@ -26,12 +23,7 @@ class Import extends CI_Controller
         'pemutus'      => 'lbs_recloser',
         'unit'         => 'unit',
         'ulp'          => 'ulp',
-
-        // ➕ entity untuk Data Kontrak
         'data_kontrak' => 'data_kontrak',
-
-        // ✅ TAMBAHAN: entity untuk master rekomposisi
-        // sehingga link /import/rekomposisi akan masuk ke tabel master_rekomposisi
         'rekomposisi'  => 'master_rekomposisi',
         'master_rekomposisi' => 'master_rekomposisi',
     ];
@@ -45,140 +37,70 @@ class Import extends CI_Controller
         $this->load->model(['ImportJob_model']);
     }
 
-    // Upload form (default GI)
-    public function index($entity = 'gi')
+    // Validate and whitelist return_to parameter to avoid open redirects
+    private function safe_return_to($r)
     {
-        $entity = strtolower($entity);
-        if (!isset($this->entityMap[$entity])) {
-            $entity = 'gi';
-        }
-        $targetTable = $this->entityMap[$entity];
-
-        $data = [
-            'title'        => 'Import ' . strtoupper($targetTable) . ' - Phase 1',
-            'entity'       => $entity,
-            'target_table' => $targetTable,
-        ];
-        $this->load->view('import/form', $data);
+        $r = trim((string)$r);
+        if (empty($r)) return null;
+        $base = rtrim(base_url(), '/');
+        // allow absolute internal URLs starting with base_url
+        if (strpos($r, $base) === 0) return $r;
+        // allow relative paths starting with '/'
+        if (strpos($r, '/') === 0) return $r;
+        return null;
     }
 
-    // Preview first 100 rows
-    public function preview($entity = 'gi')
+    // =========================
+    // Helpers (validasi CSV)
+    // =========================
+    private function normalize_header($s)
     {
-        $entity = strtolower($entity);
-        if (!isset($this->entityMap[$entity])) {
-            $entity = 'gi';
-        }
-        $targetTable = $this->entityMap[$entity];
+        $s = strtolower(trim((string)$s));
+        $s = preg_replace('/\s+/', ' ', $s);
+        $s = preg_replace('/[^a-z0-9_ ]/', '', $s);
+        $s = str_replace(' ', '_', $s);
+        return $s;
+    }
 
-        // Accept CSV or XLSX (for now CSV fallback; XLSX in next step)
-        $config = [
-            'upload_path'   => FCPATH . 'uploads/imports/',
-            'allowed_types' => 'csv|xlsx',
-            'max_size'      => 10240, // 10 MB
-            'encrypt_name'  => TRUE,
-        ];
-        if (!is_dir($config['upload_path'])) {
-            @mkdir($config['upload_path'], 0755, true);
-        }
-        $this->upload->initialize($config);
+    private function get_expected_import_columns($target_table)
+    {
+        // kolom sistem yang tidak wajib ada di CSV
+        $exclude = ['id', 'created_at', 'updated_at'];
 
-        if (!$this->upload->do_upload('file')) {
-            $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
-            return redirect('import/' . $entity);
-        }
+        if ($target_table === 'gi') {
+            $this->ImportJob_model->ensure_staging_for_gi();
+            $fields = $this->db->list_fields('gi_import_raw');
 
-        $fileData = $this->upload->data();
-        $fullpath = $fileData['full_path'];
+            // staging GI punya kolom sistem lain
+            $exclude = array_merge($exclude, ['import_id', 'row_no']);
+            $excludeUpper = array_map('strtoupper', $exclude);
 
-        // Ensure job schema exists then log job shell
-        $this->ImportJob_model->ensure_schema();
-
-        // Determine if this entity uses staging (only GI for now)
-        $stagingTable = ($targetTable === 'gi') ? 'gi_import_raw' : null;
-
-        $job_id = $this->ImportJob_model->create_job([
-            'target_table'      => $targetTable,
-            'staging_table'     => $stagingTable,
-            'original_filename' => $fileData['client_name'],
-            'stored_path'       => 'uploads/imports/' . $fileData['file_name'],
-            'file_size'         => (int)$fileData['file_size'],
-            'chunk_size'        => 500,
-            'duplicate_policy'  => 'ask',
-            'status'            => 'preview',
-        ]);
-
-        // Read first 100 rows
-        $rows    = [];
-        $headers = [];
-
-        if (strtolower($fileData['file_ext']) === '.csv') {
-            $fp = fopen($fullpath, 'r');
-            if ($fp !== false) {
-                // Try to detect separator ; or ,
-                $firstLine = fgets($fp);
-                $sep = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
-                rewind($fp);
-                $lineNo = 0;
-                while (($data = fgetcsv($fp, 0, $sep)) !== false) {
-                    if ($lineNo === 0) {
-                        $headers = $data;
-                    } else {
-                        $rows[] = $data;
-                        if (count($rows) >= 100) break;
-                    }
-                    $lineNo++;
+            $expected = [];
+            foreach ($fields as $f) {
+                if (!in_array(strtoupper($f), $excludeUpper, true)) {
+                    $expected[] = strtoupper($f);
                 }
-                fclose($fp);
             }
-        } else {
-            // XLSX support placeholder
-            $headers = ['INFO'];
-            $rows    = [['XLSX preview membutuhkan PHPSpreadsheet. Sementara, unggah CSV.']];
+            return $expected;
         }
 
-        $data = [
-            'title'   => 'Preview Import ' . strtoupper($targetTable),
-            'job_id'  => $job_id,
-            'entity'  => $entity,
-            'headers' => $headers,
-            'rows'    => $rows,
-        ];
-        $this->load->view('import/preview', $data);
+        if (!$this->db->table_exists($target_table)) {
+            return null; // tabel target tidak ada
+        }
+
+        $fields = $this->db->list_fields($target_table);
+        $isLower = in_array($target_table, ['master_rekomposisi', 'data_kontrak'], true);
+
+        $expected = [];
+        foreach ($fields as $f) {
+            if (in_array(strtolower($f), $exclude, true)) continue;
+            $expected[] = $isLower ? strtolower($f) : strtoupper($f);
+        }
+        return $expected;
     }
 
-    // Process chunks into staging table / target table
-    public function process($entity = 'gi')
+    private function map_csv_headers_to_columns(array $rawHeaders, $target_table)
     {
-        $job_id = (int)$this->input->post('job_id');
-        $entity = strtolower($entity);
-        $policy = $this->input->post('duplicate_policy'); // belum dipakai (phase1)
-
-        $job = $this->ImportJob_model->get_job($job_id);
-        if (!$job) return show_error('Job not found', 404);
-
-        $stored_path = FCPATH . $job->stored_path;
-        if (!is_file($stored_path)) return show_error('File not found', 404);
-
-        // Process CSV only for phase 1
-        $inserted = 0;
-        $failed   = 0;
-        $total    = 0;
-
-        $fp = fopen($stored_path, 'r');
-        if ($fp === false) return show_error('Cannot open file', 500);
-
-        $firstLine = fgets($fp);
-        $sep = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
-        $headers = str_getcsv(trim($firstLine), $sep);
-
-        // Normalize headers
-        $norm = function ($s) {
-            return strtolower(trim(preg_replace('/\s+/', ' ', $s)));
-        };
-        $headers = array_map($norm, $headers);
-
-        // Map some expected aliases (simple for phase 1) – GI / Asset
         $aliases = [
             'unit_layanan'   => 'UNIT_LAYANAN',
             'gardu_induk'    => 'GARDU_INDUK',
@@ -189,8 +111,7 @@ class Import extends CI_Controller
             'ip_gateway'     => 'IP_GATEWAY',
         ];
 
-        // ➕ alias minim untuk data_kontrak (boleh dipakai atau diabaikan di CSV)
-        if ($job->target_table === 'data_kontrak') {
+        if ($target_table === 'data_kontrak') {
             $aliases = array_merge($aliases, [
                 'jenis_anggaran'      => 'jenis_anggaran_text',
                 'nomor_prk'           => 'nomor_prk_text',
@@ -223,36 +144,258 @@ class Import extends CI_Controller
             ]);
         }
 
-        $map = [];
-        foreach ($headers as $i => $h) {
-            $key = preg_replace('/[^a-z0-9_]/', '', $h);
-            if (isset($aliases[$key])) {
-                $map[$i] = $aliases[$key];
-            } else {
-                $map[$i] = strtoupper($key);
-            }
+        $isLower = in_array($target_table, ['master_rekomposisi', 'data_kontrak'], true);
+
+        $mappedByIndex = [];
+        foreach ($rawHeaders as $i => $h) {
+            $key = $this->normalize_header($h);
+            $col = isset($aliases[$key]) ? $aliases[$key] : strtoupper($key);
+            $col = $isLower ? strtolower($col) : strtoupper($col);
+            $mappedByIndex[$i] = $col;
         }
 
-        // ==== CASE 1: GI pakai staging ====
+        return $mappedByIndex; // index -> col
+    }
+
+    private function validate_csv_or_error(array $rawHeaders, $target_table)
+    {
+        $expected = $this->get_expected_import_columns($target_table);
+        if ($expected === null) {
+            return 'Tabel target tidak ditemukan: ' . $target_table;
+        }
+
+        $mappedByIndex = $this->map_csv_headers_to_columns($rawHeaders, $target_table);
+        $mappedCols = array_values($mappedByIndex);
+
+        // cek duplikat header setelah normalisasi/mapping
+        if (count($mappedCols) !== count(array_unique($mappedCols))) {
+            return 'Header CSV ada yang duplikat (nama kolom terdeteksi sama setelah normalisasi).';
+        }
+
+        // cek jumlah kolom
+        if (count($mappedCols) !== count($expected)) {
+            return 'Jumlah kolom CSV (' . count($mappedCols) . ') tidak sama dengan kolom tabel (' . count($expected) . ').';
+        }
+
+        // cek mismatch nama kolom (set compare)
+        $missing = array_values(array_diff($expected, $mappedCols));
+        $extra   = array_values(array_diff($mappedCols, $expected));
+
+        if (!empty($missing)) {
+            return 'Kolom CSV kurang: ' . implode(', ', $missing);
+        }
+        if (!empty($extra)) {
+            return 'Kolom CSV tidak dikenali oleh tabel: ' . implode(', ', $extra);
+        }
+
+        return null;
+    }
+
+    // =========================
+    // Pages
+    // =========================
+
+    // Upload form
+    public function index($entity = 'gi')
+    {
+        $entity = strtolower($entity);
+        if (!isset($this->entityMap[$entity])) $entity = 'gi';
+        $targetTable = $this->entityMap[$entity];
+
+        // kolom yang diharapkan (buat ditampilkan di view)
+        $expected_columns = $this->get_expected_import_columns($targetTable);
+
+        $data = [
+            'title'            => 'Import ' . strtoupper($targetTable) . ' - Phase 1',
+            'entity'           => $entity,
+            'target_table'     => $targetTable,
+            'expected_columns' => $expected_columns,
+            'return_to'        => $this->safe_return_to($this->input->get('return_to', TRUE)),
+        ];
+        $this->load->view('import/form', $data);
+    }
+
+    // Preview first 100 rows (CSV only + strict column validation)
+    public function preview($entity = 'gi')
+    {
+        $entity = strtolower($entity);
+        if (!isset($this->entityMap[$entity])) $entity = 'gi';
+        $targetTable = $this->entityMap[$entity];
+        // Preserve validated return_to from form or query string
+        $return_to = $this->safe_return_to($this->input->post('return_to', TRUE) ?? $this->input->get('return_to', TRUE) ?? '');
+
+        $config = [
+            'upload_path'   => FCPATH . 'uploads/imports/',
+            'allowed_types' => 'csv',     // ✅ ONLY CSV
+            'max_size'      => 10240,
+            'encrypt_name'  => TRUE,
+        ];
+        if (!is_dir($config['upload_path'])) @mkdir($config['upload_path'], 0755, true);
+        $this->upload->initialize($config);
+
+        if (!$this->upload->do_upload('file')) {
+            $this->session->set_flashdata('error', $this->upload->display_errors('', ''));
+            return redirect('import/' . $entity . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+        }
+
+        $fileData = $this->upload->data();
+        $fullpath = $fileData['full_path'];
+
+        // extra safety
+        if (strtolower($fileData['file_ext']) !== '.csv') {
+            @unlink($fullpath);
+            $this->session->set_flashdata('error', 'File harus CSV (.csv).');
+            return redirect('import/' . $entity . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+        }
+
+        // baca header dulu untuk validasi kolom
+        $fp = fopen($fullpath, 'r');
+        if ($fp === false) {
+            @unlink($fullpath);
+            $this->session->set_flashdata('error', 'Tidak bisa membuka file CSV.');
+            return redirect('import/' . $entity . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+        if ($firstLine === false) {
+            fclose($fp);
+            @unlink($fullpath);
+            $this->session->set_flashdata('error', 'File CSV kosong / tidak valid.');
+            return redirect('import/' . $entity . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+        }
+
+        $sep = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+        $rawHeaders = str_getcsv(trim($firstLine), $sep);
+
+        $err = $this->validate_csv_or_error($rawHeaders, $targetTable);
+        if ($err !== null) {
+            fclose($fp);
+            @unlink($fullpath);
+            $this->session->set_flashdata('error', 'Tidak bisa import: ' . $err);
+            return redirect('import/' . $entity . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+        }
+
+        // kalau valid, baru create job
+        $this->ImportJob_model->ensure_schema();
+        $stagingTable = ($targetTable === 'gi') ? 'gi_import_raw' : null;
+
+        $job_id = $this->ImportJob_model->create_job([
+            'target_table'      => $targetTable,
+            'staging_table'     => $stagingTable,
+            'original_filename' => $fileData['client_name'],
+            'stored_path'       => 'uploads/imports/' . $fileData['file_name'],
+            'file_size'         => (int)$fileData['file_size'],
+            'chunk_size'        => 500,
+            'duplicate_policy'  => 'ask',
+            'status'            => 'preview',
+        ]);
+
+        // preview 100 rows
+        $rows = [];
+        $lineNo = 0;
+        rewind($fp);
+        while (($data = fgetcsv($fp, 0, $sep)) !== false) {
+            $lineNo++;
+            if ($lineNo === 1) continue;
+            $rows[] = $data;
+            if (count($rows) >= 100) break;
+        }
+        fclose($fp);
+
+        $data = [
+            'title'            => 'Preview Import ' . strtoupper($targetTable),
+            'job_id'           => $job_id,
+            'entity'           => $entity,
+            'target_table'     => $targetTable,
+            'expected_columns' => $this->get_expected_import_columns($targetTable),
+            'headers'          => $rawHeaders,
+            'rows'             => $rows,
+            'return_to'        => $return_to,
+        ];
+        $this->load->view('import/preview', $data);
+    }
+
+    // Process chunks into staging/target (CSV only + strict validation again)
+    public function process($entity = 'gi')
+    {
+        $job_id = (int)$this->input->post('job_id');
+        $return_to = $this->safe_return_to($this->input->post('return_to', TRUE) ?? '');
+        $entity = strtolower($entity);
+
+        $job = $this->ImportJob_model->get_job($job_id);
+        if (!$job) return show_error('Job not found', 404);
+
+        $stored_path = FCPATH . $job->stored_path;
+        if (!is_file($stored_path)) return show_error('File not found', 404);
+
+        // pastikan CSV
+        if (strtolower(pathinfo($stored_path, PATHINFO_EXTENSION)) !== 'csv') {
+            $this->ImportJob_model->finish_job($job_id, ['status' => 'failed']);
+            $this->session->set_flashdata('error', 'File harus CSV (.csv).');
+            return redirect('import/status/' . $job_id);
+        }
+
+        $fp = fopen($stored_path, 'r');
+        if ($fp === false) return show_error('Cannot open file', 500);
+
+        $firstLine = fgets($fp);
+        if ($firstLine === false) {
+            fclose($fp);
+            $this->ImportJob_model->finish_job($job_id, ['status' => 'failed']);
+            $this->session->set_flashdata('error', 'File CSV kosong / tidak valid.');
+            return redirect('import/status/' . $job_id);
+        }
+
+        $sep = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+        $rawHeaders = str_getcsv(trim($firstLine), $sep);
+
+        // validasi ulang (anti bypass)
+        $err = $this->validate_csv_or_error($rawHeaders, $job->target_table);
+        if ($err !== null) {
+            fclose($fp);
+            $this->ImportJob_model->finish_job($job_id, ['status' => 'failed']);
+            $this->session->set_flashdata('error', 'Tidak bisa import: ' . $err);
+            return redirect('import/status/' . $job_id);
+        }
+
+        $mappedByIndex = $this->map_csv_headers_to_columns($rawHeaders, $job->target_table);
+
+        $inserted = 0;
+        $failed   = 0;
+        $total    = 0;
+
+        // ========= CASE 1: GI -> staging =========
         if ($job->target_table === 'gi') {
             $this->ImportJob_model->ensure_staging_for_gi();
-            rewind($fp);
-            $lineNo    = 0;
-            $batch     = [];
+
+            $lineNo = 1; // header sudah terbaca
+            $batch = [];
             $chunkSize = 500;
 
             while (($row = fgetcsv($fp, 0, $sep)) !== false) {
                 $lineNo++;
-                if ($lineNo === 1) continue;
                 $total++;
+
+                // validasi struktur per baris (kolom harus konsisten)
+                if (count($row) !== count($rawHeaders)) {
+                    fclose($fp);
+                    $this->ImportJob_model->finish_job($job_id, [
+                        'total_rows' => $total,
+                        'inserted'   => $inserted,
+                        'failed'     => $failed + 1,
+                        'status'     => 'failed',
+                    ]);
+                    $this->session->set_flashdata('error', 'Tidak bisa import: Struktur CSV tidak konsisten. Kolom pada baris ' . $lineNo . ' tidak sama dengan header.');
+                    return redirect('import/status/' . $job_id . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
+                }
 
                 $assoc = [];
                 foreach ($row as $i => $val) {
-                    $col = isset($map[$i]) ? $map[$i] : ('COL' . $i);
+                    $col = isset($mappedByIndex[$i]) ? $mappedByIndex[$i] : null;
+                    if (!$col) continue;
                     $assoc[$col] = is_string($val) ? trim($val) : $val;
                 }
+
                 $assoc['import_id'] = $job_id;
                 $assoc['row_no']    = $lineNo - 1;
+
                 $batch[] = $assoc;
 
                 if (count($batch) >= $chunkSize) {
@@ -278,52 +421,55 @@ class Import extends CI_Controller
                 'status'     => 'done'
             ]);
 
-            $this->session->set_flashdata('success', 'Import selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed);
-            return redirect('import/status/' . $job_id);
+            $this->session->set_flashdata('success', 'Import selesai (staging): total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed);
+            return redirect('import/status/' . $job_id . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
         }
 
-        // ==== CASE 2: Entity lain – termasuk master_rekomposisi – langsung ke target_table ====
+        // ========= CASE 2: entity lain -> direct append =========
         $target_table = $job->target_table;
         if (!$this->db->table_exists($target_table)) {
-            $this->session->set_flashdata('error', 'Tabel target tidak ditemukan: ' . $target_table);
             fclose($fp);
+            $this->ImportJob_model->finish_job($job_id, ['status' => 'failed']);
+            $this->session->set_flashdata('error', 'Tabel target tidak ditemukan: ' . $target_table);
             return redirect('import/status/' . $job_id);
         }
 
         $target_fields = $this->db->list_fields($target_table);
+        $isLower = in_array($target_table, ['master_rekomposisi', 'data_kontrak'], true);
 
-        rewind($fp);
-        $lineNo    = 0;
-        $batch     = [];
+        $lineNo = 1;
+        $batch = [];
         $chunkSize = 500;
 
         while (($row = fgetcsv($fp, 0, $sep)) !== false) {
             $lineNo++;
-            if ($lineNo === 1) continue;
             $total++;
+
+            if (count($row) !== count($rawHeaders)) {
+                fclose($fp);
+                $this->ImportJob_model->finish_job($job_id, [
+                    'total_rows' => $total,
+                    'inserted'   => $inserted,
+                    'failed'     => $failed + 1,
+                    'status'     => 'failed',
+                ]);
+                $this->session->set_flashdata('error', 'Tidak bisa import: Struktur CSV tidak konsisten. Kolom pada baris ' . $lineNo . ' tidak sama dengan header.');
+                return redirect('import/status/' . $job_id);
+            }
 
             $assoc = [];
             foreach ($row as $i => $val) {
-                $col = isset($map[$i]) ? $map[$i] : ('COL' . $i);
+                $col = isset($mappedByIndex[$i]) ? $mappedByIndex[$i] : null;
+                if (!$col) continue;
 
-                // default: pakai UPPER (karena master_rekomposisi kolomnya lower_snake_case? -> kolom Anda ternyata lower_snake_case, jadi kita sesuaikan)
-                // ✅ KHUSUS master_rekomposisi: kolomnya: jenis_anggaran, nomor_prk, nomor_skk_io, uraian_prk, pagu_skk_io, judul_drp, lkao_usulan, created_at, updated_at
-                if ($target_table === 'master_rekomposisi') {
-                    $col = strtolower($col);
-                } elseif ($target_table === 'data_kontrak') {
-                    $col = strtolower($col);
-                } else {
-                    $col = strtoupper($col);
-                }
+                $colFinal = $isLower ? strtolower($col) : strtoupper($col);
 
-                if (in_array($col, $target_fields, true)) {
-                    $assoc[$col] = is_string($val) ? trim($val) : $val;
+                if (in_array($colFinal, $target_fields, true)) {
+                    $assoc[$colFinal] = is_string($val) ? trim($val) : $val;
                 }
             }
 
-            if (!empty($assoc)) {
-                $batch[] = $assoc;
-            }
+            if (!empty($assoc)) $batch[] = $assoc;
 
             if (count($batch) >= $chunkSize) {
                 $this->db->insert_batch($target_table, $batch);
@@ -350,34 +496,26 @@ class Import extends CI_Controller
             'status'     => 'committed'
         ]);
 
-        // ✅ KHUSUS master_rekomposisi: balik ke halaman Rekomposisi
         if ($target_table === 'master_rekomposisi') {
-            $this->session->set_flashdata(
-                'success',
-                'Import master rekomposisi selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed
-            );
+            $this->session->set_flashdata('success', 'Import master rekomposisi selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed);
             return redirect('rekomposisi');
         }
 
-        // KHUSUS data_kontrak: kembali ke data_kontrak
         if ($target_table === 'data_kontrak') {
-            $this->session->set_flashdata(
-                'success',
-                'Import data kontrak selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed
-            );
+            $this->session->set_flashdata('success', 'Import data kontrak selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed);
             return redirect('data_kontrak');
         }
 
-        // Entity lain tetap ke halaman status import
         $this->session->set_flashdata('success', 'Import selesai: total ' . $total . ', masuk ' . $inserted . ', gagal ' . $failed);
-        return redirect('import/status/' . $job_id);
+        return redirect('import/status/' . $job_id . ($return_to ? '?return_to=' . urlencode($return_to) : ''));
     }
 
     public function status($job_id)
     {
         $job = $this->ImportJob_model->get_job((int)$job_id);
         if (!$job) return show_404();
-        $data = ['title' => 'Status Import', 'job' => $job];
+        $return_to = $this->safe_return_to($this->input->get('return_to', TRUE));
+        $data = ['title' => 'Status Import', 'job' => $job, 'return_to' => $return_to];
         $this->load->view('import/status', $data);
     }
 

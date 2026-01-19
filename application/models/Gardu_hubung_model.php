@@ -5,43 +5,60 @@ class Gardu_hubung_model extends CI_Model
 {
     private $table = 'gh'; // Nama tabel di database
 
-    // Ambil semua data Gardu Hubung
     public function get_all_gardu_hubung()
     {
         return $this->db->get($this->table)->result_array();
     }
 
-    public function get_gardu_hubung($limit, $offset)
+    // ✅ LIST + SEARCH
+    public function get_gardu_hubung($limit, $offset, $search = '')
     {
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('UNITNAME_UP3', $search);
+            $this->db->or_like('UNITNAME', $search);
+            $this->db->or_like('SSOTNUMBER', $search);
+            $this->db->or_like('DESCRIPTION', $search);
+            $this->db->or_like('CITY', $search);
+            $this->db->group_end();
+        }
+
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
     }
 
-    public function count_all_gardu_hubung()
+    // ✅ COUNT + SEARCH (ini yang bikin pagination ikut hasil search)
+    public function count_all_gardu_hubung($search = '')
     {
-        return $this->db->count_all($this->table);
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('UNITNAME_UP3', $search);
+            $this->db->or_like('UNITNAME', $search);
+            $this->db->or_like('SSOTNUMBER', $search);
+            $this->db->or_like('DESCRIPTION', $search);
+            $this->db->or_like('CITY', $search);
+            $this->db->group_end();
+        }
+
+        return $this->db->count_all_results($this->table);
     }
 
-    // Ambil data Gardu Hubung berdasarkan SSOTNUMBER
     public function get_gardu_hubung_by_id($ssotnumber)
     {
         return $this->db->get_where($this->table, ['SSOTNUMBER' => $ssotnumber])->row_array();
     }
 
-    // Tambah data baru
     public function insert_gardu_hubung($data)
     {
         return $this->db->insert($this->table, $data);
     }
 
-    // Update data berdasarkan SSOTNUMBER
     public function update_gardu_hubung($ssotnumber, $data)
     {
         $this->db->where('SSOTNUMBER', $ssotnumber);
         return $this->db->update($this->table, $data);
     }
 
-    // Hapus data berdasarkan SSOTNUMBER
     public function delete_gardu_hubung($ssotnumber)
     {
         $this->db->where('SSOTNUMBER', $ssotnumber);

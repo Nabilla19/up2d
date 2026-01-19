@@ -12,19 +12,21 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Gardu Induk</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-bolt me-2"></i>Tabel Data Gardu Induk</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Gardu_induk/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/gardu_induk') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/gardu_induk?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Gardu_induk/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('gardu_induk/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -43,10 +45,21 @@
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
 
-                    <!-- Search (server-side seperti Unit, Enter untuk submit) -->
-                    <input type="text" id="searchInputGI" class="form-control form-control-sm rounded-3"
-                        style="max-width: 300px;" placeholder="Cari data Gardu Induk..."
-                        value="<?= isset($q) ? html_escape($q) : '' ?>">
+                    <!-- ✅ SEARCH SERVER-SIDE -->
+                    <form method="get" action="<?= base_url('Gardu_induk/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('gardu_induk/index'); ?>', 'searchInputGI', 'q');">
+                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+                        <input type="text"
+                               id="searchInputGI"
+                               name="q"
+                               value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                               class="form-control form-control-sm rounded-3"
+                               style="max-width: 300px;"
+                               placeholder="Cari data Gardu Induk...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('Gardu_induk/index/1?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -65,18 +78,19 @@
                         <tbody>
                             <?php if (empty($gardu_induk)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="7" class="text-center text-secondary py-4">
+                                        <?php if (!empty($search)): ?>
+                                            Tidak ada data yang cocok dengan pencarian: <b><?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?></b>
+                                        <?php else: ?>
+                                            Belum ada data
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php else: ?>
-                                <?php foreach ($gardu_induk as $i => $row): ?>
-                                    <?php
-                                    // Nomor tampil: posisi global saat search, fallback nomor pagination
-                                    $displayNo = (!empty($q) && !empty($positions) && isset($positions[$row['SSOTNUMBER']]))
-                                        ? $positions[$row['SSOTNUMBER']]
-                                        : ($start_no + $i);
-                                    ?>
-                                    <tr class="<?= ($displayNo % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $displayNo; ?></td>
+                                <?php $no = $start_no;
+                                foreach ($gardu_induk as $row): ?>
+                                    <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
+                                        <td class="text-sm"><?= $no++; ?></td>
                                         <td class="text-sm"><?= htmlentities($row['UNITNAME_UP3'] ?? ''); ?></td>
                                         <td class="text-sm"><?= htmlentities($row['UNITNAME'] ?? ''); ?></td>
                                         <td class="text-sm"><?= htmlentities($row['SSOTNUMBER'] ?? ''); ?></td>
@@ -114,43 +128,18 @@
 
 <!-- Script -->
 <script>
-    // Per-page: reset ke halaman 1 via URI segment (bukan ?page=1)
     function changePerPageGI(perPage) {
-        const url = new URL("<?= site_url('gardu_induk/index/1'); ?>");
-        const q = document.getElementById('searchInputGI').value.trim();
-
+        const base = "<?= site_url('gardu_induk/index'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-
-        if (q) url.searchParams.set('q', q);
-        else url.searchParams.delete('q');
-
+        
+        const input = document.getElementById('searchInputGI');
+        if (input) {
+            const q = input.value.trim();
+            if (q) url.searchParams.set('q', q);
+        }
         window.location.href = url.toString();
     }
-
-    // Search: Enter untuk submit (server-side)
-    (function() {
-        const input = document.getElementById('searchInputGI');
-        if (!input) return;
-
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const q = input.value.trim();
-
-                const url = new URL("<?= site_url('gardu_induk/index/1'); ?>");
-
-                // pertahankan per_page yang aktif
-                const current = new URL(window.location.href);
-                const per = current.searchParams.get('per_page');
-                if (per) url.searchParams.set('per_page', per);
-
-                if (q) url.searchParams.set('q', q);
-                else url.searchParams.delete('q');
-
-                window.location.href = url.toString();
-            }
-        });
-    })();
 </script>
 
 <!-- Style -->

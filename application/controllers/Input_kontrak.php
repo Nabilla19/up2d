@@ -20,7 +20,10 @@ class Input_kontrak extends CI_Controller
         $page = $this->input->get('page') ? (int)$this->input->get('page') : 1;
         $offset = ($page - 1) * $per_page;
 
-        $total_rows = $this->kontrak->count_all();
+        // server-side search support
+        $search = trim($this->input->get('search', TRUE) ?? '');
+
+        $total_rows = $this->kontrak->count_all($search);
 
         $config['base_url'] = base_url('Input_kontrak');
         $config['total_rows'] = $total_rows;
@@ -44,9 +47,10 @@ class Input_kontrak extends CI_Controller
         $this->pagination->initialize($config);
 
         $data = [
-            'input_kontrak' => $this->kontrak->get_limit($per_page, $offset),
+            'input_kontrak' => $this->kontrak->get_limit($per_page, $offset, $search),
             'total_rows'    => $total_rows,
             'per_page'      => $per_page,
+            'search'        => $search,
             'start_no'      => $offset + 1,
             'pagination'    => $this->pagination->create_links(),
             'page_title'    => 'Data Input Kontrak',
@@ -236,6 +240,8 @@ class Input_kontrak extends CI_Controller
 
         $query = $this->db->query("SELECT * FROM anggaran_op"); // sesuaikan tabel
         $csv = $this->dbutil->csv_from_result($query);
+        // prepend BOM so Excel recognizes UTF-8
+        $csv = "\xEF\xBB\xBF" . $csv;
 
         force_download('input_kontrak.csv', $csv);
     }

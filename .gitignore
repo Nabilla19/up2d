@@ -21,6 +21,16 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 #-------------------------
 /nbproject/
 .idea/*
+.vscode/*
+
+## Project Specific Exclusions
+uploads/*
+!uploads/index.html
+assets/node_modules/
+application/config/google_service_account.json
+application/brain/
+.gemini/
+*.log
 
 ## Sublime Text cache files
 *.tmlanguage.cache

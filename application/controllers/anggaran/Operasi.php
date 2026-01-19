@@ -40,6 +40,8 @@ class Operasi extends CI_Controller {
         // Navbar data
         $data['page_title'] = 'Progress Kontrak (Operasi)';
         $data['page_icon'] = 'fas fa-chart-line';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
 
         try {
             $result = $this->progress_kontrak_model->get_table_data(200);
@@ -65,6 +67,8 @@ class Operasi extends CI_Controller {
         // Navbar data
         $data['page_title'] = 'Rekomposisi (Operasi)';
         $data['page_icon'] = 'fas fa-exchange-alt';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
         
         try {
             $result = $this->rekomposisi_model->get_table_data(200);
@@ -88,6 +92,8 @@ class Operasi extends CI_Controller {
         // Navbar data
         $data['page_title'] = 'Monitoring (Operasi)';
         $data['page_icon'] = 'fas fa-desktop';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
         
         try {
             $result = $this->monitoring_model->get_table_data(500);
@@ -105,7 +111,9 @@ class Operasi extends CI_Controller {
 
     public function add_progress_kontrak()
     {
-        $this->load->view('layout/header');
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
+        $this->load->view('layout/header', $data);
         $this->load->view('anggaran/operasi/vw_add_progress_kontrak');
         $this->load->view('layout/footer');
     }
@@ -167,7 +175,9 @@ class Operasi extends CI_Controller {
 
     public function add_rekomposisi()
     {
-        $this->load->view('layout/header');
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
+        $this->load->view('layout/header', $data);
         $this->load->view('anggaran/operasi/vw_add_rekomposisi');
         $this->load->view('layout/footer');
     }
@@ -198,7 +208,9 @@ class Operasi extends CI_Controller {
 
     public function add_monitoring()
     {
-        $this->load->view('layout/header');
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
+        $this->load->view('layout/header', $data);
         $this->load->view('anggaran/operasi/vw_add_monitoring');
         $this->load->view('layout/footer');
     }

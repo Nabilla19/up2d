@@ -22,7 +22,7 @@ function e($v)
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0">Tabel Entry Kontrak</h6>
+                <h6 class="mb-0 text-white"><i class="fas fa-file-signature me-2"></i>Tabel Entry Kontrak</h6>
 
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
 
@@ -39,16 +39,18 @@ function e($v)
                             <i class="fas fa-file-export me-1"></i> Export
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('entry_kontrak/export_csv') . $qs_str; ?>">
-                                    <i class="fas fa-file-csv me-2"></i> Export to CSV
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="<?= base_url('entry_kontrak/export_gsheet') . $qs_str; ?>">
-                                    <i class="fas fa-table me-2"></i> Export to Google Spreadsheet
-                                </a>
-                            </li>
+                            <?php if (!is_guest()): ?>
+                                <li>
+                                    <a class="dropdown-item" href="<?= base_url('entry_kontrak/export_csv') . $qs_str; ?>">
+                                        <i class="fas fa-file-csv me-2"></i> Export to CSV
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="<?= base_url('entry_kontrak/export_gsheet') . $qs_str; ?>">
+                                        <i class="fas fa-table me-2"></i> Export to Google Spreadsheet
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
                     </div>
 
@@ -73,9 +75,12 @@ function e($v)
                         <span class="ms-3 text-sm">dari <?= (int)$total_rows; ?> data</span>
                     </div>
 
-                    <input type="text" id="searchInput" class="form-control form-control-sm rounded-3"
-                        style="max-width:300px;" placeholder="Cari entry kontrak..."
-                        value="<?= e($keyword ?? ''); ?>" onkeyup="searchTable()">
+                    <form method="get" action="<?= site_url('entry_kontrak'); ?>" class="d-flex" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('entry_kontrak'); ?>', 'searchInput', 'keyword');">
+                        <input type="text" id="searchInput" name="keyword" class="form-control form-control-sm rounded-3"
+                            style="max-width:300px;" placeholder="Cari entry kontrak..."
+                            value="<?= e($keyword ?? ''); ?>">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -171,11 +176,28 @@ function e($v)
 
 <script>
     function changePerPage(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('entry_kontrak'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '0');
+        url.searchParams.set('page', 0);
         window.location.href = url.toString();
     }
+
+    (function(){
+        const input = document.getElementById('searchInput');
+        if (!input) return;
+        input.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') { e.preventDefault();
+                const base = "<?= site_url('entry_kontrak'); ?>";
+                const url = new URL(base, window.location.origin);
+                url.searchParams.set('keyword', (input.value||'').trim());
+                url.searchParams.set('page', 0);
+                const per = (new URL(window.location.href)).searchParams.get('per_page');
+                if (per) url.searchParams.set('per_page', per);
+                window.location.href = url.toString();
+            }
+        });
+    })();
 
     function searchTable() {
         const input = document.getElementById('searchInput');

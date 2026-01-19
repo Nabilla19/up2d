@@ -27,15 +27,19 @@ class Gi_cell extends CI_Controller
     public function index()
     {
         $data['title'] = 'Data GI Cell';
-        
+
         // Navbar data
         $data['page_title'] = 'Data GI Cell';
         $data['page_icon'] = 'fas fa-wave-square';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
+
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
 
         // Konfigurasi paginasi
         $config['base_url'] = site_url('gi_cell/index');
-        $config['total_rows'] = $this->gi_cell_model->count_all_gi_cell();
-        // Per-page selector (from ?per_page), use config default_per_page
+        $config['total_rows'] = $this->gi_cell_model->count_all_gi_cell($search); // Menambahkan parameter search untuk menghitung jumlah data
         $allowedPerPage = [5, 10, 25, 50, 100, 500];
         $requestedPer = (int) $this->input->get('per_page');
         $defaultPer = (int) $this->config->item('default_per_page');
@@ -43,6 +47,16 @@ class Gi_cell extends CI_Controller
         $config['per_page'] = $perPage;
         $config["uri_segment"] = 3;
         $config['use_page_numbers'] = TRUE;
+
+        // ✅ PERBAIKAN: biar pagination tetap bawa query string (?search=...&per_page=...)
+        $config['reuse_query_string'] = TRUE;
+
+        // ✅ PERBAIKAN: pastikan first_url dan suffix ikut query GET (search, per_page, dll)
+        $query = $this->input->get(NULL, TRUE);
+        if (!empty($query)) {
+            $config['suffix'] = '?' . http_build_query($query, '', '&');
+            $config['first_url'] = $config['base_url'] . $config['suffix'];
+        }
 
         // Customizing pagination links
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
@@ -79,11 +93,12 @@ class Gi_cell extends CI_Controller
         $this->pagination->initialize($config);
 
         // Ambil data untuk halaman saat ini
-        $data['gi_cell'] = $this->gi_cell_model->get_gi_cell($config['per_page'], $offset);
+        $data['gi_cell'] = $this->gi_cell_model->get_gi_cell($config['per_page'], $offset, $search);
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
         $data['total_rows'] = $config['total_rows'];
         $data['per_page'] = $perPage;
+        $data['search'] = $search; // Simpan kata kunci pencarian di view
 
         $this->load->view('layout/header');
         $this->load->view('gi_cell/vw_gi_cell', $data);
@@ -99,7 +114,6 @@ class Gi_cell extends CI_Controller
         }
         if ($this->input->post()) {
             $insertData = [
-                // Only fields that exist in database (34 columns)
                 'CXUNIT' => $this->input->post('CXUNIT'),
                 'UNITNAME' => $this->input->post('UNITNAME'),
                 'ASSETNUM' => $this->input->post('ASSETNUM'),
@@ -141,6 +155,8 @@ class Gi_cell extends CI_Controller
             redirect('Gi_cell');
         } else {
             $data['title'] = 'Tambah Data GI Cell';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gi_cell/vw_tambah_gi_cell', $data);
             $this->load->view('layout/footer');
@@ -155,7 +171,6 @@ class Gi_cell extends CI_Controller
             redirect('Gi_cell');
         }
 
-        // Pastikan nama variabel seragam: gi_cell
         $data['gi_cell'] = $this->gi_cell_model->get_gi_cell_by_id($id);
         if (empty($data['gi_cell'])) {
             show_404();
@@ -248,6 +263,8 @@ class Gi_cell extends CI_Controller
             redirect('Gi_cell');
         } else {
             $data['title'] = 'Edit Data GI Cell';
+            $data['parent_page_title'] = 'Asset';
+            $data['parent_page_url'] = '#';
             $this->load->view('layout/header');
             $this->load->view('gi_cell/vw_edit_gi_cell', $data);
             $this->load->view('layout/footer');
@@ -263,6 +280,8 @@ class Gi_cell extends CI_Controller
         }
 
         $data['title'] = 'Detail Data GI Cell';
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
         $this->load->view('layout/header');
         $this->load->view('gi_cell/vw_detail_gi_cell', $data);
         $this->load->view('layout/footer');
@@ -283,6 +302,13 @@ class Gi_cell extends CI_Controller
     // Export GI Cell data to CSV
     public function export_csv()
     {
+        // Block guest users from exporting
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect(strtolower($this->router->fetch_class()));
+            return;
+        }
+
         $all = $this->gi_cell_model->get_all_gi_cell();
         $label = 'Data GI Cell';
         $filename = $label . ' ' . date('d-m-Y') . '.csv';

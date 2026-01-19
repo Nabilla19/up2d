@@ -9,21 +9,29 @@
             </div>
         <?php endif; ?>
 
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger text-white">
+                <?= $this->session->flashdata('error'); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Unit</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-cube me-2"></i>Tabel Data Unit</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Unit/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/unit') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/unit?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Unit/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('unit/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -41,7 +49,22 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputUnit" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Unit..." value="<?= isset($q) ? html_escape($q) : '' ?>">
+
+                    <!-- ✅ SEARCH SERVER-SIDE (bukan filter JS) -->
+                    <form method="get" action="<?= base_url('Unit/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('unit/index'); ?>', 'searchInputUnit', 'q');">
+                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+                        <input type="text"
+                               id="searchInputUnit"
+                               name="q"
+                               value="<?= htmlspecialchars($q ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                               class="form-control form-control-sm rounded-3"
+                               style="max-width: 300px;"
+                               placeholder="Cari data Unit...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($q)): ?>
+                            <a href="<?= base_url('Unit/index?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -60,23 +83,24 @@
                         <tbody>
                             <?php if (empty($unit)): ?>
                                 <tr>
-                                    <td colspan="7" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="7" class="text-center text-secondary py-4">
+                                        <?php if (!empty($search)): ?>
+                                            Tidak ada data yang cocok dengan pencarian: <b><?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?></b>
+                                        <?php else: ?>
+                                            Belum ada data
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php else: ?>
-                                <?php foreach ($unit as $i => $row): ?>
-                                    <?php
-                                        // Tentukan nomor tampil dari map posisi atau fallback
-                                        $displayNo = (!empty($q) && !empty($positions) && isset($positions[$row['ID_UNIT']])) 
-                                            ? $positions[$row['ID_UNIT']] 
-                                            : ($start_no + $i);
-                                    ?>
-                                    <tr class="<?= ($displayNo % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $displayNo; ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNIT_PELAKSANA']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNIT_LAYANAN']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['LONGITUDEX']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['LATITUDEY']); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['ADDRESS']); ?></td>
+                                <?php $no = $start_no;
+                                foreach ($unit as $row): ?>
+                                    <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
+                                        <td class="text-sm"><?= $no++; ?></td>
+                                        <td class="text-sm"><?= htmlentities((string)($row['UNIT_PELAKSANA'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities((string)($row['UNIT_LAYANAN'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities((string)($row['LONGITUDEX'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities((string)($row['LATITUDEY'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm"><?= htmlentities((string)($row['ADDRESS'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
                                         <td class="text-center">
                                             <a href="<?= base_url('Unit/detail/' . $row['ID_UNIT']); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail"><i class="fas fa-info-circle"></i></a>
                                             <?php if (can_edit()): ?>
@@ -103,36 +127,8 @@
 <!-- Script -->
 <script>
     function changePerPageUnit(perPage) {
-        const url = new URL(window.location.href);
-        const q = document.getElementById('searchInputUnit').value.trim();
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        if (q) {
-            url.searchParams.set('q', q);
-        } else {
-            url.searchParams.delete('q'); // hapus q jika kosong
-        }
-        window.location.href = url.toString();
+        changePerPageGlobal("<?= site_url('unit/index'); ?>", perPage);
     }
-
-    (function(){
-        const input = document.getElementById('searchInputUnit');
-        if (!input) return;
-        input.addEventListener('keydown', function(e){
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const q = input.value.trim();
-                const url = new URL(window.location.href);
-                if (q) {
-                    url.searchParams.set('q', q);
-                    url.searchParams.set('page', '1');
-                } else {
-                    url.searchParams.delete('q'); // hapus q jika kosong
-                }
-                window.location.href = url.toString();
-            }
-        });
-    })();
 </script>
 
 <!-- Style (sama persis seperti halaman Gardu Induk) -->

@@ -71,6 +71,8 @@ class Prognosa extends CI_Controller
 
         $data = [
             'page_title'  => 'Prognosa',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'page_icon'   => 'fas fa-chart-pie me-2',
 
             'rows'        => $rows,
@@ -114,6 +116,8 @@ class Prognosa extends CI_Controller
 
         $data = [
             'page_title' => 'Detail Prognosa',
+            'parent_page_title' => 'Anggaran',
+            'parent_page_url' => '#',
             'page_icon'  => 'fas fa-chart-pie me-2',
             'row'        => $row
         ];

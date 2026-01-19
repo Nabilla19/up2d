@@ -53,6 +53,7 @@ $disable_kku         = !($is_admin || $can_kku);
 <main class="main-content position-relative border-radius-lg">
     <?php $this->load->view('layout/navbar'); ?>
 
+    <!-- Content -->
     <div class="container-fluid py-4">
         <div class="card shadow border-0 rounded-4">
             <div class="card-header py-3 bg-gradient-primary text-white rounded-top-4 d-flex justify-content-between align-items-center">

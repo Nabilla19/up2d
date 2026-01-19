@@ -61,10 +61,11 @@ class Pengaduan extends CI_Controller
         // Pagination setup
         $per_page = (int) $this->input->get('per_page') ?: 5;
         $page = (int) $this->input->get('page') ?: 0;
+        $q = trim($this->input->get('q', TRUE) ?? '');
 
         $config = [
             'base_url'            => base_url('pengaduan/index'),
-            'total_rows'          => $this->db->count_all('pengaduan'),
+            'total_rows'          => $this->Pengaduan_model->count_all_pengaduan($q),
             'per_page'            => $per_page,
             'page_query_string'   => true,
             'query_string_segment' => 'page',
@@ -94,11 +95,12 @@ class Pengaduan extends CI_Controller
 
         $this->pagination->initialize($config);
 
-        $data['pengaduan'] = $this->Pengaduan_model->get_pengaduan_paginated($per_page, $page);
+        $data['pengaduan'] = $this->Pengaduan_model->get_pengaduan_paginated($per_page, $page, $q);
         $data['start_no'] = $page + 1;
         $data['pagination'] = $this->pagination->create_links();
         $data['total_rows'] = $config['total_rows'];
         $data['per_page'] = $per_page;
+        $data['q'] = $q;
 
         $this->load->view('layout/header', $data);
         $this->load->view('pengaduan/vw_pengaduan', $data);

@@ -58,6 +58,8 @@ class Single_Line_Diagram extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data Single Line Diagram';
         $data['page_icon'] = 'fas fa-project-diagram';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
 
         // Per-page dari query string atau default (allowed values)
         $allowedPer = [5,10,25,50,100,500];
@@ -122,6 +124,8 @@ class Single_Line_Diagram extends CI_Controller
         }
 
         $data['judul'] = 'Tambah Single Line Diagram';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
         $this->load->model('Unit_model', 'unitModel');
         $data['unit'] = $this->unitModel->get_all_units(); // use existing model method
 
@@ -188,6 +192,8 @@ class Single_Line_Diagram extends CI_Controller
         }
 
         $data['judul'] = 'Edit Single Line Diagram';
+        $data['parent_page_title'] = 'Operasi';
+        $data['parent_page_url'] = '#';
         $data['sld'] = $this->sldModel->get_sld_by_id($id);
 
         if (!$data['sld']) {

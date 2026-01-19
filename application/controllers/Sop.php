@@ -32,6 +32,8 @@ class Sop extends CI_Controller
         // Navbar data
         $data['page_title'] = 'Data SOP';
         $data['page_icon'] = 'fas fa-file-alt';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
     // Konfigurasi pagination dengan pilihan per-page dari query string
     $allowedPerPage = [5, 10, 25, 50, 100, 500];
@@ -88,6 +90,8 @@ class Sop extends CI_Controller
         }
 
         $data['judul'] = 'Tambah SOP';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
 
         // Hanya tampilkan form tambah jika belum ada post
         if (!$this->input->post()) {
@@ -151,6 +155,8 @@ class Sop extends CI_Controller
         }
 
         $data['judul'] = 'Edit SOP';
+        $data['parent_page_title'] = 'Pustaka';
+        $data['parent_page_url'] = '#';
         $data['sop'] = $this->sopModel->get_sop_by_id($id);
 
         if (!$data['sop']) {

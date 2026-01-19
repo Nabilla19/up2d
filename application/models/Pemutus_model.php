@@ -11,15 +11,37 @@ class Pemutus_model extends CI_Model
         return $this->db->get($this->table)->result_array();
     }
 
-    public function get_pemutus($limit, $offset)
+    // ✅ LIST + SEARCH (SERVER SIDE)
+    public function get_pemutus($limit, $offset, $search = '')
     {
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('SSOTNUMBER', $search);
+            $this->db->or_like('CXUNIT', $search);
+            $this->db->or_like('UNITNAME', $search);
+            $this->db->or_like('LOCATION', $search);
+            $this->db->or_like('DESCRIPTION', $search);
+            $this->db->group_end();
+        }
+
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
     }
 
-    public function count_all_pemutus()
+    // ✅ COUNT + SEARCH (pagination ikut hasil search)
+    public function count_all_pemutus($search = '')
     {
-        return $this->db->count_all($this->table);
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('SSOTNUMBER', $search);
+            $this->db->or_like('CXUNIT', $search);
+            $this->db->or_like('UNITNAME', $search);
+            $this->db->or_like('LOCATION', $search);
+            $this->db->or_like('DESCRIPTION', $search);
+            $this->db->group_end();
+        }
+
+        return $this->db->count_all_results($this->table);
     }
 
     // 🔹 Mengambil data pemutus berdasarkan SSOTNUMBER (Primary Key)
@@ -62,7 +84,7 @@ class Pemutus_model extends CI_Model
     {
         $this->db->like('KEYPOINT', $keyword);
         $this->db->or_like('PENYULANG', $keyword);
-    $this->db->or_like('SSOTNUMBER', $keyword);
+        $this->db->or_like('SSOTNUMBER', $keyword);
         return $this->db->get($this->table)->result_array();
     }
 }

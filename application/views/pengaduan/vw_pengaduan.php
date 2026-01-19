@@ -15,7 +15,7 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Pengaduan</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-exclamation-circle me-2"></i>Tabel Data Pengaduan</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Pengaduan/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
@@ -39,7 +39,7 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputPengaduan" onkeyup="searchTablePengaduan()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data pengaduan...">
+                    <input type="text" id="searchInputPengaduan" value="<?= htmlentities((string)($q ?? ''), ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data pengaduan...">
                 </div>
 
                 <div class="table-responsive p-0">
@@ -124,22 +124,20 @@
     }
 
     function changePerPagePengaduan(perPage) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
+        const base = "<?= site_url('pengaduan/index/1'); ?>";
+        changePerPageGlobal(base, perPage);
     }
 
-    function searchTablePengaduan() {
+    (function() {
         const input = document.getElementById('searchInputPengaduan');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('pengaduanTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
-        }
-    }
+        if (!input) return;
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchSubmit("<?= site_url('pengaduan/index/1'); ?>", 'searchInputPengaduan', 'q');
+            }
+        });
+    })();
 </script>
 
 <!-- Style (disamakan dengan halaman Data Unit) -->

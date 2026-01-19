@@ -1,6 +1,7 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
 
+    <!-- Content -->
     <div class="container-fluid py-4">
 
         <?php if ($this->session->flashdata('success')): ?>
@@ -81,7 +82,7 @@
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
 
-                        <a href="<?= base_url('import/data_kontrak') ?>"
+                        <a href="<?= base_url('import/data_kontrak?return_to=' . urlencode(current_url())); ?>"
                             class="btn btn-sm btn-light text-success me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
@@ -191,7 +192,8 @@
 
 <script>
     function changePerPageKontrak(perPage) {
-        const url = new URL("<?= site_url('data_kontrak/index/1'); ?>");
+        // Reset to page 1 (offset 0) when changing limit
+        const url = new URL("<?= base_url('data_kontrak/index'); ?>");
         const q = document.getElementById('searchInputKontrak').value.trim();
         url.searchParams.set('per_page', perPage);
         if (q) url.searchParams.set('q', q);
@@ -205,9 +207,10 @@
         input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const url = new URL("<?= site_url('data_kontrak/index/1'); ?>");
+                // Reset to page 1 (offset 0) when searching
+                const url = new URL("<?= base_url('data_kontrak/index'); ?>");
                 const current = new URL(window.location.href);
-                const per = current.searchParams.get('per_page');
+                const per = current.searchParams.get('per_page') || "<?= $per_page ?>"; // use PHP value as fallback
                 if (per) url.searchParams.set('per_page', per);
                 const q = input.value.trim();
                 if (q) url.searchParams.set('q', q);

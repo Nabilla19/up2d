@@ -12,22 +12,23 @@
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Kit Penyulang</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-microchip me-2"></i>Tabel Data Kit Penyulang</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
                     <?php if (can_create()): ?>
                         <a href="<?= base_url('Kit_cell/tambah') ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
                             <i class="fas fa-plus me-1"></i> Tambah
                         </a>
-                        <a href="<?= base_url('import/kit_cell') ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
+                        <a href="<?= base_url('import/kit_cell?return_to=' . urlencode(current_url())); ?>" class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
-                    <a href="<?= base_url('Kit_cell/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('kit_cell/export_csv') ?>" class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
-
 
             <div class="card-body px-0 pt-0 pb-2 bg-white">
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center">
@@ -43,7 +44,25 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputKC" onkeyup="searchTableKC()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data Kit Cell...">
+
+                    <!-- ✅ SEARCH SERVER-SIDE (uses shared helper) -->
+                    <form method="get" action="<?= base_url('Kit_cell/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('Kit_cell/index'); ?>', 'searchInputKC', 'q');">
+                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+
+                        <input type="text"
+                               id="searchInputKC"
+                               name="q"
+                               value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                               class="form-control form-control-sm rounded-3"
+                               style="max-width: 300px;"
+                               placeholder="Cari data Kit Cell...">
+
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('Kit_cell/index?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -61,7 +80,13 @@
                         <tbody>
                             <?php if (empty($kit_cell)): ?>
                                 <tr>
-                                    <td colspan="6" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="6" class="text-center text-secondary py-4">
+                                        <?php if (!empty($search)): ?>
+                                            Tidak ada data yang cocok dengan pencarian: <b><?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?></b>
+                                        <?php else: ?>
+                                            Belum ada data
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php else: ?>
                                 <?php $no = $start_no;
@@ -105,21 +130,16 @@
 <!-- Script -->
 <script>
     function changePerPageKC(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('Kit_cell/index'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '1');
-        window.location.href = url.toString();
-    }
-
-    function searchTableKC() {
+        
         const input = document.getElementById('searchInputKC');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('kitCellTable');
-        const tr = table.getElementsByTagName('tr');
-        for (let i = 1; i < tr.length; i++) {
-            let txtValue = tr[i].textContent || tr[i].innerText;
-            tr[i].style.display = (txtValue.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
+        if (input) {
+            const q = input.value.trim();
+            if (q) url.searchParams.set('q', q);
         }
+        window.location.href = url.toString();
     }
 </script>
 

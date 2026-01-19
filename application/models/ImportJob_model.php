@@ -31,11 +31,12 @@ class ImportJob_model extends CI_Model {
 
     public function ensure_schema()
     {
-        // Create jobs and errors table if not exists (simple portable SQL)
+        // Create jobs and errors table if not exists
         $this->db->query("CREATE TABLE IF NOT EXISTS `{$this->jobs_table}` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
             `user_id` INT NULL,
             `target_table` VARCHAR(64) NOT NULL,
+            `staging_table` VARCHAR(64) NULL,
             `original_filename` VARCHAR(255) NOT NULL,
             `stored_path` VARCHAR(255) NOT NULL,
             `file_size` INT NULL,
@@ -51,6 +52,11 @@ class ImportJob_model extends CI_Model {
             `started_at` DATETIME NULL,
             `finished_at` DATETIME NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
+
+        // Jika tabel sudah ada tapi belum ada kolom staging_table
+        if (!$this->db->field_exists('staging_table', $this->jobs_table)) {
+            $this->db->query("ALTER TABLE `{$this->jobs_table}` ADD COLUMN `staging_table` VARCHAR(64) NULL AFTER `target_table`");
+        }
 
         $this->db->query("CREATE TABLE IF NOT EXISTS `{$this->errors_table}` (
             `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -106,55 +112,48 @@ class ImportJob_model extends CI_Model {
     /**
      * Commit rows from staging table into the target table.
      * Strategy: append-only (no upsert). Only columns that exist in both tables are copied.
-     * Returns number of rows inserted, or -1 if target table is missing, or 0 if no matching columns.
+     * Returns number of rows inserted, or -1 if target table missing, -2 if PK not auto-increment, 0 if no match cols.
      */
     public function commit_staging_to_target($job_id, $target_table)
     {
         $job_id = (int)$job_id;
-        // Ensure target exists
+
         if (!$this->db->table_exists($target_table)) {
             return -1;
         }
 
-        // Read PK info; require either no PK or single AUTO_INCREMENT PK for append-only import
+        // PK check
         $dbName = $this->db->database;
         $pkQuery = $this->db->query(
-            "SELECT k.COLUMN_NAME, c.EXTRA FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS t\n".
-            "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE k ON t.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND t.TABLE_SCHEMA=k.TABLE_SCHEMA AND t.TABLE_NAME=k.TABLE_NAME\n".
-            "JOIN INFORMATION_SCHEMA.COLUMNS c ON c.TABLE_SCHEMA=k.TABLE_SCHEMA AND c.TABLE_NAME=k.TABLE_NAME AND c.COLUMN_NAME=k.COLUMN_NAME\n".
-            "WHERE t.TABLE_SCHEMA=? AND t.TABLE_NAME=? AND t.CONSTRAINT_TYPE='PRIMARY KEY'",
+            "SELECT k.COLUMN_NAME, c.EXTRA FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS t
+             JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE k
+               ON t.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND t.TABLE_SCHEMA=k.TABLE_SCHEMA AND t.TABLE_NAME=k.TABLE_NAME
+             JOIN INFORMATION_SCHEMA.COLUMNS c
+               ON c.TABLE_SCHEMA=k.TABLE_SCHEMA AND c.TABLE_NAME=k.TABLE_NAME AND c.COLUMN_NAME=k.COLUMN_NAME
+             WHERE t.TABLE_SCHEMA=? AND t.TABLE_NAME=? AND t.CONSTRAINT_TYPE='PRIMARY KEY'",
             [$dbName, $target_table]
         );
         $pkCols = $pkQuery->result_array();
         if (count($pkCols) === 1) {
             $pkExtra = strtolower((string)$pkCols[0]['EXTRA']);
             $isAI = (strpos($pkExtra, 'auto_increment') !== false);
-            if (!$isAI) {
-                // Signal: PK exists but not auto-increment; recommend fixing schema
-                return -2; // special code
-            }
+            if (!$isAI) return -2;
         }
 
-        // Determine column intersection between staging and target
         $target_fields = $this->db->list_fields($target_table);
         $staging_fields = $this->db->list_fields($this->staging_gi);
         $cols = array_values(array_intersect($staging_fields, $target_fields));
-        if (empty($cols)) {
-            return 0;
-        }
+        if (empty($cols)) return 0;
 
-        // Fetch rows from staging for this job
         $query = $this->db->select($cols)->from($this->staging_gi)->where('import_id', $job_id)->get();
         $rows = $query->result_array();
         if (empty($rows)) return 0;
 
-        // Batch insert in chunks
         $batchSize = 500;
         $inserted = 0;
         for ($i = 0; $i < count($rows); $i += $batchSize) {
             $batch = array_slice($rows, $i, $batchSize);
             $this->db->insert_batch($target_table, $batch);
-            // affected_rows for insert_batch returns number of affected rows (driver dependent)
             $aff = $this->db->affected_rows();
             if ($aff > 0) $inserted += $aff;
         }

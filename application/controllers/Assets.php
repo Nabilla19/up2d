@@ -37,6 +37,8 @@ class Assets extends CI_Controller
         $data['icon'] = $meta[1];
         $data['table'] = $name;
         $data['tables'] = $this->tables; // for sidebar highlighting if needed
+        $data['parent_page_title'] = 'Asset';
+        $data['parent_page_url'] = '#';
 
         try {
             $result = $this->Asset_model->get_table_data($name, 50);

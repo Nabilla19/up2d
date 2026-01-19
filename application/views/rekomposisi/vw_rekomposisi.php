@@ -22,7 +22,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
             <!-- HEADER -->
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">Tabel Data Rekomposisi</h6>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-chart-line me-2"></i>Tabel Data Rekomposisi</h6>
 
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
 
@@ -33,16 +33,18 @@ defined('BASEPATH') or exit('No direct script access allowed');
                         </a>
 
                         <!-- ✅ TAMBAHAN: tombol Import (mengarah ke controller Import) -->
-                        <a href="<?= base_url('import/rekomposisi') ?>"
+                        <a href="<?= base_url('import/rekomposisi?return_to=' . urlencode(current_url())); ?>"
                             class="btn btn-sm btn-light text-success d-flex align-items-center no-anim">
                             <i class="fas fa-file-import me-1"></i> Import
                         </a>
                     <?php endif; ?>
 
-                    <a href="<?= base_url('rekomposisi/export_csv') ?>"
-                        class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
+                    <?php if (!is_guest()): ?>
+                        <a href="<?= base_url('rekomposisi/export_csv') ?>"
+                            class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
+                            <i class="fas fa-file-csv me-1"></i> Download CSV
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -163,29 +165,44 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 <script>
     function changePerPage(perPage) {
-        const url = new URL(window.location.href);
+        const base = "<?= site_url('rekomposisi'); ?>";
+        const url = new URL(base, window.location.origin);
         url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', '0');
+        url.searchParams.set('page', 0);
+        
+        const input = document.getElementById('searchInput');
+        if (input) {
+            const kw = input.value.trim();
+            if (kw) url.searchParams.set('keyword', kw);
+        }
         window.location.href = url.toString();
     }
 
     function applySearch() {
         const input = document.getElementById('searchInput');
-        const url = new URL(window.location.href);
-        url.searchParams.set('keyword', (input.value || '').trim());
-        url.searchParams.set('page', '0');
+        const base = "<?= site_url('rekomposisi'); ?>";
+        const url = new URL(base, window.location.origin);
+        if (input) {
+            url.searchParams.set('keyword', input.value.trim());
+        }
+        url.searchParams.set('page', 0);
+        
+        // Keep per_page
+        const current = new URL(window.location.href);
+        const per = current.searchParams.get('per_page');
+        if (per) url.searchParams.set('per_page', per);
+
         window.location.href = url.toString();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    (function() {
         const input = document.getElementById('searchInput');
         if (!input) return;
-
-        input.addEventListener('keydown', (e) => {
+        input.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 applySearch();
             }
         });
-    });
+    })();
 </script>
