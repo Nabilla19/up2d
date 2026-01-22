@@ -55,6 +55,9 @@
                     <form method="get" action="<?= site_url('input_kontrak/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('input_kontrak/index/1'); ?>', 'searchInputKontrak', 'search');">
                         <input type="text" id="searchInputKontrak" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data kontrak...">
                         <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('input_kontrak/index/1?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
                     </form>
                 </div>
 

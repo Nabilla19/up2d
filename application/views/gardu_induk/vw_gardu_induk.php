@@ -55,9 +55,9 @@
                                class="form-control form-control-sm rounded-3"
                                style="max-width: 300px;"
                                placeholder="Cari data Gardu Induk...">
-                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
-                        <?php if (!empty($search)): ?>
-                            <a href="<?= base_url('Gardu_induk/index/1?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                                                <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($q)): ?>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.replace('<?= base_url('Gardu_induk/index?per_page=' . (int)$per_page); ?>')">Reset</button>
                         <?php endif; ?>
                     </form>
                 </div>
@@ -90,26 +90,28 @@
                                 <?php $no = $start_no;
                                 foreach ($gardu_induk as $row): ?>
                                     <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $no++; ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNITNAME_UP3'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['UNITNAME'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['SSOTNUMBER'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['DESCRIPTION'] ?? ''); ?></td>
-                                        <td class="text-sm"><?= htmlentities($row['CITY'] ?? ''); ?></td>
-                                        <td class="text-center">
-                                            <a href="<?= base_url('Gardu_induk/detail/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail">
-                                                <i class="fas fa-info-circle"></i>
-                                            </a>
-                                            <?php if (can_edit()): ?>
-                                                <a href="<?= base_url('Gardu_induk/edit/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-warning btn-xs text-white me-1" title="Edit">
-                                                    <i class="fas fa-pen"></i>
+                                        <td class="text-sm" data-label="No"><?= $no++; ?></td>
+                                        <td class="text-sm" data-label="UP3"><?= htmlentities($row['UNITNAME_UP3'] ?? ''); ?></td>
+                                        <td class="text-sm" data-label="Unit"><?= htmlentities($row['UNITNAME'] ?? ''); ?></td>
+                                        <td class="text-sm" data-label="SSOT Number"><?= htmlentities($row['SSOTNUMBER'] ?? ''); ?></td>
+                                        <td class="text-sm" data-label="Deskripsi"><?= htmlentities($row['DESCRIPTION'] ?? ''); ?></td>
+                                        <td class="text-sm" data-label="Kota"><?= htmlentities($row['CITY'] ?? ''); ?></td>
+                                        <td class="text-center" data-label="Aksi">
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <a href="<?= base_url('Gardu_induk/detail/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-info btn-xs text-white" title="Detail">
+                                                    <i class="fas fa-info-circle"></i>
                                                 </a>
-                                            <?php endif; ?>
-                                            <?php if (can_delete()): ?>
-                                                <a href="<?= base_url('Gardu_induk/hapus/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
-                                            <?php endif; ?>
+                                                <?php if (can_edit()): ?>
+                                                    <a href="<?= base_url('Gardu_induk/edit/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-warning btn-xs text-white" title="Edit">
+                                                        <i class="fas fa-pen"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                                <?php if (can_delete()): ?>
+                                                    <a href="<?= base_url('Gardu_induk/hapus/' . urlencode($row['SSOTNUMBER'] ?? '')); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

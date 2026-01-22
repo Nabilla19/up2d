@@ -37,7 +37,12 @@ class Road_map extends CI_Controller
 
         // Konfigurasi pagination
         $config['base_url'] = site_url('road_map/index');
-        $config['total_rows'] = $this->roadmapModel->count_all_roadmap();
+        
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
+        
+        $config['total_rows'] = $this->roadmapModel->count_all_roadmap($search);
+        
         // support per_page from query string (allowed values)
         $allowedPer = [5,10,25,50,100,500];
         $reqPer = (int) $this->input->get('per_page', TRUE);
@@ -62,15 +67,16 @@ class Road_map extends CI_Controller
 
         $page_segment = $this->uri->segment(3);
         $page = (is_numeric($page_segment) && $page_segment > 0) ? (int)$page_segment : 1;
-    $offset = ($page - 1) * $config['per_page'];
+        $offset = ($page - 1) * $config['per_page'];
 
         $this->pagination->initialize($config);
 
-        $data['road_map'] = $this->roadmapModel->get_roadmap($config['per_page'], $offset);
+        $data['road_map'] = $this->roadmapModel->get_roadmap($config['per_page'], $offset, $search);
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
-    $data['per_page'] = $perPage;
-    $data['total_rows'] = $config['total_rows'];
+        $data['per_page'] = $perPage;
+        $data['total_rows'] = $config['total_rows'];
+        $data['search'] = $search;
 
         $this->load->view('layout/header', $data);
         $this->load->view('road_map/vw_road_map', $data);

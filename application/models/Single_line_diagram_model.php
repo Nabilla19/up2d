@@ -20,11 +20,18 @@ class Single_line_diagram_model extends CI_Model
     // ===============================
     // Ambil SLD dengan paginasi + join unit
     // ===============================
-    public function get_sld($limit, $offset)
+    public function get_sld($limit, $offset, $search = '')
     {
         $this->db->select('sld.*, u.UNIT_PELAKSANA AS NAMA_UNIT');
         $this->db->from($this->table . ' AS sld');
         $this->db->join('unit AS u', 'sld.ID_UNIT = u.ID_UNIT', 'left');
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('sld.NAMA_GI', $search);
+            $this->db->or_like('sld.NAMA_PENYULANG', $search);
+            $this->db->or_like('u.UNIT_PELAKSANA', $search);
+            $this->db->group_end();
+        }
         $this->db->order_by('sld.CREATED_AT', 'DESC');
         $this->db->limit($limit, $offset);
         return $this->db->get()->result_array();
@@ -33,9 +40,18 @@ class Single_line_diagram_model extends CI_Model
     // ===============================
     // Hitung semua data
     // ===============================
-    public function count_all_sld()
+    public function count_all_sld($search = '')
     {
-        return $this->db->count_all($this->table);
+        $this->db->from($this->table . ' AS sld');
+        $this->db->join('unit AS u', 'sld.ID_UNIT = u.ID_UNIT', 'left');
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('sld.NAMA_GI', $search);
+            $this->db->or_like('sld.NAMA_PENYULANG', $search);
+            $this->db->or_like('u.UNIT_PELAKSANA', $search);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results();
     }
 
     // ===============================

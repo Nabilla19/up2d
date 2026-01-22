@@ -97,85 +97,147 @@ class Notifikasi_model extends CI_Model
     }
 
     /**
-     * Ambil semua notifikasi
+     * Ambil semua notifikasi dengan info baca per-user
      */
-    public function get_all()
+    public function get_all($user_id = null)
     {
-        $this->db->order_by('tanggal_waktu', 'DESC');
-        return $this->db->get($this->table)->result_array();
+        $this->db->select('a.*, COALESCE(rs.read_at, NULL) as is_read_user');
+        $this->db->from($this->table . ' a');
+        if ($user_id) {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = $user_id", 'left');
+        } else {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = 0", 'left');
+        }
+        $this->db->order_by('a.tanggal_waktu', 'DESC');
+        
+        $result = $this->db->get()->result_array();
+        
+        // Map is_read_user to status_baca for view compatibility
+        foreach ($result as &$r) {
+            $r['status_baca'] = $r['is_read_user'] ? 1 : 0;
+        }
+        return $result;
     }
 
     /**
      * Ambil semua notifikasi (alias untuk kompatibilitas)
      */
-    public function get_all_notifications()
+    public function get_all_notifications($user_id = null)
     {
-        return $this->get_all();
+        return $this->get_all($user_id);
     }
 
     /**
      * Ambil notifikasi terbaru
      * @param int $limit Jumlah data yang diambil
      */
-    public function get_latest($limit = 10)
+    public function get_latest($limit = 10, $user_id = null)
     {
-        $this->db->order_by('tanggal_waktu', 'DESC');
+        $this->db->select('a.*, rs.read_at as is_read_user');
+        $this->db->from($this->table . ' a');
+        if ($user_id) {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = $user_id", 'left');
+        } else {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = 0", 'left');
+        }
+        $this->db->order_by('a.tanggal_waktu', 'DESC');
         $this->db->limit($limit);
-        return $this->db->get($this->table)->result_array();
+        
+        $result = $this->db->get()->result_array();
+        foreach ($result as &$r) {
+            $r['is_read'] = $r['is_read_user'] ? 1 : 0;
+            $r['status_baca'] = $r['is_read_user'] ? 1 : 0;
+        }
+        return $result;
     }
 
     /**
      * Ambil notifikasi belum dibaca
      */
-    public function get_unread()
+    public function get_unread($user_id = null)
     {
-        $this->db->where('status_baca', 0);
-        $this->db->order_by('tanggal_waktu', 'DESC');
-        return $this->db->get($this->table)->result_array();
+        $this->db->select('a.*');
+        $this->db->from($this->table . ' a');
+        if ($user_id) {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = $user_id", 'left');
+        } else {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = 0", 'left');
+        }
+        $this->db->where('rs.read_at IS NULL');
+        $this->db->order_by('a.tanggal_waktu', 'DESC');
+        return $this->db->get()->result_array();
     }
 
     /**
      * Hitung notifikasi belum dibaca
      */
-    public function count_unread()
+    public function count_unread($user_id = null)
     {
-        $this->db->where('status_baca', 0);
-        return $this->db->count_all_results($this->table);
+        $this->db->from($this->table . ' a');
+        if ($user_id) {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = $user_id", 'left');
+        } else {
+            $this->db->join('notifikasi_read_status rs', "rs.notification_id = a.id AND rs.user_id = 0", 'left');
+        }
+        $this->db->where('rs.read_at IS NULL');
+        return $this->db->count_all_results();
     }
 
     /**
      * Hitung notifikasi belum dibaca (alias untuk kompatibilitas)
      */
-    public function get_unread_count()
+    public function get_unread_count($user_id = null)
     {
-        return $this->count_unread();
+        return $this->count_unread($user_id);
     }
 
     /**
-     * Tandai satu notifikasi sebagai sudah dibaca
+     * Tandai satu notifikasi sebagai sudah dibaca per-user
      * @param int $id ID notifikasi
+     * @param int $user_id
      */
-    public function mark_read($id)
+    public function mark_read($id, $user_id = null)
     {
-        $this->db->where('id', $id);
-        return $this->db->update($this->table, ['status_baca' => 1]);
+        if (!$user_id) return false;
+        
+        $data = [
+            'notification_id' => $id,
+            'user_id' => $user_id,
+            'read_at' => date('Y-m-d H:i:s')
+        ];
+        
+        return $this->db->replace('notifikasi_read_status', $data);
     }
 
     /**
-     * Tandai semua notifikasi sebagai sudah dibaca
+     * Tandai semua notifikasi sebagai sudah dibaca per-user
      */
-    public function mark_all_read()
+    public function mark_all_read($user_id = null)
     {
-        $this->db->set('status_baca', 1);
-        return $this->db->update($this->table);
+        if (!$user_id) return false;
+        
+        // Ambil semua ID notifikasi yang belum dibaca oleh user ini
+        $unread = $this->get_unread($user_id);
+        if (empty($unread)) return true;
+        
+        $data = [];
+        foreach ($unread as $n) {
+            $data[] = [
+                'notification_id' => $n['id'],
+                'user_id' => $user_id,
+                'read_at' => date('Y-m-d H:i:s')
+            ];
+        }
+        
+        return $this->db->insert_batch('notifikasi_read_status', $data);
     }
 
     /**
      * Tandai semua notifikasi sebagai sudah dibaca (alias)
      */
-    public function mark_as_read()
+    public function mark_as_read($user_id = null)
     {
-        return $this->mark_all_read();
+        return $this->mark_all_read($user_id);
     }
 
     /**

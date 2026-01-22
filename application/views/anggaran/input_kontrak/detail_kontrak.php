@@ -1,3 +1,6 @@
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    
 <div class="container-fluid py-4 print-area">
     <?php
     // Helper kecil di view
@@ -439,4 +442,4 @@
             display: flex !important;
         }
     }
-</style>
+</style></main>

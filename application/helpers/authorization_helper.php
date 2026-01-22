@@ -41,6 +41,30 @@ if (!function_exists('is_admin')) {
 }
 
 /**
+ * apakah ASMEN (role_id 15-18 atau role name mengandung 'asmen')
+ */
+if (!function_exists('is_asmen')) {
+    function is_asmen()
+    {
+        $CI = &get_instance();
+        $role_id = $CI->session->userdata('role_id');
+        $role = strtolower($CI->session->userdata('user_role') ?? '');
+        
+        // Check by role_id (15, 16, 17, 18)
+        if (in_array($role_id, [15, 16, 17, 18], true)) {
+            return true;
+        }
+        
+        // Check by role name containing 'asmen'
+        if (strpos($role, 'asmen') !== false) {
+            return true;
+        }
+        
+        return false;
+    }
+}
+
+/**
  * ROLE MAPPING KHUSUS DATA KONTRAK
  */
 if (!function_exists('_role_allows_create_kontrak')) {
@@ -108,6 +132,12 @@ if (!function_exists('can_create')) {
         } else {
             $module = strtolower($module);
         }
+        
+        // ASMEN: hanya boleh create di module transport
+        if (is_asmen()) {
+            $transport_modules = ['transport_request', 'transport_approval', 'transport_fleet', 'transport_security'];
+            return in_array($module, $transport_modules, true);
+        }
 
         // KHUSUS DATA KONTRAK
         if (in_array($module, ['data_kontrak', 'input_kontrak'], true)) {
@@ -172,6 +202,12 @@ if (!function_exists('can_edit')) {
         } else {
             $module = strtolower($module);
         }
+        
+        // ASMEN: hanya boleh edit di module transport
+        if (is_asmen()) {
+            $transport_modules = ['transport_request', 'transport_approval', 'transport_fleet', 'transport_security'];
+            return in_array($module, $transport_modules, true);
+        }
 
         if (in_array($module, ['data_kontrak', 'input_kontrak'], true)) {
             if (is_admin()) return true;
@@ -213,6 +249,12 @@ if (!function_exists('can_delete')) {
             $module = strtolower($CI->router->fetch_class());
         } else {
             $module = strtolower($module);
+        }
+        
+        // ASMEN: hanya boleh delete di module transport
+        if (is_asmen()) {
+            $transport_modules = ['transport_request', 'transport_approval', 'transport_fleet', 'transport_security'];
+            return in_array($module, $transport_modules, true);
         }
 
         if (in_array($module, ['data_kontrak', 'input_kontrak'], true)) {

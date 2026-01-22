@@ -62,10 +62,10 @@ $route['login'] = 'login/index';
 $route['login/authenticate'] = 'login/authenticate';
 $route['logout'] = 'login/logout';
 
-// Pages routes (profile / sign-up)
+// Pages routes (Admin-only user management, sign-up disabled)
 $route['pages/profile'] = 'pages/profile';
-$route['pages/sign-up'] = 'pages/sign_up';
-$route['pages/sign_up'] = 'pages/sign_up';
+// $route['pages/sign-up'] = 'pages/sign_up';  // Disabled - Admin creates users
+// $route['pages/sign_up'] = 'pages/sign_up';  // Disabled - Admin creates users
 
 // Import routes (Phase 1: GI)
 $route['import'] = 'import/index';

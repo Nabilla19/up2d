@@ -41,12 +41,16 @@ class Rekomposisi extends CI_Controller
     {
         // --- PERSISTENCE LOGIC ---
         
-        // Keyword
-        if ($this->input->get('keyword') !== null) {
-            $keyword = trim($this->input->get('keyword', true));
-            $this->session->set_userdata('rekom_keyword', $keyword);
+        // Search
+        if ($this->input->get('search') !== null) {
+            $search = trim($this->input->get('search', true));
+            $this->session->set_userdata('rekom_search', $search);
+        } elseif ($this->input->get('per_page') !== null && $this->input->get('search') === null) {
+            // If per_page is set but search is not, clear the session search (this is a reset)
+            $this->session->unset_userdata('rekom_search');
+            $search = '';
         } else {
-            $keyword = $this->session->userdata('rekom_keyword') ?? '';
+            $search = $this->session->userdata('rekom_search') ?? '';
         }
 
         // Per Page
@@ -65,7 +69,7 @@ class Rekomposisi extends CI_Controller
         $page_offset = (int)($this->input->get('page') ?? 0);
         if ($page_offset < 0) $page_offset = 0;
 
-        $total_rows = $this->rekom->count_all($keyword);
+        $total_rows = $this->rekom->count_all($search);
 
         $config['base_url'] = base_url('rekomposisi');
         $config['total_rows'] = $total_rows;
@@ -89,7 +93,7 @@ class Rekomposisi extends CI_Controller
         $this->pagination->initialize($config);
 
         $data = [
-            'rekomposisi' => $this->rekom->get_paginated($per_page, $page_offset, $keyword),
+            'rekomposisi' => $this->rekom->get_paginated($per_page, $page_offset, $search),
             'pagination'  => $this->pagination->create_links(),
             'total_rows'  => $total_rows,
             'per_page'    => $per_page,
@@ -98,7 +102,7 @@ class Rekomposisi extends CI_Controller
             'page_icon'  => 'fas fa-layer-group',
             'parent_page_title' => 'Anggaran',
             'parent_page_url' => '#',
-            'keyword'     => $keyword // Pass to view
+            'search'     => $search // Pass to view
         ];
 
         $this->load->view('layout/header', $data);

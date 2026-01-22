@@ -1,6 +1,5 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
-    <?php $this->load->view('layout/navbar'); ?>
 
     <!-- Content -->
     <div class="container-fluid py-4">
@@ -43,9 +42,14 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputBpm" onkeyup="searchTableBpm()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari BPM...">
+                    <form method="get" action="<?= site_url('bpm/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('bpm/index/1'); ?>', 'searchInputBpm', 'search');">
+                        <input type="text" id="searchInputBpm" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari BPM...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('bpm/index/1?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
-
                 <div class="table-responsive p-0">
                     <table class="table align-items-center mb-0" id="bpmTable">
                         <thead class="bg-light">

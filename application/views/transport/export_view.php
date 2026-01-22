@@ -72,7 +72,7 @@
         <strong>Mode Cetak:</strong> <?= count($requests) == 1 ? 'Formulir Tunggal' : 'Laporan Riwayat' ?>. 
         Pilih <strong>"Save as PDF"</strong> pada tujuan printer.
         <button onclick="window.print()" style="padding: 5px 15px; cursor: pointer; background: #5e72e4; color: white; border: none; border-radius: 4px; margin-left: 10px;">CETAK / SIMPAN PDF</button>
-        <button onclick="window.history.back()" style="padding: 5px 15px; cursor: pointer; background: #8898aa; color: white; border: none; border-radius: 4px; margin-left: 5px;">KEMBALI</button>
+        <button onclick="if(document.referrer) { window.location.href = document.referrer; } else { window.location.href='<?= base_url('transport/daftar_saya') ?>'; }" style="padding: 5px 15px; cursor: pointer; background: #8898aa; color: white; border: none; border-radius: 4px; margin-left: 5px;">KEMBALI</button>
     </div>
 
     <div class="header">

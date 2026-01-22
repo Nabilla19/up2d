@@ -1,6 +1,11 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
+/**
+ * Controller Transport_security
+ * Menangani pencatatan keluar-masuk kendaraan di pos security.
+ * Bertanggung jawab atas pencatatan KM (Kilometer) awal dan akhir.
+ */
 class Transport_security extends CI_Controller {
 
     public function __construct() {
@@ -9,11 +14,12 @@ class Transport_security extends CI_Controller {
         $this->load->library(['session', 'form_validation', 'upload']);
         $this->load->helper(['url', 'form']);
         
+        // Proteksi login
         if (!$this->session->userdata('logged_in')) {
             redirect('login');
         }
 
-        // Role 19 (Security) or 6 (Admin)
+        // Hak Akses: Hanya Petugas Security (Role 19) atau Admin
         $role_id = $this->session->userdata('role_id');
         if (!in_array($role_id, [19, 6])) {
             $this->session->set_flashdata('error', 'Anda tidak memiliki hak akses ke menu ini.');
@@ -21,9 +27,12 @@ class Transport_security extends CI_Controller {
         }
     }
 
+    /**
+     * Halaman Utama Security
+     * Menampilkan daftar kendaraan yang sedang beroperasi atau menunggu diproses.
+     */
     public function index() {
         $data['page_title'] = 'Pos Security / Notifikasi';
-        // Show requests that are In Progress (awaiting check-in or check-out)
         $data['requests'] = $this->Transport_model->get_all_requests_detailed();
         
         $this->load->view('layout/header', $data);
@@ -31,10 +40,15 @@ class Transport_security extends CI_Controller {
         $this->load->view('layout/footer');
     }
 
+    /**
+     * Check-In (Saat kendaraan keluar kantor)
+     * Mencatat KM Awal dan Jam Berangkat
+     */
     public function checkin($id) {
         $data['page_title'] = 'Security Check-In (Berangkat)';
         $data['request'] = $this->Transport_model->get_requests($id);
         
+        // Validasi input
         $this->form_validation->set_rules('km_awal', 'KM Awal', 'required|numeric');
         $this->form_validation->set_rules('jam_berangkat', 'Jam Berangkat', 'required');
 
@@ -52,7 +66,7 @@ class Transport_security extends CI_Controller {
                 'jam_berangkat' => $this->input->post('jam_berangkat'),
             ];
 
-            // Handle Photo Uploads
+            // Proses Upload Foto (Driver & KM Awal)
             $config['upload_path'] = './uploads/transport/';
             $config['allowed_types'] = 'gif|jpg|png|jpeg';
             $config['max_size'] = 2048;
@@ -69,13 +83,18 @@ class Transport_security extends CI_Controller {
                 $log_data['foto_km_berangkat'] = $this->upload->data('file_name');
             }
 
+            // Simpan log keberangkatan
             $this->Transport_model->add_security_log($log_data);
-            // Stay In Progress but log created
+            
             $this->session->set_flashdata('success', 'Data check-in berhasil dicatat. Silakan cetak Surat Jalan.');
             redirect('transport/export_pdf/' . $id);
         }
     }
 
+    /**
+     * Check-Out (Saat kendaraan kembali ke kantor)
+     * Mencatat KM Akhir dan Jam Kembali
+     */
     public function checkout($id) {
         $data['page_title'] = 'Security Check-Out (Kembali)';
         $data['request'] = $this->Transport_model->get_requests($id);
@@ -96,7 +115,7 @@ class Transport_security extends CI_Controller {
                 'jarak_tempuh' => $this->input->post('jarak_tempuh')
             ];
 
-            // Handle Photo Uploads
+            // Proses Upload Foto (Driver & KM Akhir)
             $config['upload_path'] = './uploads/transport/';
             $config['allowed_types'] = 'gif|jpg|png|jpeg';
             $config['max_size'] = 2048;
@@ -109,14 +128,16 @@ class Transport_security extends CI_Controller {
                 $log_data['foto_km_kembali'] = $this->upload->data('file_name');
             }
 
+            // Update log yang sudah ada dengan data kepulangan
             $this->Transport_model->update_security_log($id, $log_data);
 
-            // Get Fleet data to find Plate Number
+            // 1. Kembalikan status kendaraan fisik menjadi 'Available'
             $fleet = $this->Transport_model->get_fleet($id);
             if ($fleet) {
                 $this->Transport_model->update_vehicle_status($fleet['plat_nomor'], 'Available');
             }
 
+            // 2. Ubah status permohonan menjadi 'Selesai'
             $this->Transport_model->update_request($id, ['status' => 'Selesai']);
 
             $this->session->set_flashdata('success', 'Data check-out berhasil dicatat. Status Permohonan: Selesai.');

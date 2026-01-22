@@ -67,7 +67,7 @@ function e($v)
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
-                        <select class="form-select form-select-sm" style="width:80px; padding-right:2rem;" onchange="changePerPage(this.value)">
+                        <select class="form-select form-select-sm" style="width:80px; padding-right:2rem;" onchange="changePerPageGlobal(this.value)">
                             <?php foreach ([5, 10, 25, 50, 100] as $n): ?>
                                 <option value="<?= $n ?>" <?= ((int)$per_page === $n) ? 'selected' : '' ?>><?= $n ?></option>
                             <?php endforeach; ?>
@@ -75,11 +75,17 @@ function e($v)
                         <span class="ms-3 text-sm">dari <?= (int)$total_rows; ?> data</span>
                     </div>
 
-                    <form method="get" action="<?= site_url('entry_kontrak'); ?>" class="d-flex" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('entry_kontrak'); ?>', 'searchInput', 'keyword');">
-                        <input type="text" id="searchInput" name="keyword" class="form-control form-control-sm rounded-3"
+                    <form method="get" action="<?= base_url('entry_kontrak'); ?>" class="d-flex" id="searchFormEntryKontrak" onsubmit="event.preventDefault(); searchSubmit('<?= base_url('entry_kontrak'); ?>', 'searchInputEntryKontrak', 'search');">
+                        <input type="text" id="searchInputEntryKontrak" name="search" class="form-control form-control-sm rounded-3"
                             style="max-width:300px;" placeholder="Cari entry kontrak..."
-                            value="<?= e($keyword ?? ''); ?>">
+                            value="<?= e($search ?? ''); ?>">
                         <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
+                                onclick="window.location.replace('<?= base_url('entry_kontrak?per_page=' . (int)($per_page ?? 10)); ?>')">
+                                Reset
+                            </button>
+                        <?php endif; ?>
                     </form>
                 </div>
 

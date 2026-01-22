@@ -57,10 +57,9 @@
                                style="max-width: 300px;"
                                placeholder="Cari data Kit Cell...">
 
-                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
-
+                                                <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
                         <?php if (!empty($search)): ?>
-                            <a href="<?= base_url('Kit_cell/index?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.replace('<?= base_url('Kit_cell/index?per_page=' . (int)$per_page); ?>')">Reset</button>
                         <?php endif; ?>
                     </form>
                 </div>

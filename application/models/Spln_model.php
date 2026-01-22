@@ -17,8 +17,14 @@ class Spln_model extends CI_Model
     /**
      * Ambil data SPLN dengan limit dan offset (untuk pagination)
      */
-    public function get_spln($limit, $offset)
+    public function get_spln($limit, $offset, $search = '')
     {
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('NAMA_FILE', $search);
+            $this->db->or_like('CREATED_BY', $search);
+            $this->db->group_end();
+        }
         $this->db->order_by('CREATED_AT', 'DESC');
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
@@ -27,9 +33,15 @@ class Spln_model extends CI_Model
     /**
      * Hitung total data SPLN
      */
-    public function count_all_spln()
+    public function count_all_spln($search = '')
     {
-        return $this->db->count_all($this->table);
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('NAMA_FILE', $search);
+            $this->db->or_like('CREATED_BY', $search);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results($this->table);
     }
 
     /**

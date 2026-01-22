@@ -38,9 +38,13 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? count($sld) ?> data</span>
                     </div>
-                    <input type="text" id="searchInputSLD" onkeyup="searchTableSld()"
-                        class="form-control form-control-sm rounded-3" style="max-width: 300px;"
-                        placeholder="Cari GI atau Penyulang...">
+                    <form method="get" action="<?= site_url('Single_Line_Diagram/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('Single_Line_Diagram/index'); ?>', 'searchInputSLD', 'search');">
+                        <input type="text" id="searchInputSLD" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari GI atau Penyulang...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('Single_Line_Diagram/index?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">

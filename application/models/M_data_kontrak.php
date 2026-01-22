@@ -8,7 +8,7 @@ class M_data_kontrak extends CI_Model
     // ================================
     // GET ALL KONTRAK + JOIN MASTER
     // ================================
-    public function get_all()
+    public function get_all($search = null)
     {
         $this->db->select("
             kontrak.*,
@@ -19,14 +19,80 @@ class M_data_kontrak extends CI_Model
             skk.nomor_skk_io,
             skk.pagu_skk_io
         ");
-        $this->db->from('kontrak');
+        $this->db->from($this->table);
         $this->db->join('jenis_anggaran ja', 'ja.id = kontrak.jenis_anggaran_id', 'left');
         $this->db->join('prk', 'prk.id = kontrak.prk_id', 'left');
         $this->db->join('drp', 'drp.id = kontrak.drp_id', 'left');
         $this->db->join('skk', 'skk.id = kontrak.skk_id', 'left');
+        
+        $this->_apply_search($search);
+        
         $this->db->order_by('kontrak.id', 'DESC');
 
         return $this->db->get()->result();
+    }
+
+    public function count_all($search = null)
+    {
+        $this->db->from($this->table);
+        $this->db->join('jenis_anggaran ja', 'ja.id = kontrak.jenis_anggaran_id', 'left');
+        $this->db->join('prk', 'prk.id = kontrak.prk_id', 'left');
+        $this->db->join('drp', 'drp.id = kontrak.drp_id', 'left');
+        $this->db->join('skk', 'skk.id = kontrak.skk_id', 'left');
+        
+        $this->_apply_search($search);
+        
+        return $this->db->count_all_results();
+    }
+
+    public function get_limit($limit, $offset, $search = null)
+    {
+        $this->db->select("
+            kontrak.*,
+            ja.nama AS jenis_anggaran_nama,
+            prk.nomor_prk,
+            prk.uraian_prk,
+            drp.judul_drp,
+            skk.nomor_skk_io,
+            skk.pagu_skk_io
+        ");
+        $this->db->from($this->table);
+        $this->db->join('jenis_anggaran ja', 'ja.id = kontrak.jenis_anggaran_id', 'left');
+        $this->db->join('prk', 'prk.id = kontrak.prk_id', 'left');
+        $this->db->join('drp', 'drp.id = kontrak.drp_id', 'left');
+        $this->db->join('skk', 'skk.id = kontrak.skk_id', 'left');
+        
+        $this->_apply_search($search);
+        
+        $this->db->order_by('kontrak.id', 'DESC');
+        $this->db->limit($limit, $offset);
+
+        return $this->db->get()->result();
+    }
+
+    private function _apply_search($search = null)
+    {
+        if ($search && trim($search) !== '') {
+            $kw = trim($search);
+
+            $this->db->group_start()
+                ->like('kontrak.jenis_anggaran_text', $kw)
+                ->or_like('kontrak.nomor_prk_text', $kw)
+                ->or_like('kontrak.uraian_prk_text', $kw)
+                ->or_like('kontrak.nomor_skk_io_text', $kw)
+                ->or_like('kontrak.drp_text', $kw)
+                ->or_like('kontrak.uraian_pekerjaan', $kw)
+                ->or_like('kontrak.user_pengusul', $kw)
+                ->or_like('kontrak.status_kontrak', $kw)
+                ->or_like('kontrak.no_kontrak', $kw)
+                ->or_like('kontrak.pelaksana_vendor', $kw)
+                ->or_like('ja.nama', $kw)
+                ->or_like('prk.nomor_prk', $kw)
+                ->or_like('prk.uraian_prk', $kw)
+                ->or_like('drp.judul_drp', $kw)
+                ->or_like('skk.nomor_skk_io', $kw)
+                ->group_end();
+        }
     }
 
     // ================================

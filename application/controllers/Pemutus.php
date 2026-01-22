@@ -37,6 +37,10 @@ class Pemutus extends CI_Controller
         if ($this->input->get('search') !== null) {
             $search = trim($this->input->get('search', TRUE));
             $this->session->set_userdata('pemutus_search', $search);
+        } elseif ($this->input->get('per_page') !== null && $this->input->get('search') === null) {
+            // If per_page is set but search is not, clear the session search (this is a reset)
+            $this->session->unset_userdata('pemutus_search');
+            $search = '';
         } else {
             $search = $this->session->userdata('pemutus_search') ?? '';
         }

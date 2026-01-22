@@ -17,8 +17,14 @@ class Road_map_model extends CI_Model
     /**
      * Ambil data Road Map dengan limit dan offset (untuk pagination)
      */
-    public function get_roadmap($limit, $offset)
+    public function get_roadmap($limit, $offset, $search = '')
     {
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('NAMA_FILE', $search);
+            $this->db->or_like('CREATED_BY', $search);
+            $this->db->group_end();
+        }
         $this->db->order_by('CREATED_AT', 'DESC');
         $this->db->limit($limit, $offset);
         return $this->db->get($this->table)->result_array();
@@ -27,9 +33,15 @@ class Road_map_model extends CI_Model
     /**
      * Hitung total data Road Map
      */
-    public function count_all_roadmap()
+    public function count_all_roadmap($search = '')
     {
-        return $this->db->count_all($this->table);
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('NAMA_FILE', $search);
+            $this->db->or_like('CREATED_BY', $search);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results($this->table);
     }
 
     /**

@@ -155,9 +155,9 @@ class Entry_kontrak extends CI_Controller
         $offset = (int)($this->input->get('page') ?? 0);
         if ($offset < 0) $offset = 0;
 
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
 
-        $total_rows = $this->kontrak->count_for_role($role_raw, $role_label, $keyword);
+        $total_rows = $this->kontrak->count_for_role($role_raw, $role_label, $search);
 
         $config['base_url']             = base_url('entry_kontrak');
         $config['total_rows']           = $total_rows;
@@ -195,7 +195,7 @@ class Entry_kontrak extends CI_Controller
 
         $this->pagination->initialize($config);
 
-        $rows = $this->kontrak->get_for_role($role_raw, $role_label, $per_page, $offset, $keyword);
+        $rows = $this->kontrak->get_for_role($role_raw, $role_label, $per_page, $offset, $search);
 
         $can_edit_row = [];
         foreach ($rows as $rw) {
@@ -241,7 +241,7 @@ class Entry_kontrak extends CI_Controller
             'total_rows'   => $total_rows,
             'per_page'     => $per_page,
             'start_no'     => $offset + 1,
-            'keyword'      => $keyword,
+            'search'      => $search,
             'role_raw'     => $role_raw,
             'role_label'   => $role_label,
             'is_admin'     => $is_admin,
@@ -785,17 +785,17 @@ class Entry_kontrak extends CI_Controller
 
     private function _get_all_rows_for_current_list_export()
     {
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
 
         $ctx = $this->_get_stage_for_current_role();
         $stage = $ctx['stage'];
         $origin_label = $ctx['origin_label'];
 
         // ✅ Ambil semua data filtered sesuai list role (tanpa pagination)
-        $rows = $this->kontrak->get_all_filtered($keyword, $stage, $origin_label);
+        $rows = $this->kontrak->get_all_filtered($search, $stage, $origin_label);
 
         return [
-            'keyword' => $keyword,
+            'search' => $search,
             'stage'   => $stage,
             'rows'    => $rows
         ];

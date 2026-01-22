@@ -42,7 +42,13 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputSpln" onkeyup="searchTableSpln()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari SPLN...">
+                    <form method="get" action="<?= site_url('spln/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('spln/index/1'); ?>', 'searchInputSpln', 'search');">
+                        <input type="text" id="searchInputSpln" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari SPLN...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('spln/index/1?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">

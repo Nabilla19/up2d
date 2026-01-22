@@ -12,10 +12,10 @@ class Entry_kontrak_model extends CI_Model
         return $num === '' ? 0 : (float)$num;
     }
 
-    private function _apply_search($keyword)
+    private function _apply_search($search)
     {
-        if ($keyword && trim($keyword) !== '') {
-            $kw = trim($keyword);
+        if ($search && trim($search) !== '') {
+            $kw = trim($search);
             $this->db->group_start()
                 ->like('jenis_anggaran', $kw)
                 ->or_like('nomor_prk', $kw)
@@ -146,70 +146,70 @@ class Entry_kontrak_model extends CI_Model
         $this->db->order_by('id', 'DESC');
     }
 
-    public function count_for_role($role_raw, $role_label, $keyword = null)
+    public function count_for_role($role_raw, $role_label, $search = null)
     {
         $r = strtolower(trim((string)$role_raw));
 
         if ($r === 'admin' || $r === 'administrator') {
-            return $this->count_all_filtered($keyword, 'admin', null);
+            return $this->count_all_filtered($search, 'admin', null);
         }
         if ($r === 'perencanaan') {
-            return $this->count_all_filtered($keyword, 'perencanaan', null);
+            return $this->count_all_filtered($search, 'perencanaan', null);
         }
         if ($r === 'pengadaan' || $r === 'pengadaan keuangan') {
-            return $this->count_all_filtered($keyword, 'pengadaan', null);
+            return $this->count_all_filtered($search, 'pengadaan', null);
         }
         if ($r === 'kku') {
-            return $this->count_all_filtered($keyword, 'kku', null);
+            return $this->count_all_filtered($search, 'kku', null);
         }
 
-        return $this->count_all_filtered($keyword, 'originator', $role_label);
+        return $this->count_all_filtered($search, 'originator', $role_label);
     }
 
-    public function get_for_role($role_raw, $role_label, $limit, $offset, $keyword = null)
+    public function get_for_role($role_raw, $role_label, $limit, $offset, $search = null)
     {
         $r = strtolower(trim((string)$role_raw));
 
         if ($r === 'admin' || $r === 'administrator') {
-            return $this->get_paginated_filtered($limit, $offset, $keyword, 'admin', null);
+            return $this->get_paginated_filtered($limit, $offset, $search, 'admin', null);
         }
         if ($r === 'perencanaan') {
-            return $this->get_paginated_filtered($limit, $offset, $keyword, 'perencanaan', null);
+            return $this->get_paginated_filtered($limit, $offset, $search, 'perencanaan', null);
         }
         if ($r === 'pengadaan' || $r === 'pengadaan keuangan') {
-            return $this->get_paginated_filtered($limit, $offset, $keyword, 'pengadaan', null);
+            return $this->get_paginated_filtered($limit, $offset, $search, 'pengadaan', null);
         }
         if ($r === 'kku') {
-            return $this->get_paginated_filtered($limit, $offset, $keyword, 'kku', null);
+            return $this->get_paginated_filtered($limit, $offset, $search, 'kku', null);
         }
 
-        return $this->get_paginated_filtered($limit, $offset, $keyword, 'originator', $role_label);
+        return $this->get_paginated_filtered($limit, $offset, $search, 'originator', $role_label);
     }
 
-    public function count_all_filtered($keyword = null, $stage = 'admin', $origin_label = null)
+    public function count_all_filtered($search = null, $stage = 'admin', $origin_label = null)
     {
         $this->db->from($this->table);
         $this->_apply_stage_filter($stage, $origin_label);
-        $this->_apply_search($keyword);
+        $this->_apply_search($search);
         return (int)$this->db->count_all_results();
     }
 
-    public function get_paginated_filtered($limit, $offset, $keyword = null, $stage = 'admin', $origin_label = null)
+    public function get_paginated_filtered($limit, $offset, $search = null, $stage = 'admin', $origin_label = null)
     {
         $this->db->from($this->table);
         $this->_apply_stage_filter($stage, $origin_label);
-        $this->_apply_search($keyword);
+        $this->_apply_search($search);
         $this->_apply_order_by($stage);
         $this->db->limit((int)$limit, (int)$offset);
         return $this->db->get()->result_array();
     }
 
     // ✅ Untuk EXPORT: ambil SEMUA data sesuai list (tanpa pagination)
-    public function get_all_filtered($keyword = null, $stage = 'admin', $origin_label = null)
+    public function get_all_filtered($search = null, $stage = 'admin', $origin_label = null)
     {
         $this->db->from($this->table);
         $this->_apply_stage_filter($stage, $origin_label);
-        $this->_apply_search($keyword);
+        $this->_apply_search($search);
         $this->_apply_order_by($stage);
         return $this->db->get()->result_array();
     }

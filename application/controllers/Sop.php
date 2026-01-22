@@ -41,12 +41,16 @@ class Sop extends CI_Controller
     $defaultPer = 5;
     $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
 
-    $config['base_url'] = site_url('sop/index');
-    $config['total_rows'] = $this->sopModel->count_all_sop();
-    $config['per_page'] = $per_page;
-    $config['uri_segment'] = 3;
-    $config['use_page_numbers'] = TRUE;
-    $config['reuse_query_string'] = TRUE;
+        $config['base_url'] = site_url('sop/index');
+        
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
+        
+        $config['total_rows'] = $this->sopModel->count_all_sop($search);
+        $config['per_page'] = $per_page;
+        $config['uri_segment'] = 3;
+        $config['use_page_numbers'] = TRUE;
+        $config['reuse_query_string'] = TRUE;
 
         // Tampilan pagination
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
@@ -68,11 +72,12 @@ class Sop extends CI_Controller
 
         $this->pagination->initialize($config);
 
-    $data['sop'] = $this->sopModel->get_sop($config['per_page'], $offset);
-    $data['pagination'] = $this->pagination->create_links();
-    $data['start_no'] = $offset + 1;
-    $data['per_page'] = $per_page;
-    $data['total_rows'] = $config['total_rows'];
+        $data['sop'] = $this->sopModel->get_sop($config['per_page'], $offset, $search);
+        $data['pagination'] = $this->pagination->create_links();
+        $data['start_no'] = $offset + 1;
+        $data['per_page'] = $per_page;
+        $data['total_rows'] = $config['total_rows'];
+        $data['search'] = $search; // Simpan kata kunci pencarian di view
 
         $this->load->view('layout/header', $data);
         $this->load->view('sop/vw_sop', $data);

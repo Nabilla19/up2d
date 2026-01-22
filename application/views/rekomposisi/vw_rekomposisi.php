@@ -58,7 +58,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
                         <select id="perPageSelect"
                             class="form-select form-select-sm"
                             style="width: 90px; padding-right: 2rem;"
-                            onchange="changePerPage(this.value)">
+                            onchange="changePerPageGlobal(this.value)">
                             <option value="5" <?= ((int)$per_page === 5) ? 'selected' : ''; ?>>5</option>
                             <option value="10" <?= ((int)$per_page === 10) ? 'selected' : ''; ?>>10</option>
                             <option value="25" <?= ((int)$per_page === 25) ? 'selected' : ''; ?>>25</option>
@@ -71,22 +71,22 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
                     <!-- SERVER-SIDE SEARCH -->
                     <div class="d-flex align-items-center gap-2">
-                        <input type="text"
-                            id="searchInput"
-                            class="form-control form-control-sm rounded-3"
-                            style="max-width: 320px;"
-                            placeholder="Cari: jenis anggaran / PRK / SKK IO / judul DRP..."
-                            value="<?= htmlentities($this->input->get('keyword', true) ?? '') ?>">
-
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="applySearch()">
-                            <i class="fas fa-search"></i>
-                        </button>
-
-                        <?php if (!empty($this->input->get('keyword', true))): ?>
-                            <a class="btn btn-sm btn-light" href="<?= base_url('rekomposisi'); ?>">
-                                Reset
-                            </a>
-                        <?php endif; ?>
+                        <form method="get" action="<?= base_url('rekomposisi'); ?>" class="d-flex" id="searchFormRekomposisi" onsubmit="event.preventDefault(); searchSubmit('<?= base_url('rekomposisi'); ?>', 'searchInputRekomposisi', 'search');">
+                            <input type="text"
+                                id="searchInputRekomposisi"
+                                name="search"
+                                class="form-control form-control-sm rounded-3"
+                                style="max-width: 320px;"
+                                placeholder="Cari data..."
+                                value="<?= htmlentities($search ?? '') ?>">
+                            <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                            <?php if (!empty($search)): ?>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
+                                    onclick="window.location.replace('<?= base_url('rekomposisi?per_page=' . (int)($per_page ?? 5)); ?>')">
+                                    Reset
+                                </button>
+                            <?php endif; ?>
+                        </form>
                     </div>
                 </div>
 
@@ -162,47 +162,3 @@ defined('BASEPATH') or exit('No direct script access allowed');
         </div>
     </div>
 </main>
-
-<script>
-    function changePerPage(perPage) {
-        const base = "<?= site_url('rekomposisi'); ?>";
-        const url = new URL(base, window.location.origin);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', 0);
-        
-        const input = document.getElementById('searchInput');
-        if (input) {
-            const kw = input.value.trim();
-            if (kw) url.searchParams.set('keyword', kw);
-        }
-        window.location.href = url.toString();
-    }
-
-    function applySearch() {
-        const input = document.getElementById('searchInput');
-        const base = "<?= site_url('rekomposisi'); ?>";
-        const url = new URL(base, window.location.origin);
-        if (input) {
-            url.searchParams.set('keyword', input.value.trim());
-        }
-        url.searchParams.set('page', 0);
-        
-        // Keep per_page
-        const current = new URL(window.location.href);
-        const per = current.searchParams.get('per_page');
-        if (per) url.searchParams.set('per_page', per);
-
-        window.location.href = url.toString();
-    }
-
-    (function() {
-        const input = document.getElementById('searchInput');
-        if (!input) return;
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                applySearch();
-            }
-        });
-    })();
-</script>

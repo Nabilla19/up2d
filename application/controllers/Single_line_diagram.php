@@ -61,14 +61,17 @@ class Single_Line_Diagram extends CI_Controller
         $data['parent_page_title'] = 'Operasi';
         $data['parent_page_url'] = '#';
 
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
+
         // Per-page dari query string atau default (allowed values)
         $allowedPer = [5,10,25,50,100,500];
         $reqPer = (int) $this->input->get('per_page', TRUE);
         $per_page = in_array($reqPer, $allowedPer) ? $reqPer : 5; // default 5
 
         // Konfigurasi pagination (menggunakan query string)
-        $config['base_url'] = site_url('Single_Line_Diagram/index') . '?';
-        $config['total_rows'] = $this->sldModel->count_all_sld();
+        $config['base_url'] = site_url('Single_Line_Diagram/index');
+        $config['total_rows'] = $this->sldModel->count_all_sld($search);
         $config['per_page'] = $per_page;
         $config['reuse_query_string'] = TRUE;
         $config['page_query_string'] = TRUE;
@@ -88,25 +91,17 @@ class Single_Line_Diagram extends CI_Controller
         $config['attributes'] = array('class' => 'page-link');
 
         // Hitung offset berdasarkan page query string
-        // Note: when page_query_string = TRUE and use_page_numbers is FALSE (default),
-        // the pagination links will include the offset (0, per_page, 2*per_page, ...)
         $pageParam = $this->input->get($config['query_string_segment']);
-        if (!empty($config['use_page_numbers'])) {
-            // pageParam is a page number (1,2,3...)
-            $pageNum = (is_numeric($pageParam) && $pageParam > 0) ? (int)$pageParam : 1;
-            $offset = ($pageNum - 1) * $config['per_page'];
-        } else {
-            // pageParam is the offset (0, per_page, ...)
-            $offset = (is_numeric($pageParam) && $pageParam >= 0) ? (int)$pageParam : 0;
-        }
+        $offset = (is_numeric($pageParam) && $pageParam >= 0) ? (int)$pageParam : 0;
 
         $this->pagination->initialize($config);
 
-        $data['sld'] = $this->sldModel->get_sld($config['per_page'], $offset);
+        $data['sld'] = $this->sldModel->get_sld($config['per_page'], $offset, $search);
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
         $data['total_rows'] = $config['total_rows'];
         $data['per_page'] = $per_page;
+        $data['search'] = $search;
 
         $this->load->view('layout/header', $data);
         $this->load->view('single_line_diagram/vw_single_line_diagram', $data);

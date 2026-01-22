@@ -62,13 +62,13 @@
                                placeholder="Cari data Unit...">
                         <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
                         <?php if (!empty($q)): ?>
-                            <a href="<?= base_url('Unit/index?per_page=' . (int)$per_page); ?>" class="btn btn-sm btn-secondary ms-2">Reset</a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.replace('<?= base_url("Unit/index?per_page=" . (int)$per_page); ?>')">Reset</button>
                         <?php endif; ?>
                     </form>
                 </div>
 
                 <div class="table-responsive p-0">
-                    <table class="table align-items-center mb-0" id="unitTable">
+                    <table class="table align-items-center mb-0 card-table" id="unitTable">
                         <thead class="bg-light">
                             <tr>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
@@ -95,20 +95,22 @@
                                 <?php $no = $start_no;
                                 foreach ($unit as $row): ?>
                                     <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $no++; ?></td>
-                                        <td class="text-sm"><?= htmlentities((string)($row['UNIT_PELAKSANA'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="text-sm"><?= htmlentities((string)($row['UNIT_LAYANAN'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="text-sm"><?= htmlentities((string)($row['LONGITUDEX'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="text-sm"><?= htmlentities((string)($row['LATITUDEY'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="text-sm"><?= htmlentities((string)($row['ADDRESS'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
-                                        <td class="text-center">
-                                            <a href="<?= base_url('Unit/detail/' . $row['ID_UNIT']); ?>" class="btn btn-info btn-xs text-white me-1" title="Detail"><i class="fas fa-info-circle"></i></a>
-                                            <?php if (can_edit()): ?>
-                                                <a href="<?= base_url('Unit/edit/' . $row['ID_UNIT']); ?>" class="btn btn-warning btn-xs text-white me-1" title="Edit"><i class="fas fa-pen"></i></a>
-                                            <?php endif; ?>
-                                            <?php if (can_delete()): ?>
-                                                <a href="<?= base_url('Unit/hapus/' . $row['ID_UNIT']); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus"><i class="fas fa-trash"></i></a>
-                                            <?php endif; ?>
+                                        <td class="text-sm" data-label="No"><?= $no++; ?></td>
+                                        <td class="text-sm" data-label="Unit Pelaksana"><?= htmlentities((string)($row['UNIT_PELAKSANA'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm" data-label="Unit Layanan"><?= htmlentities((string)($row['UNIT_LAYANAN'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm" data-label="Longitude"><?= htmlentities((string)($row['LONGITUDEX'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm" data-label="Latitude"><?= htmlentities((string)($row['LATITUDEY'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-sm" data-label="Alamat"><?= htmlentities((string)($row['ADDRESS'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                        <td class="text-center" data-label="Aksi">
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <a href="<?= base_url('Unit/detail/' . $row['ID_UNIT']); ?>" class="btn btn-info btn-xs text-white" title="Detail"><i class="fas fa-info-circle"></i></a>
+                                                <?php if (can_edit()): ?>
+                                                    <a href="<?= base_url('Unit/edit/' . $row['ID_UNIT']); ?>" class="btn btn-warning btn-xs text-white" title="Edit"><i class="fas fa-pen"></i></a>
+                                                <?php endif; ?>
+                                                <?php if (can_delete()): ?>
+                                                    <a href="<?= base_url('Unit/hapus/' . $row['ID_UNIT']); ?>" class="btn btn-danger btn-xs btn-hapus" title="Hapus"><i class="fas fa-trash"></i></a>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

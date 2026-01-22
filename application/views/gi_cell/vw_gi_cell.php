@@ -48,7 +48,10 @@
                     <!-- Form Pencarian -->
                     <form method="get" action="<?= site_url('gi_cell/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('gi_cell/index/1'); ?>', 'searchInputGIcell', 'search');">
                         <input type="text" id="searchInputGIcell" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data GI Cell...">
-                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                                                <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.replace('<?= base_url('Gi_cell/index?per_page=' . (int)$per_page); ?>')">Reset</button>
+                        <?php endif; ?>
                     </form>
                 </div>
 

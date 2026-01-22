@@ -6,7 +6,7 @@ class Monitoring_model extends CI_Model
     private $view = 'vw_monitoring_final';
 
     // Function to apply filters to the query
-    private function _apply_filters($keyword, $user_pengusul_filter = null, $column_filters = null)
+    private function _apply_filters($search, $user_pengusul_filter = null, $column_filters = null)
     {
         // Filter by user_pengusul if available
         if ($user_pengusul_filter !== null && trim((string)$user_pengusul_filter) !== '') {
@@ -83,8 +83,8 @@ class Monitoring_model extends CI_Model
         }
 
         // Filter by keyword across multiple columns
-        if ($keyword && trim($keyword) !== '') {
-            $kw = trim($keyword);
+        if ($search && trim($search) !== '') {
+            $kw = trim($search);
 
             $this->db->group_start()
                 ->like('jenis_anggaran', $kw)
@@ -108,18 +108,18 @@ class Monitoring_model extends CI_Model
     }
 
     // Count all records that match the filters
-    public function count_all($keyword = null, $user_pengusul_filter = null, $column_filters = null)
+    public function count_all($search = null, $user_pengusul_filter = null, $column_filters = null)
     {
         $this->db->from($this->view);
-        $this->_apply_filters($keyword, $user_pengusul_filter, $column_filters);
+        $this->_apply_filters($search, $user_pengusul_filter, $column_filters);
         return (int)$this->db->count_all_results();
     }
 
     // Get paginated data with filters applied
-    public function get_paginated($limit, $offset, $keyword = null, $user_pengusul_filter = null, $column_filters = null)
+    public function get_paginated($limit, $offset, $search = null, $user_pengusul_filter = null, $column_filters = null)
     {
         $this->db->from($this->view);
-        $this->_apply_filters($keyword, $user_pengusul_filter, $column_filters);
+        $this->_apply_filters($search, $user_pengusul_filter, $column_filters);
 
         // Sorting: Sort by 'id' descending for most recent data on top
         $this->db->order_by('id', 'DESC');
@@ -130,10 +130,10 @@ class Monitoring_model extends CI_Model
     }
 
     // Get all data that matches the filters
-    public function get_all($keyword = null, $user_pengusul_filter = null, $column_filters = null)
+    public function get_all($search = null, $user_pengusul_filter = null, $column_filters = null)
     {
         $this->db->from($this->view);
-        $this->_apply_filters($keyword, $user_pengusul_filter, $column_filters);
+        $this->_apply_filters($search, $user_pengusul_filter, $column_filters);
 
         // Sorting: Sort by 'id' descending for most recent data on top
         $this->db->order_by('id', 'DESC');

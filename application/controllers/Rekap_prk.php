@@ -24,10 +24,10 @@ class Rekap_prk extends CI_Controller
         $offset  = (int)($this->input->get('page') ?? 0);
         if ($offset < 0) $offset = 0;
 
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
         $jenis   = $this->input->get('jenis_anggaran', true); // filter optional
 
-        $total_rows = $this->prk->count_all($keyword, $jenis);
+        $total_rows = $this->prk->count_all($search, $jenis);
 
         $config['base_url'] = base_url('rekap_prk');
         $config['total_rows'] = $total_rows;
@@ -57,12 +57,12 @@ class Rekap_prk extends CI_Controller
             'page_icon'  => 'fas fa-clipboard-list me-2',
             'per_page'   => $per_page,
             'total_rows' => $total_rows,
-            'keyword'    => $keyword,
+            'search'    => $search,
             'jenis_anggaran' => $jenis,
             'jenis_list' => $this->prk->get_jenis_anggaran_list(),
             'pagination' => $this->pagination->create_links(),
             'start_no'   => $offset + 1,
-            'prk_data'   => $this->prk->get_paginated($per_page, $offset, $keyword, $jenis),
+            'prk_data'   => $this->prk->get_paginated($per_page, $offset, $search, $jenis),
         ];
 
         $this->load->view('layout/header', $data);
@@ -113,13 +113,13 @@ class Rekap_prk extends CI_Controller
             return;
         }
 
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
         $jenis   = $this->input->get('jenis_anggaran', true);
 
         $this->load->dbutil();
         $this->load->helper(['download']);
 
-        $query = $this->prk->export_all($keyword, $jenis);
+        $query = $this->prk->export_all($search, $jenis);
         $csv   = $this->dbutil->csv_from_result($query);
         // prepend BOM so Excel recognizes UTF-8
         $csv = "\xEF\xBB\xBF" . $csv;

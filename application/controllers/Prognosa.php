@@ -26,13 +26,13 @@ class Prognosa extends CI_Controller
 
         $jenis   = (string)($this->input->get('jenis', true) ?? '');
         $rekap   = (string)($this->input->get('rekap', true) ?? '');
-        $keyword = (string)($this->input->get('keyword', true) ?? '');
+        $search = (string)($this->input->get('search', true) ?? '');
 
         // optional sort (untuk hindari error trim(null))
         $sort_by  = (string)($this->input->get('sort_by', true) ?? '');
         $sort_dir = (string)($this->input->get('sort_dir', true) ?? '');
 
-        $total_rows = $this->prognosa->count_all($jenis, $rekap, $keyword);
+        $total_rows = $this->prognosa->count_all($jenis, $rekap, $search);
 
         $config['base_url'] = base_url('prognosa');
         $config['total_rows'] = $total_rows;
@@ -64,10 +64,16 @@ class Prognosa extends CI_Controller
             $offset,
             $jenis,
             $rekap,
-            $keyword,
+            $search,
             $sort_by,
             $sort_dir
         );
+        
+        // DEBUG: Check what we got
+        if (ENVIRONMENT === 'development') {
+            error_log("Prognosa DEBUG - Rows count: " . count($rows));
+            error_log("Prognosa DEBUG - First row: " . print_r($rows[0] ?? 'EMPTY', true));
+        }
 
         $data = [
             'page_title'  => 'Prognosa',
@@ -75,7 +81,7 @@ class Prognosa extends CI_Controller
             'parent_page_url' => '#',
             'page_icon'   => 'fas fa-chart-pie me-2',
 
-            'rows'        => $rows,
+            'prognosa'    => $rows,  // Changed from 'rows' to 'prognosa'
             'total_rows'  => $total_rows,
             'pagination'  => $this->pagination->create_links(),
             'per_page'    => $per_page,
@@ -86,7 +92,7 @@ class Prognosa extends CI_Controller
 
             'filter_jenis'   => $jenis,
             'filter_rekap'   => $rekap,
-            'filter_keyword' => $keyword,
+            'search' => $search,
         ];
 
         $this->load->view('layout/header', $data);

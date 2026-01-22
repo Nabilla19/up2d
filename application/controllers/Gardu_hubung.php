@@ -40,7 +40,10 @@ class Gardu_hubung extends CI_Controller
         if ($q_param !== null) {
             $search = trim($q_param);
             $this->session->set_userdata('gh_search', $search);
-        } else {
+        } elseif ($q_param === null && $this->input->get('per_page') !== null) {
+            // If per_page is set but q/search is not, clear the session search (this is a reset)
+            $this->session->unset_userdata('gh_search');
+            $search = '';        } else {
             $search = $this->session->userdata('gh_search') ?? '';
         }
         $data['search'] = $search;

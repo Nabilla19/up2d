@@ -1,4 +1,6 @@
-<div class="container-fluid py-4">
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    <div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <div class="card shadow-lg border-0">
@@ -40,7 +42,18 @@
                                             <label class="form-control-label">Bagian / Bidang</label>
                                             <div class="input-group">
                                                 <span class="input-group-text"><i class="fas fa-users-gear"></i></span>
-                                                <input class="form-control" type="text" name="bagian" value="<?= $r['bagian'] ?>" required>
+                                                <?php 
+                                                    $options = ['Perencanaan', 'Pemeliharaan', 'Operasi', 'Fasilitas Operasi', 'KKU', 'K3L & KAM', 'Pengadaan', 'UP3'];
+                                                    $current_bagian = $r['bagian'];
+                                                ?>
+                                                <select class="form-control" name="bagian" required>
+                                                    <?php foreach($options as $opt): ?>
+                                                        <option value="<?= $opt ?>" <?= (strcasecmp($current_bagian, $opt) == 0) ? 'selected' : '' ?>><?= $opt ?></option>
+                                                    <?php endforeach; ?>
+                                                    <?php if (!in_array(ucwords(strtolower($current_bagian)), $options)): ?>
+                                                        <option value="<?= $current_bagian ?>" selected><?= $current_bagian ?> (Custom)</option>
+                                                    <?php endif; ?>
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
@@ -104,11 +117,11 @@
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                                    <a href="<?= base_url('transport/detail/'.$r['id']) ?>" class="text-secondary text-sm font-weight-bold">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-4 pt-3 border-top gap-3">
+                                    <a href="<?= base_url('transport/detail/'.$r['id']) ?>" class="text-secondary text-sm font-weight-bold order-2 order-md-1">
                                         <i class="fas fa-arrow-left me-1"></i> Batal & Kembali
                                     </a>
-                                    <button type="submit" class="btn bg-gradient-info shadow-info px-5 mb-0">Simpan Perubahan <i class="fas fa-save ms-2"></i></button>
+                                    <button type="submit" class="btn bg-gradient-info shadow-info px-5 mb-0 w-100 w-md-auto order-1 order-md-2">Simpan Perubahan <i class="fas fa-save ms-2"></i></button>
                                 </div>
                             </form>
                         </div>
@@ -118,3 +131,4 @@
         </div>
     </div>
 </div>
+</main>

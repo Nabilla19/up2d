@@ -1,4 +1,6 @@
-<div class="container-fluid py-4">
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    <div class="container-fluid py-4">
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- Progress Stepper -->
@@ -9,7 +11,7 @@
                         
                         <?php 
                             $steps = [
-                                ['label' => 'Diajukan', 'icon' => 'fa-file-signature', 'activeSlots' => ['Pending Asmen', 'Pending Fleet', 'In Progress', 'Selesai']],
+                                ['label' => 'Diajukan', 'icon' => 'fa-file-signature', 'activeSlots' => ['Pending Asmen', 'Pending Asmen/KKU', 'Pending Fleet', 'In Progress', 'Selesai']],
                                 ['label' => 'Disetujui', 'icon' => 'fa-user-check', 'activeSlots' => ['Pending Fleet', 'In Progress', 'Selesai']],
                                 ['label' => 'Siap', 'icon' => 'fa-shuttle-van', 'activeSlots' => ['In Progress', 'Selesai']],
                                 ['label' => 'Selesai', 'icon' => 'fa-flag-checkered', 'activeSlots' => ['Selesai']]
@@ -45,28 +47,28 @@
                 
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-md-7 mb-4">
                             <h6 class="text-uppercase text-primary text-xxs font-weight-bolder opacity-7 mb-3">Detail Perjalanan</h6>
                             <div class="bg-gray-100 p-3 border-radius-lg">
                                 <div class="row mb-2">
-                                    <div class="col-4 text-xs font-weight-bold text-secondary text-uppercase">Tujuan</div>
-                                    <div class="col-8 text-sm font-weight-bolder"><?= $request['tujuan'] ?></div>
+                                    <div class="col-5 col-sm-4 text-xs font-weight-bold text-secondary text-uppercase">Tujuan</div>
+                                    <div class="col-7 col-sm-8 text-sm font-weight-bolder"><?= $request['tujuan'] ?></div>
                                 </div>
                                 <div class="row mb-2">
-                                    <div class="col-4 text-xs font-weight-bold text-secondary text-uppercase">Keperluan</div>
-                                    <div class="col-8 text-sm"><?= $request['keperluan'] ?></div>
+                                    <div class="col-5 col-sm-4 text-xs font-weight-bold text-secondary text-uppercase">Keperluan</div>
+                                    <div class="col-7 col-sm-8 text-sm"><?= $request['keperluan'] ?></div>
                                 </div>
                                 <div class="row mb-2">
-                                    <div class="col-4 text-xs font-weight-bold text-secondary text-uppercase">Waktu</div>
-                                    <div class="col-8 text-sm font-weight-bold text-primary"><?= date('l, d M Y - H:i', strtotime($request['tanggal_jam_berangkat'])) ?></div>
+                                    <div class="col-5 col-sm-4 text-xs font-weight-bold text-secondary text-uppercase">Waktu</div>
+                                    <div class="col-7 col-sm-8 text-sm font-weight-bold text-primary"><?= date('l, d M Y - H:i', strtotime($request['tanggal_jam_berangkat'])) ?></div>
                                 </div>
                                 <div class="row mb-2">
-                                    <div class="col-4 text-xs font-weight-bold text-secondary text-uppercase">Pemohon</div>
-                                    <div class="col-8 text-sm"><?= $request['nama'] ?> (<?= $request['bagian'] ?>)</div>
+                                    <div class="col-5 col-sm-4 text-xs font-weight-bold text-secondary text-uppercase">Pemohon</div>
+                                    <div class="col-7 col-sm-8 text-sm"><?= $request['nama'] ?> (<?= $request['bagian'] ?>)</div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-4 text-xs font-weight-bold text-secondary text-uppercase">Jumlah Penumpang</div>
-                                    <div class="col-8 text-sm font-weight-bolder text-dark"><span class="badge bg-light text-dark border me-1"><?= $request['jumlah_penumpang'] ?: '1' ?></span> Orang</div>
+                                    <div class="col-5 col-sm-4 text-xs font-weight-bold text-secondary text-uppercase">Jumlah Penumpang</div>
+                                    <div class="col-7 col-sm-8 text-sm font-weight-bolder text-dark"><span class="badge bg-light text-dark border me-1"><?= $request['jumlah_penumpang'] ?: '1' ?></span> Orang</div>
                                 </div>
                             </div>
 
@@ -88,7 +90,7 @@
                             <?php endif; ?>
                         </div>
 
-                        <div class="col-md-5 border-start">
+                        <div class="col-md-5 border-start-md">
                             <h6 class="text-uppercase text-primary text-xxs font-weight-bolder opacity-7 mb-3">Workflow Barcodes / Persetujuan</h6>
                             
                             <div class="barcode-item p-2 mb-3 bg-white border border-radius-md d-flex align-items-center">
@@ -152,8 +154,8 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-5">
-                        <div class="d-flex align-items-center">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mt-5 gap-3">
+                        <div class="d-flex align-items-center w-100 w-md-auto justify-content-center justify-content-md-start">
                             <a href="<?= base_url('transport/semua_daftar') ?>" class="btn btn-outline-secondary btn-sm mb-0">
                                 <i class="fas fa-chevron-left me-1"></i> Kembali
                             </a>
@@ -164,39 +166,43 @@
                             <?php endif; ?>
                         </div>
                         
-                        <div class="actions">
+                        <div class="actions w-100 w-md-auto">
                             <?php 
                                 $r_name = strtolower($this->session->userdata('user_role') ?: $this->session->userdata('role') ?: '');
                                 $can_approve = in_array($this->session->userdata('role_id'), [15,16,17,18,6]) || ($r_name === 'kku');
-                                if ($request['status'] == 'Pending Asmen' && $can_approve): 
+                                if ($request['status'] == 'Pending Asmen/KKU' && $can_approve): 
                             ?>
-                                <a href="<?= base_url('transport/approval/edit/'.$request['id']) ?>" class="btn btn-outline-info btn-sm mb-0 me-2">
-                                    <i class="fas fa-edit me-1"></i> Edit
-                                </a>
-                                <button type="button" class="btn bg-gradient-success btn-sm mb-0 px-4" data-bs-toggle="modal" data-bs-target="#approvalModal">
-                                    <i class="fas fa-tasks me-1"></i> Review & Setujui
-                                </button>
+                                <div class="d-flex gap-2 w-100">
+                                    <a href="<?= base_url('transport/approval/edit/'.$request['id']) ?>" class="btn btn-outline-info btn-sm mb-0 flex-grow-1">
+                                        <i class="fas fa-edit me-1"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn bg-gradient-success btn-sm mb-0 px-4 flex-grow-1" data-bs-toggle="modal" data-bs-target="#approvalModal">
+                                        <i class="fas fa-tasks me-1"></i> Review
+                                    </button>
+                                </div>
                             <?php endif; ?>
 
                             <?php 
                                 $r_name = strtolower($this->session->userdata('user_role') ?: $this->session->userdata('role') ?: '');
                                 if ($request['status'] == 'Pending Fleet' && ($r_name === 'kku' || $this->session->userdata('role_id') == 6)): 
                             ?>
-                                <a href="<?= base_url('transport/approval/edit/'.$request['id']) ?>" class="btn btn-outline-info btn-sm mb-0 me-2">
-                                    <i class="fas fa-edit me-1"></i> Edit
-                                </a>
-                                <a href="<?= base_url('transport/fleet_process/'.$request['id']) ?>" class="btn bg-gradient-warning btn-sm mb-0 px-4">
-                                    <i class="fas fa-car-side me-1"></i> Proses Penugasan (KKU)
-                                </a>
+                                <div class="d-flex gap-2 w-100">
+                                    <a href="<?= base_url('transport/approval/edit/'.$request['id']) ?>" class="btn btn-outline-info btn-sm mb-0 flex-grow-1">
+                                        <i class="fas fa-edit me-1"></i> Edit
+                                    </a>
+                                    <a href="<?= base_url('transport/fleet_process/'.$request['id']) ?>" class="btn bg-gradient-warning btn-sm mb-0 px-4 flex-grow-1">
+                                        <i class="fas fa-car-side me-1"></i> Penugasan
+                                    </a>
+                                </div>
                             <?php endif; ?>
 
                             <?php if ($request['status'] == 'In Progress' && in_array($this->session->userdata('role_id'), [19,6])): ?>
                                 <?php if (!$security): ?>
-                                    <a href="<?= base_url('transport/security_checkin/'.$request['id']) ?>" class="btn bg-gradient-danger btn-sm mb-0 px-4">
+                                    <a href="<?= base_url('transport/security_checkin/'.$request['id']) ?>" class="btn bg-gradient-danger btn-sm mb-0 px-4 w-100">
                                         <i class="fas fa-door-open me-1"></i> KM Berangkat (Pos)
                                     </a>
                                 <?php elseif (!$security['km_akhir']): ?>
-                                    <a href="<?= base_url('transport/security_checkout/'.$request['id']) ?>" class="btn bg-gradient-primary btn-sm mb-0 px-4">
+                                    <a href="<?= base_url('transport/security_checkout/'.$request['id']) ?>" class="btn bg-gradient-primary btn-sm mb-0 px-4 w-100">
                                         <i class="fas fa-door-closed me-1"></i> KM Kembali (Pos)
                                     </a>
                                 <?php endif; ?>
@@ -244,10 +250,11 @@
             </div>
         </div>
         <div class="modal-footer border-0">
-            <button type="submit" name="action" value="reject" class="btn btn-link text-danger mb-0" formAction="<?= base_url('transport/reject/'.$request['id']) ?>">Tolak Permohonan</button>
+            <button type="button" class="btn btn-link text-secondary mb-0" data-bs-dismiss="modal">Batal</button>
             <button type="submit" class="btn bg-gradient-success mb-0 px-4">Setujui & Teruskan</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+</main>

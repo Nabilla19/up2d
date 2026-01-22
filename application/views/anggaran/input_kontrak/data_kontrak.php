@@ -10,87 +10,18 @@
             </div>
         <?php endif; ?>
 
-        <?php
-        // ===============================
-        // FALLBACK AGAR TIDAK WARNING
-        // ===============================
-        $per_page   = isset($per_page) ? (int)$per_page : (int)($this->input->get('per_page') ?? 10);
-        $start_no   = isset($start_no) ? (int)$start_no : 1;
-        $q          = isset($q) ? $q : (string)($this->input->get('q') ?? '');
-        $pagination = isset($pagination) ? $pagination : '';
-        $total_rows = isset($total_rows) ? (int)$total_rows : (is_array($kontrak) ? count($kontrak) : 0);
-
-        function v($val, $dash = '-')
-        {
-            return ($val === null || $val === '') ? $dash : html_escape($val);
-        }
-        function rupiah($n)
-        {
-            return 'Rp ' . number_format((float)($n ?? 0), 0, ',', '.');
-        }
-        function fmt_date($d)
-        {
-            if (!$d) return '-';
-            $t = strtotime($d);
-            return $t ? date('d/m/Y', $t) : html_escape($d);
-        }
-
-        // ===============================
-        // ROLE → HAK TOMBOL LOKAL
-        // ===============================
-        $role = null;
-        if (isset($this) && isset($this->session)) {
-            $r    = $this->session->userdata('user_role') ?: $this->session->userdata('role');
-            $role = strtolower(trim((string)$r));
-        }
-
-        $role_full_access = in_array($role, [
-            'admin',
-            'administrator',
-            'pemeliharaan',
-            'fasilitas operasi',
-            'pengadaan keuangan',
-            'kku',
-            'perencanaan'
-        ], true);
-
-        $can_create_local = $role_full_access;
-        $can_edit_local   = $role_full_access;
-        $can_delete_local = $role_full_access;
-
-        if (function_exists('can_create') && can_create()) {
-            $can_create_local = true;
-        }
-        if (function_exists('can_edit') && can_edit()) {
-            $can_edit_local = true;
-        }
-        if (function_exists('can_delete') && can_delete()) {
-            $can_delete_local = true;
-        }
-        ?>
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger text-white">
+                <?= $this->session->flashdata('error'); ?>
+            </div>
+        <?php endif; ?>
 
         <div class="card mb-4 shadow border-0 rounded-4">
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center">
-                    <i class="fas fa-file-contract me-2"></i> Tabel Data Kontrak
-                </h6>
-
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-file-contract me-2"></i>Tabel Data Kontrak</h6>
                 <div class="d-flex align-items-center" style="padding-top: 16px;">
-                    <?php if ($can_create_local): ?>
-                        <a href="<?= base_url('data_kontrak/tambah') ?>"
-                            class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
-                            <i class="fas fa-plus me-1"></i> Tambah
-                        </a>
-
-                        <a href="<?= base_url('import/data_kontrak?return_to=' . urlencode(current_url())); ?>"
-                            class="btn btn-sm btn-light text-success me-2 d-flex align-items-center no-anim">
-                            <i class="fas fa-file-import me-1"></i> Import
-                        </a>
-                    <?php endif; ?>
-
-                    <a href="<?= base_url('data_kontrak/export_csv') ?>"
-                        class="btn btn-sm btn-light text-secondary d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
+                    <a href="<?= base_url('data_kontrak/export_csv?search=' . urlencode($search ?? '')); ?>" class="btn btn-sm btn-light text-primary me-2 d-flex align-items-center no-anim">
+                        <i class="fas fa-file-csv me-1"></i> Export CSV
                     </a>
                 </div>
             </div>
@@ -100,20 +31,21 @@
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
-                        <select id="perPageSelectKontrak" class="form-select form-select-sm" style="width: 90px; padding-right: 2rem;" onchange="changePerPageKontrak(this.value)">
+                        <select id="perPageSelectKontrak" class="form-select form-select-sm" style="width: 90px; padding-right: 2rem;" onchange="changePerPageGlobal(this.value)">
                             <?php foreach ([5, 10, 25, 50, 100, 500] as $n): ?>
                                 <option value="<?= $n ?>" <?= ($per_page == $n) ? 'selected' : ''; ?>><?= $n ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <span class="ms-3 text-sm">dari <?= $total_rows; ?> data</span>
+                        <span class="ms-3 text-sm">dari <?= (int)($total_rows ?? 0); ?> data</span>
                     </div>
 
-                    <input type="text"
-                        id="searchInputKontrak"
-                        class="form-control form-control-sm rounded-3"
-                        style="max-width: 300px;"
-                        placeholder="Cari data kontrak..."
-                        value="<?= html_escape($q); ?>">
+                    <form method="get" action="<?= base_url('data_kontrak/index'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= base_url('data_kontrak/index'); ?>', 'searchInputKontrak', 'search');">
+                        <input type="text" id="searchInputKontrak" name="search" value="<?= html_escape($search ?? ''); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data kontrak...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('data_kontrak/index/1?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -121,13 +53,13 @@
                         <thead class="bg-light">
                             <tr>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PRK</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">DRP</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis Anggaran</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nomor PRK</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Judul DRP</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No Kontrak</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Vendor</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pelaksana</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tgl Kontrak</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nilai</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nilai Kontrak</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Aksi</th>
                             </tr>
@@ -146,14 +78,14 @@
                                     ?>
                                     <tr class="<?= (($start_no + $i) % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
                                         <td class="text-sm"><?= $start_no + $i; ?></td>
-                                        <td class="text-sm"><?= v($jenis); ?></td>
-                                        <td class="text-sm"><?= v($prk); ?></td>
-                                        <td class="text-sm"><?= v($drp); ?></td>
-                                        <td class="text-sm"><?= v($row->no_kontrak); ?></td>
-                                        <td class="text-sm"><?= v($row->pelaksana_vendor); ?></td>
+                                        <td class="text-sm"><?= html_escape($jenis); ?></td>
+                                        <td class="text-sm"><?= html_escape($prk); ?></td>
+                                        <td class="text-sm"><?= html_escape($drp); ?></td>
+                                        <td class="text-sm"><?= html_escape($row->no_kontrak); ?></td>
+                                        <td class="text-sm"><?= html_escape($row->pelaksana_vendor); ?></td>
                                         <td class="text-sm"><?= fmt_date($row->tgl_kontrak); ?></td>
                                         <td class="text-sm"><?= rupiah($row->nilai_kontrak); ?></td>
-                                        <td class="text-sm"><?= v($row->status_kontrak); ?></td>
+                                        <td class="text-sm"><?= html_escape($row->status_kontrak); ?></td>
 
                                         <td class="text-center">
                                             <a href="<?= base_url('data_kontrak/detail/' . $row->id); ?>"
@@ -191,38 +123,34 @@
 </main>
 
 <script>
-    function changePerPageKontrak(perPage) {
-        // Reset to page 1 (offset 0) when changing limit
-        const url = new URL("<?= base_url('data_kontrak/index'); ?>");
-        const q = document.getElementById('searchInputKontrak').value.trim();
-        url.searchParams.set('per_page', perPage);
-        if (q) url.searchParams.set('q', q);
-        window.location.href = url.toString();
-    }
-
-    (function() {
-        const input = document.getElementById('searchInputKontrak');
-        if (!input) return;
-
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Confirmation for delete
+        document.querySelectorAll('.btn-hapus').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                // Reset to page 1 (offset 0) when searching
-                const url = new URL("<?= base_url('data_kontrak/index'); ?>");
-                const current = new URL(window.location.href);
-                const per = current.searchParams.get('per_page') || "<?= $per_page ?>"; // use PHP value as fallback
-                if (per) url.searchParams.set('per_page', per);
-                const q = input.value.trim();
-                if (q) url.searchParams.set('q', q);
-                window.location.href = url.toString();
-            }
+                const url = this.getAttribute('href');
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data kontrak ini akan dihapus secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = url;
+                    }
+                });
+            });
         });
-    })();
+    });
 </script>
 
 <style>
     .bg-gradient-primary {
-        background: linear-gradient(90deg, #005C99, #0099CC);
+        background: linear-gradient(87deg, #005C99 0, #0099CC 100%) !important;
     }
 
     .table-row-odd {
@@ -230,39 +158,20 @@
     }
 
     .table-row-even {
-        background-color: #f5f7fa;
+        background-color: #f8f9fa;
     }
 
     #kontrakTable tbody tr:hover {
-        background-color: #e9ecef !important;
-        transition: 0.2s ease-in-out;
+        background-color: #f2f2f2 !important;
+        transition: 0.2s;
     }
 
     .btn-xs {
-        padding: 2px 6px;
-        font-size: 11px;
-        border-radius: 4px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
 
-    .btn-xs i {
-        font-size: 12px;
-    }
-
-    #kontrakTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #kontrakTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
-    }
-
-    .no-anim,
-    .no-anim * {
+    .no-anim {
         transition: none !important;
-        animation: none !important;
     }
 </style>

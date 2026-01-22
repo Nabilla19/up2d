@@ -1,24 +1,23 @@
-<div class="container-fluid py-4">
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <div class="card shadow-lg border-0 mb-4">
-                <div class="card-header pb-0 d-flex justify-content-between align-items-center bg-transparent">
-                    <div>
+                <div class="card-header pb-0 d-flex justify-content-between align-items-start bg-transparent mobile-stack">
+                    <div class="mb-3 mb-md-0">
                         <h6 class="font-weight-bolder mb-0">Daftar Permohonan <?= isset($all) ? 'Unit' : 'Saya' ?></h6>
                         <p class="text-sm mb-0">Kelola dan pantau status peminjaman kendaraan operasional.</p>
                     </div>
-                    <div>
-                        <a href="<?= base_url('transport/export_pdf') ?>" target="_blank" class="btn btn-outline-danger btn-sm mb-0 me-2">
-                            <i class="fas fa-file-pdf me-2"></i>Ekspor PDF
-                        </a>
-                        <a href="<?= base_url('transport/ajukan') ?>" class="btn bg-gradient-primary btn-sm mb-0">
+                    <div class="d-flex flex-column flex-md-row gap-2">
+                        <a href="<?= base_url('transport/ajukan') ?>" class="btn bg-gradient-primary btn-sm mb-0 mobile-full-width">
                             <i class="fas fa-plus me-2"></i>Buat Baru
                         </a>
                     </div>
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0" id="table-transport">
+                        <table class="table align-items-center mb-0 card-table" id="table-transport">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pemohon</th>
@@ -39,7 +38,7 @@
                                 <?php endif; ?>
                                 <?php foreach ($requests as $r): ?>
                                 <tr class="hover-shadow">
-                                    <td>
+                                    <td data-label="Pemohon">
                                         <div class="d-flex px-3 py-1">
                                             <div class="avatar avatar-sm bg-gradient-info me-3 d-flex align-items-center justify-content-center">
                                                 <i class="fas fa-user text-white"></i>
@@ -50,7 +49,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td data-label="Perjalanan">
                                         <div class="d-flex flex-column">
                                             <span class="text-sm font-weight-bold"><i class="fas fa-location-dot text-danger me-1"></i> <?= $r['tujuan'] ?></span>
                                             <div class="d-flex align-items-center">
@@ -59,13 +58,13 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="align-middle text-center text-sm">
+                                    <td data-label="Waktu" class="align-middle text-center text-sm">
                                         <span class="text-dark text-xs font-weight-bold">
                                             <i class="far fa-calendar-alt me-1 text-primary"></i> <?= date('d/m/Y', strtotime($r['tanggal_jam_berangkat'])) ?><br>
                                             <i class="far fa-clock me-1 text-primary"></i> <?= date('H:i', strtotime($r['tanggal_jam_berangkat'])) ?>
                                         </span>
                                     </td>
-                                    <td class="align-middle text-center">
+                                    <td data-label="Status" class="align-middle text-center">
                                         <?php 
                                             $badge_class = 'bg-gradient-secondary';
                                             $icon = 'fa-clock';

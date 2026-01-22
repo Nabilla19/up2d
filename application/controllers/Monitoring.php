@@ -103,7 +103,7 @@ class Monitoring extends CI_Controller
         $offset = (int)($this->input->get('page') ?? 0);
         if ($offset < 0) $offset = 0;
 
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
 
         // ✅ Ambil filter kolom: f[field]=value
         $column_filters = $this->input->get('f', true);
@@ -112,7 +112,7 @@ class Monitoring extends CI_Controller
         // ✅ filter sesuai role label
         $user_pengusul_filter = $this->_get_user_pengusul_filter();
 
-        $total_rows = $this->monitor->count_all($keyword, $user_pengusul_filter, $column_filters);
+        $total_rows = $this->monitor->count_all($search, $user_pengusul_filter, $column_filters);
 
         $config['base_url']             = base_url('monitoring');
         $config['total_rows']           = $total_rows;
@@ -156,12 +156,12 @@ class Monitoring extends CI_Controller
             'parent_page_title' => 'Anggaran',
             'parent_page_url' => '#',
             'per_page'        => $per_page,
-            'keyword'         => $keyword,
+            'search'          => $search,
             'total_rows'      => $total_rows,
             'pagination'      => $this->pagination->create_links(),
             'start_no'        => $offset + 1,
             'column_filters'  => $column_filters, // ✅ agar view bisa isi ulang value filter
-            'monitoring'      => $this->monitor->get_paginated($per_page, $offset, $keyword, $user_pengusul_filter, $column_filters),
+            'monitoring'      => $this->monitor->get_paginated($per_page, $offset, $search, $user_pengusul_filter, $column_filters),
         ];
 
         $this->load->view('layout/header', $data);
@@ -178,7 +178,7 @@ class Monitoring extends CI_Controller
             return;
         }
 
-        $keyword = $this->input->get('keyword', true);
+        $search = $this->input->get('search', true);
 
         // ✅ ambil filter kolom
         $column_filters = $this->input->get('f', true);
@@ -187,7 +187,7 @@ class Monitoring extends CI_Controller
         // ✅ filter juga agar export tidak bocor
         $user_pengusul_filter = $this->_get_user_pengusul_filter();
 
-        $rows = $this->monitor->get_all($keyword, $user_pengusul_filter, $column_filters);
+        $rows = $this->monitor->get_all($search, $user_pengusul_filter, $column_filters);
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=monitoring.csv');

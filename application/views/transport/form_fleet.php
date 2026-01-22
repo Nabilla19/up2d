@@ -1,4 +1,6 @@
-<div class="container-fluid py-4">
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    <div class="container-fluid py-4">
     <div class="row">
         <div class="col-md-6 mx-auto">
             <div class="card">
@@ -76,9 +78,9 @@
                             <label class="form-control-label">Nama Pengemudi</label>
                             <input class="form-control" type="text" name="pengemudi" required>
                         </div>
-                        <div class="d-flex justify-content-end mt-4">
-                            <a href="<?= base_url('transport/fleet') ?>" class="btn btn-secondary btn-sm me-2">Batal</a>
-                            <button type="submit" class="btn btn-primary btn-sm">Simpan Data Fleet</button>
+                        <div class="d-flex flex-column flex-sm-row justify-content-end mt-4 gap-2">
+                            <a href="<?= base_url('transport/fleet') ?>" class="btn btn-outline-secondary btn-sm mb-0">Batal</a>
+                            <button type="submit" class="btn bg-gradient-primary btn-sm mb-0">Simpan Data Fleet</button>
                         </div>
                     </form>
                 </div>
@@ -86,3 +88,4 @@
         </div>
     </div>
 </div>
+</main>

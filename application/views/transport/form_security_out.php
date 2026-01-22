@@ -1,4 +1,6 @@
-<div class="container-fluid py-4">
+<main class="main-content position-relative border-radius-lg">
+    <?php $this->load->view('layout/navbar'); ?>
+    <div class="container-fluid py-4">
     <div class="row">
         <div class="col-md-6 mx-auto">
             <div class="card">
@@ -7,6 +9,14 @@
                 </div>
                 <div class="card-body">
                     <form action="<?= base_url('transport/security_checkout/'.$request['id']) ?>" method="post" enctype="multipart/form-data">
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="fas fa-camera"></i></span>
+                            <span class="alert-text">
+                                <strong>Info:</strong> Untuk mengambil foto langsung dari kamera, buka halaman ini di <strong>perangkat mobile</strong> (HP/Tablet). 
+                                Di desktop, Anda bisa pilih file gambar dari komputer.
+                            </span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -37,11 +47,27 @@
                         </div>
                         <div class="form-group">
                             <label class="form-control-label">Foto Driver + Mobil (Kembali)</label>
-                            <input class="form-control" type="file" name="foto_driver_kembali" accept="image/*" required>
+                            <input class="form-control" type="file" name="foto_driver_kembali" 
+                                   id="foto_driver_kembali"
+                                   accept="image/*" 
+                                   capture="environment" 
+                                   required>
+                            <small class="form-text text-muted">Tap untuk mengambil foto atau pilih dari galeri</small>
+                            <div id="preview_driver_kembali" class="mt-2" style="display:none;">
+                                <img id="img_driver_kembali" class="img-fluid rounded shadow-sm" style="max-height: 200px;">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-control-label">Foto KM (Kembali)</label>
-                            <input class="form-control" type="file" name="foto_km_kembali" accept="image/*" required>
+                            <input class="form-control" type="file" name="foto_km_kembali" 
+                                   id="foto_km_kembali"
+                                   accept="image/*" 
+                                   capture="environment" 
+                                   required>
+                            <small class="form-text text-muted">Tap untuk mengambil foto atau pilih dari galeri</small>
+                            <div id="preview_km_kembali" class="mt-2" style="display:none;">
+                                <img id="img_km_kembali" class="img-fluid rounded shadow-sm" style="max-height: 200px;">
+                            </div>
                         </div>
                         <div class="d-flex justify-content-end mt-4">
                             <button type="submit" class="btn btn-primary btn-sm">Simpan & Selesaikan</button>
@@ -51,7 +77,8 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
+</main>
 
 <script>
 function calculateValues() {
@@ -90,4 +117,40 @@ document.getElementById('jam_kembali').addEventListener('input', calculateValues
 
 // Initial call
 window.onload = calculateValues;
+
+// Image preview functionality for Security check-out form
+function setupImagePreview(inputId, previewId, imgId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    input.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.match('image.*')) {
+                alert('File harus berupa gambar!');
+                this.value = '';
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Ukuran file maksimal 2MB!');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById(imgId).src = event.target.result;
+                document.getElementById(previewId).style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Initialize preview for both photo inputs
+setupImagePreview('foto_driver_kembali', 'preview_driver_kembali', 'img_driver_kembali');
+setupImagePreview('foto_km_kembali', 'preview_km_kembali', 'img_km_kembali');
 </script>

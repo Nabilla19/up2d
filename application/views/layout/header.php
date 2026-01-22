@@ -98,6 +98,121 @@
 <body class="g-sidenav-show bg-gray-100">
   <div class="min-height-300 bg-dark position-absolute w-100" aria-hidden="true"></div>
 
+  <!-- MOBILE SIDEBAR FIX: Ultra-strong inline styles -->
+  <style>
+    @media (max-width: 768px) {
+      /* Force sidebar to be hidden by default on mobile - ULTRA SPECIFIC */
+      aside#sidenav-main,
+      #sidenav-main.sidenav,
+      aside.sidenav#sidenav-main {
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        bottom: 0 !important;
+        width: 260px !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        z-index: 9999 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transition: left 0.3s ease !important;
+        background: white !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        transform: none !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      /* Show sidebar when body has active class - ULTRA SPECIFIC */
+      body.mobile-sidebar-open aside#sidenav-main,
+      body.mobile-sidebar-open #sidenav-main.sidenav,
+      body.mobile-sidebar-open aside.sidenav#sidenav-main {
+        left: 0 !important;
+        transform: translateX(0) !important;
+      }
+
+      /* Backdrop overlay */
+      body.mobile-sidebar-open::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        pointer-events: auto;
+      }
+
+      /* Prevent body scroll when sidebar open */
+      body.mobile-sidebar-open {
+        overflow: hidden !important;
+      }
+
+      /* Main content full width on mobile */
+      .main-content,
+      main.main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+      
+      
+      /* Ensure navbar is below sidebar */
+      .navbar-main {
+        z-index: 1050 !important;
+      }
+      
+      /* Mobile Toggle Button - Shows when sidebar closed */
+      .custom-sidenav-toggler {
+        position: fixed !important;
+        left: 1rem !important;
+        top: 1rem !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: white !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        z-index: 1100 !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.15) !important;
+        transition: all 0.2s ease !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+      
+      .custom-sidenav-toggler i {
+        color: #344767 !important;
+        font-size: 18px !important;
+      }
+      
+      .custom-sidenav-toggler:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+        transform: scale(1.05) !important;
+      }
+      
+      .custom-sidenav-toggler:active {
+        transform: scale(0.95) !important;
+      }
+      
+      /* Completely hide toggle when sidebar is open */
+      body.mobile-sidebar-open .custom-sidenav-toggler {
+        display: none !important;
+      }
+    }
+    
+    /* Hide toggle on desktop */
+    @media (min-width: 992px) {
+      .custom-sidenav-toggler {
+        display: none !important;
+      }
+    }
+  </style>
+
   <?php
   // =========================
   // Role + segment helper
@@ -124,15 +239,23 @@
   $transport_routes = ['transport'];
   
   $role_id = $this->session->userdata('role_id');
+
+  // Fetch Transport Pending Counts for Sidebar Badges
+  $CI =& get_instance();
+  $CI->load->model('Transport_model');
+  $pending_counts = $CI->Transport_model->get_pending_counts($role_id, $role);
+  $total_pending_transport = $pending_counts['pending_asmen'] + $pending_counts['pending_fleet'] + $pending_counts['in_progress'];
   ?>
+
+  <!-- Mobile Toggle Button (outside sidebar, shows when closed) -->
+  <div class="custom-sidenav-toggler d-lg-none" id="iconNavbarSidenav">
+    <i class="fas fa-bars"></i>
+  </div>
 
   <!-- Sidebar -->
   <aside class="sidenav bg-white navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-4" id="sidenav-main" role="navigation" aria-label="Sidebar utama">
+    
     <div class="sidenav-header">
-      <button class="btn btn-icon btn-sm text-secondary d-xl-none" id="iconSidenav" aria-label="Tutup sidebar">
-        <i class="fas fa-times"></i>
-      </button>
-
       <a class="navbar-brand m-0" href="<?= base_url('dashboard'); ?>">
         <img src="<?= base_url('assets/assets/img/logo_pln.png'); ?>" alt="Logo PLN" class="navbar-brand-img h-100" style="height:55px; width:auto;">
         <span class="ms-2 font-weight-bold text-dark">PLN UP2D RIAU</span>
@@ -175,19 +298,19 @@
               <ul class="nav flex-column submenu-list">
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'unit') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('unit'); ?>">
-                    <i class="fas fa-building me-2 text-success"></i><span class="nav-link-text">Unit</span>
+                    <i class="fas fa-building me-2 text-primary"></i><span class="nav-link-text">Unit</span>
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'gardu_induk') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('gardu_induk'); ?>">
-                    <i class="fas fa-bolt me-2 text-warning"></i><span class="nav-link-text">Gardu Induk</span>
+                    <i class="fas fa-bolt me-2 text-primary"></i><span class="nav-link-text">Gardu Induk</span>
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'gi_cell') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('gi_cell'); ?>">
-                    <i class="fas fa-wave-square me-2 text-info"></i><span class="nav-link-text">GI Cell</span>
+                    <i class="fas fa-wave-square me-2 text-primary"></i><span class="nav-link-text">GI Cell</span>
                   </a>
                 </li>
 
@@ -199,14 +322,14 @@
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'gh_cell') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('gh_cell'); ?>">
-                    <i class="fas fa-square me-2 text-secondary"></i><span class="nav-link-text">GH Cell</span>
+                    <i class="fas fa-square me-2 text-primary"></i><span class="nav-link-text">GH Cell</span>
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <!-- URL tetap mengikuti yang kamu pakai -->
                   <a class="nav-link <?= ($seg1 == 'pembangkit') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('Pembangkit'); ?>">
-                    <i class="fas fa-industry me-2 text-danger"></i><span class="nav-link-text">Pembangkit</span>
+                    <i class="fas fa-industry me-2 text-primary"></i><span class="nav-link-text">Pembangkit</span>
                   </a>
                 </li>
 
@@ -218,7 +341,7 @@
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'pemutus') ? 'active bg-primary text-white' : '' ?>" href="<?= base_url('Pemutus'); ?>">
-                    <i class="fas fa-toggle-on me-2 text-warning"></i><span class="nav-link-text">Pemutus</span>
+                    <i class="fas fa-toggle-on me-2 text-primary"></i><span class="nav-link-text">Pemutus</span>
                   </a>
                 </li>
 
@@ -238,6 +361,8 @@
             </a>
           </li>
         <?php endif; ?>
+
+
 
         <!-- Pustaka -->
         <?php if ($role_id != 19): ?>
@@ -259,31 +384,31 @@
             <ul class="nav flex-column submenu-list">
               <li class="nav-item">
                 <a class="nav-link <?= ($seg1 == 'sop') ? 'active' : '' ?>" href="<?= base_url('sop'); ?>">
-                  <i class="fas fa-file-alt text-dark text-sm opacity-10"></i><span class="nav-link-text"> SOP</span>
+                  <i class="fas fa-file-alt text-primary text-sm opacity-10"></i><span class="nav-link-text"> SOP</span>
                 </a>
               </li>
 
               <li class="nav-item">
                 <a class="nav-link <?= ($seg1 == 'bpm') ? 'active' : '' ?>" href="<?= base_url('bpm'); ?>">
-                  <i class="fas fa-project-diagram text-dark text-sm opacity-10"></i><span class="nav-link-text"> BPM</span>
+                  <i class="fas fa-project-diagram text-primary text-sm opacity-10"></i><span class="nav-link-text"> BPM</span>
                 </a>
               </li>
 
               <li class="nav-item">
                 <a class="nav-link <?= ($seg1 == 'ik') ? 'active' : '' ?>" href="<?= base_url('ik'); ?>">
-                  <i class="fas fa-info-circle text-dark text-sm opacity-10"></i><span class="nav-link-text"> IK</span>
+                  <i class="fas fa-info-circle text-primary text-sm opacity-10"></i><span class="nav-link-text"> IK</span>
                 </a>
               </li>
 
               <li class="nav-item">
                 <a class="nav-link <?= ($seg1 == 'road_map') ? 'active' : '' ?>" href="<?= base_url('road_map'); ?>">
-                  <i class="fas fa-road text-dark text-sm opacity-10"></i><span class="nav-link-text"> Road Map</span>
+                  <i class="fas fa-road text-primary text-sm opacity-10"></i><span class="nav-link-text"> Road Map</span>
                 </a>
               </li>
 
               <li class="nav-item">
                 <a class="nav-link <?= ($seg1 == 'spln') ? 'active' : '' ?>" href="<?= base_url('spln'); ?>">
-                  <i class="fas fa-bolt text-dark text-sm opacity-10"></i><span class="nav-link-text"> SPLN</span>
+                  <i class="fas fa-bolt text-primary text-sm opacity-10"></i><span class="nav-link-text"> SPLN</span>
                 </a>
               </li>
             </ul>
@@ -311,7 +436,7 @@
               <ul class="nav flex-column submenu-list">
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'single_line_diagram') ? 'active' : '' ?>" href="<?= base_url('single_line_diagram'); ?>">
-                    <i class="fas fa-project-diagram text-dark text-sm opacity-10"></i><span class="nav-link-text"> Single Line Diagram</span>
+                    <i class="fas fa-project-diagram text-primary text-sm opacity-10"></i><span class="nav-link-text"> Single Line Diagram</span>
                   </a>
                 </li>
               </ul>
@@ -339,31 +464,31 @@
               <ul class="nav ms-4">
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'rekomposisi') ? 'active' : '' ?>" href="<?= base_url('rekomposisi'); ?>">
-                    <i class="fas fa-random me-2"></i> Rekomposisi
+                    <i class="fas fa-random me-2 text-primary"></i> Rekomposisi
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'entry_kontrak') ? 'active' : '' ?>" href="<?= base_url('entry_kontrak'); ?>">
-                    <i class="fas fa-file-signature me-2"></i> Entry Kontrak
+                    <i class="fas fa-file-signature me-2 text-primary"></i> Entry Kontrak
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'monitoring') ? 'active' : '' ?>" href="<?= base_url('monitoring'); ?>">
-                    <i class="fas fa-chart-line me-2"></i> Monitoring
+                    <i class="fas fa-chart-line me-2 text-primary"></i> Monitoring
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'rekap_prk') ? 'active' : '' ?>" href="<?= base_url('rekap_prk'); ?>">
-                    <i class="fas fa-clipboard-list me-2"></i> Rekap PRK
+                    <i class="fas fa-clipboard-list me-2 text-primary"></i> Rekap PRK
                   </a>
                 </li>
 
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'prognosa') ? 'active' : '' ?>" href="<?= base_url('prognosa'); ?>">
-                    <i class="fas fa-chart-pie me-2"></i> Prognosa
+                    <i class="fas fa-chart-pie me-2 text-primary"></i> Prognosa
                   </a>
                 </li>
               </ul>
@@ -377,8 +502,13 @@
           <a href="#menuTransport" class="nav-link d-flex align-items-center justify-content-between <?= $transport_active ? 'active' : '' ?>"
             data-bs-toggle="collapse" role="button" aria-expanded="<?= $transport_active ? 'true' : 'false' ?>" aria-controls="menuTransport">
             <div class="d-flex align-items-center">
-              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center position-relative">
                 <i class="fas fa-car text-dark text-sm opacity-10" aria-hidden="true"></i>
+                <?php if ($total_pending_transport > 0): ?>
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 8px; padding: 3px 5px;">
+                    <?= $total_pending_transport ?>
+                  </span>
+                <?php endif; ?>
               </div>
               <span class="nav-link-text ms-1">E-Transport</span>
             </div>
@@ -405,6 +535,9 @@
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'approval') ? 'active' : '' ?>" href="<?= base_url('transport/approval'); ?>">
                     <i class="fas fa-check-double text-success text-sm opacity-10"></i><span class="nav-link-text"> Persetujuan Asmen / KKU</span>
+                    <?php if ($pending_counts['pending_asmen'] > 0): ?>
+                      <span class="badge badge-xs bg-danger ms-auto"><?= $pending_counts['pending_asmen'] ?></span>
+                    <?php endif; ?>
                   </a>
                 </li>
               <?php endif; ?>
@@ -413,6 +546,9 @@
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'fleet') ? 'active' : '' ?>" href="<?= base_url('transport/fleet'); ?>">
                     <i class="fas fa-truck-moving text-warning text-sm opacity-10"></i><span class="nav-link-text"> Manajemen Fleet (KKU)</span>
+                    <?php if ($pending_counts['pending_fleet'] > 0): ?>
+                      <span class="badge badge-xs bg-danger ms-auto"><?= $pending_counts['pending_fleet'] ?></span>
+                    <?php endif; ?>
                   </a>
                 </li>
               <?php endif; ?>
@@ -421,12 +557,30 @@
                 <li class="nav-item">
                   <a class="nav-link <?= ($seg1 == 'transport' && $this->uri->segment(2) == 'security') ? 'active' : '' ?>" href="<?= base_url('transport/security'); ?>">
                     <i class="fas fa-shield-halved text-danger text-sm opacity-10"></i><span class="nav-link-text"> Pos Security</span>
+                    <?php if ($pending_counts['in_progress'] > 0): ?>
+                      <span class="badge badge-xs bg-danger ms-auto"><?= $pending_counts['in_progress'] ?></span>
+                    <?php endif; ?>
                   </a>
                 </li>
               <?php endif; ?>
             </ul>
           </div>
         </li>
+
+        <!-- User Management (Admin Only) -->
+        <?php if (is_admin()): ?>
+          <li class="nav-item mt-3">
+            <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Admin</h6>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link <?= ($seg1 == 'user_manager') ? 'active' : '' ?>" href="<?= base_url('user_manager'); ?>">
+              <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="fas fa-users-cog text-primary text-sm opacity-10" aria-hidden="true"></i>
+              </div>
+              <span class="nav-link-text ms-1">Manajemen User</span>
+            </a>
+          </li>
+        <?php endif; ?>
 
         <!-- Account Pages -->
         <li class="nav-item mt-3">
@@ -455,7 +609,7 @@
           <li class="nav-item">
             <a class="nav-link btn-logout" href="<?= base_url('logout'); ?>">
               <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-                <i class="fas fa-power-off text-danger text-sm opacity-10" aria-hidden="true"></i>
+                <i class="fas fa-power-off text-primary text-sm opacity-10" aria-hidden="true"></i>
               </div>
               <span class="nav-link-text ms-1">Logout</span>
             </a>

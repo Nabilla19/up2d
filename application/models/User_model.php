@@ -117,5 +117,108 @@ class User_model extends CI_Model {
         $query = $this->db->get();
         return $query->result_array();
     }
+    
+    // ========================================
+    // User Management Methods (Admin)
+    // ========================================
+    
+    /**
+     * Get all users with pagination and search
+     */
+    public function get_all_users($limit, $offset, $search = null)
+    {
+        $this->db->from($this->table);
+        
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('name', $search);
+            $this->db->or_like('email', $search);
+            $this->db->or_like('role', $search);
+            $this->db->group_end();
+        }
+        
+        $this->db->order_by('created_at', 'DESC');
+        $this->db->limit($limit, $offset);
+        
+        return $this->db->get()->result_array();
+    }
+    
+    /**
+     * Count all users (with optional search)
+     */
+    public function count_all_users($search = null)
+    {
+        $this->db->from($this->table);
+        
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('name', $search);
+            $this->db->or_like('email', $search);
+            $this->db->or_like('role', $search);
+            $this->db->group_end();
+        }
+        
+        return $this->db->count_all_results();
+    }
+    
+    /**
+     * Create a new user
+     */
+    public function create_user($data)
+    {
+        return $this->db->insert($this->table, $data);
+    }
+    
+    /**
+     * Update user
+     */
+    public function update_user($id, $data)
+    {
+        $this->db->where('id', $id);
+        return $this->db->update($this->table, $data);
+    }
+    
+    /**
+     * Delete user
+     */
+    public function delete_user($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->delete($this->table);
+    }
+    
+    /**
+     * Toggle user active status (DISABLED - column not in database)
+     */
+    public function toggle_active($id, $status)
+    {
+        // This method is disabled because is_active column doesn't exist in the database
+        // To enable this feature, run: ALTER TABLE users ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1;
+        return false;
+    }
+    
+    /**
+     * Get available roles for dropdown
+     */
+    public function get_roles()
+    {
+        return [
+            1 => 'Operasi Sistem Distribusi',
+            2 => 'Fasilitas Operasi',
+            3 => 'Pemeliharaan',
+            4 => 'K3L & KAM',
+            5 => 'Perencanaan',
+            6 => 'Admin',
+            7 => 'Guest',
+            8 => 'UP3',
+            9 => 'Pengadaan',
+            10 => 'HAR',
+            14 => 'KKU',
+            15 => 'Asmen Perencanaan',
+            16 => 'Asmen Pemeliharaan',
+            17 => 'Asmen Operasi',
+            18 => 'Asmen Fasop',
+            19 => 'Security'
+        ];
+    }
 }
-

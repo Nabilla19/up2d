@@ -35,11 +35,17 @@
                             <option value="25" <?= ($per_page == 25) ? 'selected' : ''; ?>>25</option>
                             <option value="50" <?= ($per_page == 50) ? 'selected' : ''; ?>>50</option>
                             <option value="100" <?= ($per_page == 100) ? 'selected' : ''; ?>>100</option>
-                            <option value="500" <?= ($per_page == 500) ? 'selected' : ''; ?>>500</option>
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputPengaduan" value="<?= htmlentities((string)($q ?? ''), ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data pengaduan...">
+
+                    <form method="get" action="<?= site_url('pengaduan/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('pengaduan/index/1'); ?>', 'searchInputPengaduan', 'q');">
+                        <input type="text" id="searchInputPengaduan" name="q" value="<?= htmlspecialchars((string)($q ?? ''), ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data pengaduan...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($q)): ?>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.location.replace('<?= base_url('pengaduan/index/1'); ?>')">Reset</button>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">
@@ -103,8 +109,6 @@
     </div>
 </main>
 
-<!-- SweetAlert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmDelete(url) {
         Swal.fire({
@@ -125,7 +129,7 @@
 
     function changePerPagePengaduan(perPage) {
         const base = "<?= site_url('pengaduan/index/1'); ?>";
-        changePerPageGlobal(base, perPage);
+        changePerPageGlobal(perPage, base);
     }
 
     (function() {
@@ -140,27 +144,7 @@
     })();
 </script>
 
-<!-- Style (disamakan dengan halaman Data Unit) -->
 <style>
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        padding: 0.75rem 1rem;
-    }
-
-    .card-header h6 {
-        color: #fff;
-        margin: 0;
-        font-weight: 600;
-    }
-
-    .breadcrumb .breadcrumb-item.active,
-    .breadcrumb .breadcrumb-item a.opacity-5,
-    .breadcrumb .breadcrumb-item.text-white {
-        color: #ffffff !important;
-    }
-
     .bg-gradient-primary {
         background: linear-gradient(90deg, #005C99, #0099CC);
     }
@@ -186,63 +170,5 @@
 
     .btn-xs i {
         font-size: 12px;
-    }
-
-    #pengaduanTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #pengaduanTable tbody td.text-center {
-        vertical-align: middle !important;
-        text-align: center !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
-    }
-
-    #pengaduanTable tbody td.text-center .btn {
-        margin: 2px 3px;
-    }
-
-    #pengaduanTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
-    }
-
-    #pengaduanTable tbody tr {
-        line-height: 1.15;
-    }
-
-    /* Disable click/hover animations for elements with .no-anim */
-    .no-anim,
-    .no-anim * {
-        transition: none !important;
-        -webkit-transition: none !important;
-        -moz-transition: none !important;
-        -o-transition: none !important;
-        animation: none !important;
-        -webkit-animation: none !important;
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    .no-anim:active,
-    .no-anim:focus,
-    .no-anim *:active,
-    .no-anim *:focus {
-        transform: none !important;
-        -webkit-transform: none !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-    /* Hide common ripple elements if a JS plugin adds them */
-    .no-anim .ripple,
-    .no-anim .waves-ripple,
-    .no-anim .wave,
-    .no-anim .ink {
-        display: none !important;
     }
 </style>

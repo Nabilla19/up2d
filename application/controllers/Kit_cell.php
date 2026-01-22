@@ -44,6 +44,10 @@ class Kit_cell extends CI_Controller
         if ($q_param !== null) {
             $search = trim($q_param);
             $this->session->set_userdata('kc_search', $search);
+        } elseif ($q_param === null && $this->input->get('per_page') !== null) {
+            // If per_page is set but q/search is not, clear the session search (this is a reset)
+            $this->session->unset_userdata('kc_search');
+            $search = '';
         } else {
             $search = $this->session->userdata('kc_search') ?? '';
         }

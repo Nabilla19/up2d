@@ -1,6 +1,5 @@
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
-    <?php $this->load->view('layout/navbar'); ?>
 
     <!-- Content -->
     <div class="container-fluid py-4">

@@ -41,14 +41,15 @@ class Bpm extends CI_Controller
     $defaultPer = 5;
     $per_page = in_array($requestedPer, $allowedPerPage) ? $requestedPer : $defaultPer;
 
-    $q = trim($this->input->get('q', TRUE) ?? '');
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
 
-    $config['base_url'] = site_url('bpm/index');
-    $config['total_rows'] = $this->bpmModel->count_all_bpm($q);
-    $config['per_page'] = $per_page;
-    $config['uri_segment'] = 3;
-    $config['use_page_numbers'] = TRUE;
-    $config['reuse_query_string'] = TRUE;
+        $config['base_url'] = site_url('bpm/index');
+        $config['total_rows'] = $this->bpmModel->count_all_bpm($search);
+        $config['per_page'] = $per_page;
+        $config['uri_segment'] = 3;
+        $config['use_page_numbers'] = TRUE;
+        $config['reuse_query_string'] = TRUE;
 
         // Tampilan pagination
         $config['full_tag_open'] = '<nav><ul class="pagination justify-content-end">';
@@ -69,12 +70,12 @@ class Bpm extends CI_Controller
 
         $this->pagination->initialize($config);
 
-    $data['bpm'] = $this->bpmModel->get_bpm($config['per_page'], $offset, $q);
-    $data['pagination'] = $this->pagination->create_links();
-    $data['start_no'] = $offset + 1;
-    $data['per_page'] = $per_page;
-    $data['total_rows'] = $config['total_rows'];
-    $data['q'] = $q;
+        $data['bpm'] = $this->bpmModel->get_bpm($config['per_page'], $offset, $search);
+        $data['pagination'] = $this->pagination->create_links();
+        $data['start_no'] = $offset + 1;
+        $data['per_page'] = $per_page;
+        $data['total_rows'] = $config['total_rows'];
+        $data['search'] = $search;
 
         $this->load->view('layout/header', $data);
         $this->load->view('bpm/vw_bpm', $data);

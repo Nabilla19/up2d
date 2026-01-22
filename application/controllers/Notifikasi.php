@@ -28,9 +28,10 @@ class Notifikasi extends CI_Controller
     // Tampilkan daftar notifikasi
     public function index()
     {
+        $user_id = $this->session->userdata('user_id');
         $data['judul'] = 'Notifikasi Aktivitas';
-        $data['notifikasi'] = $this->notifModel->get_all();
-        $data['unread_count'] = $this->notifModel->count_unread();
+        $data['notifikasi'] = $this->notifModel->get_all($user_id);
+        $data['unread_count'] = $this->notifModel->count_unread($user_id);
 
         $this->load->view('layout/header', $data);
         $this->load->view('notifikasi/vw_notifikasi', $data);
@@ -44,7 +45,8 @@ class Notifikasi extends CI_Controller
             redirect('Notifikasi');
         }
 
-        $this->notifModel->mark_read($id);
+        $user_id = $this->session->userdata('user_id');
+        $this->notifModel->mark_read($id, $user_id);
         $this->session->set_flashdata('success', 'Notifikasi ditandai sudah dibaca');
         redirect('Notifikasi');
     }
@@ -56,8 +58,10 @@ class Notifikasi extends CI_Controller
             redirect('Notifikasi');
         }
 
+        $user_id = $this->session->userdata('user_id');
+        
         // Get notifikasi detail
-        $notif = $this->notifModel->get_all();
+        $notif = $this->notifModel->get_all($user_id);
         $target_notif = null;
         foreach ($notif as $n) {
             if ($n['id'] == $id) {
@@ -66,8 +70,8 @@ class Notifikasi extends CI_Controller
             }
         }
 
-        // Mark as read
-        $this->notifModel->mark_read($id);
+        // Mark as read per user
+        $this->notifModel->mark_read($id, $user_id);
 
         // Redirect ke URL target jika ada module dan record_id
         if ($target_notif && !empty($target_notif['module']) && !empty($target_notif['record_id']) && $target_notif['jenis_aktivitas'] != 'delete') {
@@ -81,7 +85,8 @@ class Notifikasi extends CI_Controller
     // Tandai semua notifikasi sebagai sudah dibaca
     public function mark_all_read()
     {
-        $this->notifModel->mark_all_read();
+        $user_id = $this->session->userdata('user_id');
+        $this->notifModel->mark_all_read($user_id);
         $this->session->set_flashdata('success', 'Semua notifikasi ditandai sudah dibaca');
         redirect('Notifikasi');
     }
@@ -89,8 +94,9 @@ class Notifikasi extends CI_Controller
     // AJAX: Get latest notifications
     public function get_latest()
     {
-        $latest = $this->notifModel->get_latest(10);
-        $unread_count = $this->notifModel->count_unread();
+        $user_id = $this->session->userdata('user_id');
+        $latest = $this->notifModel->get_latest(10, $user_id);
+        $unread_count = $this->notifModel->count_unread($user_id);
 
         header('Content-Type: application/json');
         echo json_encode([
@@ -102,7 +108,8 @@ class Notifikasi extends CI_Controller
     // AJAX: Get unread count only
     public function ajax_unread_count()
     {
-        $count = $this->notifModel->get_unread_count();
+        $user_id = $this->session->userdata('user_id');
+        $count = $this->notifModel->get_unread_count($user_id);
         header('Content-Type: application/json');
         echo json_encode(['unread' => (int)$count]);
     }
@@ -110,7 +117,8 @@ class Notifikasi extends CI_Controller
     // API: Get unread count for navbar
     public function get_unread_count()
     {
-        $count = $this->notifModel->get_unread_count();
+        $user_id = $this->session->userdata('user_id');
+        $count = $this->notifModel->get_unread_count($user_id);
         header('Content-Type: application/json');
         echo json_encode(['count' => (int)$count]);
     }

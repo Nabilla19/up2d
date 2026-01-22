@@ -40,6 +40,10 @@ class Gardu_induk extends CI_Controller
         if ($this->input->get('q') !== null) {
             $q = trim($this->input->get('q', TRUE));
             $this->session->set_userdata('gardu_q', $q);
+        } elseif ($this->input->get('per_page') !== null && $this->input->get('q') === null) {
+            // If per_page is set but q is not, clear the session search (this is a reset)
+            $this->session->unset_userdata('gardu_q');
+            $q = '';
         } else {
             $q = $this->session->userdata('gardu_q') ?? '';
         }

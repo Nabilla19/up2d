@@ -1,14 +1,10 @@
 <footer class="footer pt-3">
     <div class="container-fluid">
-        <div class="row align-items-center justify-content-lg-between">
-            <div class="col-lg-6 mb-lg-0 mb-4"></div>
-            <div class="col-lg-6">
-                <ul class="nav nav-footer justify-content-center justify-content-lg-end">
-                    <li class="nav-item"><a href="https://www.creative-tim.com" class="nav-link text-muted" target="_blank" rel="noopener">Creative Tim</a></li>
-                    <li class="nav-item"><a href="https://www.creative-tim.com/presentation" class="nav-link text-muted" target="_blank" rel="noopener">About Us</a></li>
-                    <li class="nav-item"><a href="https://www.creative-tim.com/blog" class="nav-link text-muted" target="_blank" rel="noopener">Blog</a></li>
-                    <li class="nav-item"><a href="https://www.creative-tim.com/license" class="nav-link pe-0 text-muted" target="_blank" rel="noopener">License</a></li>
-                </ul>
+        <div class="row">
+            <div class="col-12">
+                <div class="copyright text-center text-sm text-muted">
+                    © <?= date('Y'); ?> PLN UP2D RIAU - Sistem Informasi Manajemen
+                </div>
             </div>
         </div>
     </div>
@@ -39,6 +35,133 @@
 
 <!-- Responsive JS -->
 <script src="<?= base_url('assets/assets/js/responsive.js'); ?>"></script>
+
+<!-- Mobile Sidebar Toggle Helper - FIXED IMMEDIATE CLOSE BUG -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== MOBILE SIDEBAR INIT ===');
+    
+    const toggleBtn = document.getElementById('iconNavbarSidenav');
+    const closeBtn = document.getElementById('iconSidenav');
+    const sidebar = document.getElementById('sidenav-main');
+    const body = document.body;
+    let isTogglingNow = false; // Flag to prevent immediate close
+    
+    console.log('Toggle button:', toggleBtn);
+    console.log('Close button:', closeBtn);
+    console.log('Sidebar:', sidebar);
+    
+    // Simple toggle function
+    function toggleSidebar() {
+      const isOpen = body.classList.contains('mobile-sidebar-open');
+      console.log('Toggling sidebar. Currently open:', isOpen);
+      
+      isTogglingNow = true; // Set flag during toggle
+      
+      if (isOpen) {
+        body.classList.remove('mobile-sidebar-open');
+        console.log('✓ Sidebar CLOSED');
+      } else {
+        body.classList.add('mobile-sidebar-open');
+        console.log('✓ Sidebar OPENED');
+      }
+      
+      // Reset flag after a bit
+      setTimeout(function() {
+        isTogglingNow = false;
+        console.log('Toggle flag reset');
+      }, 500);
+    }
+    
+    function closeSidebar() {
+      body.classList.remove('mobile-sidebar-open');
+      console.log('✓ Sidebar CLOSED');
+    }
+    
+    // Attach click handler to toggle button
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function(e) {
+        console.log('>>> TOGGLE BUTTON CLICKED <<<');
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation(); // Stop ALL propagation
+        toggleSidebar();
+      }, true); // Use capture phase
+      console.log('✓ Toggle button listener attached');
+    } else {
+      console.error('✗ Toggle button NOT FOUND!');
+    }
+    
+    // Attach click handler to close button  
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(e) {
+        console.log('>>> CLOSE BUTTON CLICKED <<<');
+        e.preventDefault();
+        e.stopPropagation();
+        closeSidebar();
+      });
+      console.log('✓ Close button listener attached');
+    }
+    
+    // IMPROVED: Close ONLY on actual clicks outside - with proper guards
+    document.addEventListener('click', function(e) {
+      // Don't do anything if we're currently toggling
+      if (isTogglingNow) {
+        console.log('Currently toggling - ignoring click');
+        return;
+      }
+      
+      // Only proceed if sidebar is open
+      if (!body.classList.contains('mobile-sidebar-open')) {
+        return;
+      }
+      
+      // Check if click was inside sidebar
+      const clickedInsideSidebar = sidebar && sidebar.contains(e.target);
+      if (clickedInsideSidebar) {
+        return; // Don't close if clicking inside sidebar
+      }
+      
+      // Check if click was on toggle button or its children
+      const clickedToggleBtn = toggleBtn && toggleBtn.contains(e.target);
+      if (clickedToggleBtn) {
+        return; // Don't close here, toggle handler will handle it
+      }
+      
+      // If we reach here, user clicked outside sidebar - close it
+      console.log('Clicked outside sidebar - closing');
+      closeSidebar();
+    }, false); // Use bubble phase
+    
+    // Close on ANY link click in sidebar (mobile only)
+    if (sidebar) {
+      sidebar.addEventListener('click', function(e) {
+        if (window.innerWidth < 768) {
+          // Don't close if we're toggling
+          if (isTogglingNow) {
+            return;
+          }
+          
+          // Check if clicked element is a menu link
+          const clickedLink = e.target.closest('a, .nav-link, button');
+          
+          // Don't close if clicking collapse toggle (submenu chevrons)
+          const isCollapseToggle = e.target.closest('[data-bs-toggle="collapse"]');
+          
+          // Close sidebar if it's a link and not a collapse toggle
+          if (clickedLink && !isCollapseToggle) {
+            console.log('Menu item clicked - closing sidebar');
+            closeSidebar();
+          }
+        }
+      });
+      
+      console.log('✓ Sidebar click handler attached');
+    }
+    
+    console.log('=== MOBILE SIDEBAR READY ===');
+  });
+</script>
 
 <!-- Sidebar State Logic (Moved from Header) -->
 <script defer>
@@ -290,17 +413,11 @@ document.addEventListener('DOMContentLoaded', function() {
      ========================= -->
 <script>
     (function () {
-        window.changePerPageGlobal = function(baseUrlWithPage1, perPage) {
+        window.changePerPageGlobal = function(perPage, baseUrl = null) {
             try {
-                const url = new URL(baseUrlWithPage1, window.location.origin);
-                const current = new URL(window.location.href);
-
-                // preserve search/q or other known filters
-                const q = current.searchParams.get('q') || current.searchParams.get('search');
-                if (q) url.searchParams.set('q', q);
-
+                const url = new URL(baseUrl || window.location.href, window.location.origin);
                 url.searchParams.set('per_page', perPage);
-                // reset to first page (offset 0) when per_page changes
+                // Reset page to 0 (first page)
                 url.searchParams.set('page', 0);
                 window.location.href = url.toString();
             } catch (e) {
@@ -321,9 +438,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 const per = curr.searchParams.get('per_page');
                 if (per) base.searchParams.set('per_page', per);
 
+                // Reset to page 0 on new search
+                base.searchParams.set('page', 0);
+
                 window.location.href = base.toString();
             } catch (e) {
                 console.error('searchSubmit error', e);
+            }
+        };
+
+        window.searchSubmitMulti = function(baseUrl, inputIds, paramNames) {
+            try {
+                const base = new URL(baseUrl, window.location.origin);
+                const curr = new URL(window.location.href);
+
+                // Start with per_page from current URL if exists
+                const per = curr.searchParams.get('per_page');
+                if (per) base.searchParams.set('per_page', per);
+
+                // Multi-param handling
+                if (Array.isArray(inputIds) && Array.isArray(paramNames)) {
+                    inputIds.forEach((id, idx) => {
+                        const input = document.getElementById(id);
+                        const pName = paramNames[idx];
+                        if (input && pName) {
+                            const val = (input.value || '').trim();
+                            if (val !== '') {
+                                base.searchParams.set(pName, val);
+                            } else {
+                                base.searchParams.delete(pName);
+                            }
+                        }
+                    });
+                }
+
+                // Reset to page 0 on new search
+                base.searchParams.set('page', 0);
+
+                window.location.href = base.toString();
+            } catch (e) {
+                console.error('searchSubmitMulti error', e);
             }
         };
 

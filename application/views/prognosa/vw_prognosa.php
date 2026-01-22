@@ -1,51 +1,11 @@
-<?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
-<?php
-if (!function_exists('e')) {
-    function e($v)
-    {
-        return htmlentities((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
-    }
-}
-if (!function_exists('nf')) {
-    function nf($v)
-    {
-        return number_format((float)($v ?? 0), 0, ',', '.');
-    }
-}
-function sum12($r)
-{
-    $months = ['jan_25', 'feb_25', 'mar_25', 'apr_25', 'mei_25', 'jun_25', 'jul_25', 'aug_25', 'sep_25', 'okt_25', 'nov_25', 'des_25'];
-    $t = 0;
-    foreach ($months as $m) {
-        $t += (float)($r[$m] ?? 0);
-    }
-    return $t;
-}
-?>
-
 <main class="main-content position-relative border-radius-lg ">
     <?php $this->load->view('layout/navbar'); ?>
 
     <div class="container-fluid py-4">
 
-        <?php if ($this->session->flashdata('success')): ?>
-            <div class="alert alert-success text-white"><?= $this->session->flashdata('success'); ?></div>
-        <?php endif; ?>
-        <?php if ($this->session->flashdata('error')): ?>
-            <div class="alert alert-danger text-white"><?= $this->session->flashdata('error'); ?></div>
-        <?php endif; ?>
-
         <div class="card mb-4 shadow border-0 rounded-4">
-
             <div class="card-header py-2 d-flex justify-content-between align-items-center bg-gradient-primary text-white rounded-top-4">
-                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-chart-line me-2"></i>Tabel Prognosa (VW_PROGNOSA)</h6>
-
-                <div class="d-flex align-items-center" style="padding-top: 16px;">
-                    <a href="<?= base_url('prognosa/export_csv?' . http_build_query($_GET)); ?>"
-                        class="btn btn-sm btn-light text-secondary ms-2 d-flex align-items-center no-anim">
-                        <i class="fas fa-file-csv me-1"></i> Download CSV
-                    </a>
-                </div>
+                <h6 class="mb-0 d-flex align-items-center text-white"><i class="fas fa-chart-line me-2"></i>Tabel Prognosa</h6>
             </div>
 
             <div class="card-body px-0 pt-0 pb-2 bg-white">
@@ -53,7 +13,7 @@ function sum12($r)
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center" style="gap:12px;">
                     <div class="d-flex align-items-center" style="gap:10px;">
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
-                        <select class="form-select form-select-sm" style="width: 90px;" onchange="changePerPage(this.value)">
+                        <select class="form-select form-select-sm" style="width: 90px;" onchange="changePerPageGlobal(this.value)">
                             <?php foreach ([5, 10, 25, 50, 100] as $pp): ?>
                                 <option value="<?= $pp ?>" <?= ($per_page == $pp) ? 'selected' : '' ?>><?= $pp ?></option>
                             <?php endforeach; ?>
@@ -62,96 +22,89 @@ function sum12($r)
                         <span class="ms-2 text-sm">dari <?= (int)($total_rows ?? 0); ?> data</span>
                     </div>
 
-                    <form method="get" action="<?= base_url('prognosa'); ?>" class="d-flex align-items-center" style="gap:8px;">
-                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
+                    <form method="get" action="<?= base_url('prognosa'); ?>" class="d-flex align-items-center" style="gap:8px;" onsubmit="event.preventDefault(); searchSubmitMulti('<?= base_url('prognosa'); ?>', ['perPageHiddenPrognosa', 'jenisSelect', 'rekapSelect', 'searchInputPrognosa'], ['per_page', 'jenis', 'rekap', 'search']);">
+                        <input type="hidden" id="perPageHiddenPrognosa" name="per_page" value="<?= (int)$per_page; ?>">
 
-                        <select name="jenis_anggaran" class="form-select form-select-sm" style="max-width:160px;">
+                        <select id="jenisSelect" name="jenis" class="form-select form-select-sm" style="max-width:160px;">
                             <option value="">Semua Jenis</option>
                             <?php foreach (($jenis_list ?? []) as $j): ?>
-                                <option value="<?= e($j['jenis_anggaran']); ?>"
-                                    <?= (($jenis_anggaran ?? '') === $j['jenis_anggaran']) ? 'selected' : '' ?>>
-                                    <?= e($j['jenis_anggaran']); ?>
+                                <option value="<?= html_escape($j['jenis_anggaran']); ?>"
+                                    <?= (($filter_jenis ?? '') === $j['jenis_anggaran']) ? 'selected' : '' ?>>
+                                    <?= html_escape($j['jenis_anggaran']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
 
-                        <select name="rekap" class="form-select form-select-sm" style="max-width:180px;">
+                        <select id="rekapSelect" name="rekap" class="form-select form-select-sm" style="max-width:180px;">
                             <option value="">Semua Rekap</option>
                             <?php foreach (($rekap_list ?? []) as $r): ?>
-                                <option value="<?= e($r['rekap']); ?>"
-                                    <?= (($rekap ?? '') === $r['rekap']) ? 'selected' : '' ?>>
-                                    <?= e($r['rekap']); ?>
+                                <option value="<?= html_escape($r['rekap']); ?>"
+                                    <?= (($filter_rekap ?? '') === $r['rekap']) ? 'selected' : '' ?>>
+                                    <?= html_escape($r['rekap']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
 
-                        <input type="text" name="keyword" value="<?= e($keyword ?? '') ?>"
+                        <input type="text" id="searchInputPrognosa" name="search" value="<?= html_escape($search ?? '') ?>"
                             class="form-control form-control-sm rounded-3"
                             style="max-width: 280px;"
                             placeholder="Cari jenis / rekap...">
 
-                        <button class="btn btn-sm btn-secondary">Cari</button>
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search) || !empty($filter_jenis) || !empty($filter_rekap)): ?>
+                            <a href="<?= base_url('prognosa?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
                     </form>
                 </div>
 
                 <div class="table-responsive p-0" style="overflow-x:auto;">
-                    <table class="table align-items-center mb-0" id="prognosaTable">
+                    <table class="table align-items-center mb-0">
                         <thead class="bg-light">
                             <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Rekap</th>
-
-                                <?php
-                                $bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-                                foreach ($bulan as $b):
-                                ?>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-end"><?= $b ?> 25</th>
-                                <?php endforeach; ?>
-
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-end">TOTAL</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Aksi</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 5%">No</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jenis Anggaran</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Rekap PRK</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Besaran Anggaran</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 1</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 2</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 3</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 4</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 5</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 6</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 7</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 8</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 9</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 10</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 11</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Bulan 12</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total Prognosa</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Deviasi (%)</th>
                             </tr>
                         </thead>
-
                         <tbody>
-                            <?php if (empty($rows)): ?>
+                            <?php if (empty($prognosa)): ?>
                                 <tr>
-                                    <td colspan="20" class="text-center text-secondary py-4">Belum ada data</td>
+                                    <td colspan="18" class="text-center text-sm py-4">Tidak ada data prognosa.</td>
                                 </tr>
                             <?php else: ?>
-                                <?php $no = (int)($start_no ?? 1); ?>
-                                <?php foreach ($rows as $row): ?>
-                                    <tr class="<?= ($no % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
-                                        <td class="text-sm"><?= $no++; ?></td>
-                                        <td class="text-sm"><?= e($row['jenis_anggaran']); ?></td>
-                                        <td class="text-sm fw-semibold"><?= e($row['rekap']); ?></td>
-
-                                        <td class="text-sm text-end"><?= nf($row['jan_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['feb_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['mar_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['apr_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['mei_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['jun_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['jul_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['aug_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['sep_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['okt_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['nov_25']); ?></td>
-                                        <td class="text-sm text-end"><?= nf($row['des_25']); ?></td>
-
-                                        <td class="text-sm text-end fw-semibold"><?= nf(sum12($row)); ?></td>
-
-                                        <td class="text-center">
+                                <?php foreach ($prognosa as $i => $row): ?>
+                                    <tr class="<?= (($start_no + $i) % 2 == 0) ? 'table-row-even' : 'table-row-odd'; ?>">
+                                        <td class="text-sm text-center"><?= $start_no + $i; ?></td>
+                                        <td class="text-sm"><?= html_escape($row['jenis_anggaran']); ?></td>
+                                        <td class="text-sm"><?= html_escape($row['rekap'] ?? ''); ?></td>
+                                        <td class="text-sm text-end"><?= number_format($row['pagu_skk_io'] ?? 0, 0, ',', '.'); ?></td>
+                                        <?php for ($m = 1; $m <= 12; $m++): ?>
+                                            <?php $month_key = ['jan_25','feb_25','mar_25','apr_25','mei_25','jun_25','jul_25','aug_25','sep_25','okt_25','nov_25','des_25'][$m-1]; ?>
+                                            <td class="text-sm text-end"><?= number_format($row[$month_key] ?? 0, 0, ',', '.'); ?></td>
+                                        <?php endfor; ?>
+                                        <?php $total = array_sum(array_map(function($k) use ($row) { return $row[$k] ?? 0; }, ['jan_25','feb_25','mar_25','apr_25','mei_25','jun_25','jul_25','aug_25','sep_25','okt_25','nov_25','des_25'])); ?>
+                                        <td class="text-sm text-end font-weight-bold"><?= number_format($total, 0, ',', '.'); ?></td>
+                                        <td class="text-sm text-center">
                                             <?php
-                                            $detail_url = base_url('prognosa/detail?') . http_build_query([
-                                                'jenis' => $row['jenis_anggaran'],
-                                                'rekap' => $row['rekap'],
-                                            ]);
+                                            $dev = 0; // Deviasi calculation can be added later
+                                            $color = ($dev > 0) ? 'text-danger' : (($dev < 0) ? 'text-success' : '');
                                             ?>
-                                            <a href="<?= $detail_url; ?>" class="btn btn-info btn-xs text-white me-1" title="Detail">
-                                                <i class="fas fa-info-circle"></i>
-                                            </a>
+                                            <span class="<?= $color ?>"><?= number_format($dev, 2); ?>%</span>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -160,27 +113,17 @@ function sum12($r)
                     </table>
                 </div>
 
-                <div class="card-footer d-flex justify-content-end">
-                    <?= $pagination ?? ''; ?>
+                <div class="card-footer d-flex justify-content-end p-3">
+                    <?= $pagination; ?>
                 </div>
             </div>
         </div>
     </div>
 </main>
 
-<script>
-    function changePerPage(perPage) {
-        const base = "<?= site_url('prognosa'); ?>"; // uses page query string
-        const url = new URL(base, window.location.origin);
-        url.searchParams.set('per_page', perPage);
-        url.searchParams.set('page', 0);
-        window.location.href = url.toString();
-    }
-</script>
-
 <style>
     .bg-gradient-primary {
-        background: linear-gradient(90deg, #005C99, #0099CC);
+        background: linear-gradient(87deg, #005C99 0, #0099CC 100%) !important;
     }
 
     .table-row-odd {
@@ -188,35 +131,10 @@ function sum12($r)
     }
 
     .table-row-even {
-        background-color: #f5f7fa;
+        background-color: #f8f9fa;
     }
 
-    #prognosaTable tbody tr:hover {
-        background-color: #e9ecef !important;
-        transition: none !important;
-    }
-
-    .btn,
-    .btn-xs {
-        transition: none !important;
-        transform: none !important;
-    }
-
-    .btn-xs {
-        padding: 2px 6px;
-        font-size: 11px;
-        border-radius: 4px;
-    }
-
-    #prognosaTable tbody tr td {
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-        font-size: 13px !important;
-    }
-
-    #prognosaTable thead th {
-        padding-top: 8px !important;
-        padding-bottom: 8px !important;
-        font-size: 12px !important;
+    tr:hover {
+        background-color: #f2f2f2 !important;
     }
 </style>

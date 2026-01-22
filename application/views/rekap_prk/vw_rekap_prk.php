@@ -77,7 +77,7 @@ if (!function_exists('nf')) {
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
-                        <select id="perPageSelectPRK" class="form-select form-select-sm" style="width: 90px;" onchange="changePerPagePRK(this.value)">
+                        <select id="perPageSelectPRK" class="form-select form-select-sm" style="width: 90px;" onchange="changePerPageGlobal(this.value)">
                             <option value="5" <?= ((int)($per_page ?? 5) == 5)  ? 'selected' : ''; ?>>5</option>
                             <option value="10" <?= ((int)($per_page ?? 5) == 10) ? 'selected' : ''; ?>>10</option>
                             <option value="25" <?= ((int)($per_page ?? 5) == 25) ? 'selected' : ''; ?>>25</option>
@@ -87,15 +87,18 @@ if (!function_exists('nf')) {
                         <span class="ms-3 text-sm">dari <?= (int)($total_rows ?? 0); ?> data</span>
                     </div>
 
-                    <form method="get" action="<?= site_url('rekap_prk'); ?>" class="d-flex" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('rekap_prk'); ?>', 'searchInputPRK', 'keyword');">
+                    <form method="get" action="<?= site_url('rekap_prk'); ?>" class="d-flex" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('rekap_prk'); ?>', 'searchInputPRK', 'search');">
                         <input type="text"
                             id="searchInputPRK"
-                            name="keyword"
+                            name="search"
                             class="form-control form-control-sm rounded-3"
                             style="max-width: 300px;"
                             placeholder="Cari data..."
-                            value="<?= htmlspecialchars($keyword ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                            value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>">
                         <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('rekap_prk?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
                     </form>
                 </div>
 

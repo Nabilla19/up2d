@@ -1,11 +1,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    # App runs under subdirectory on localhost
-    RewriteBase /pln_up2d_ci/
-
+    
+    # Don't rewrite files or directories
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php/$1 [L]
+    
+    # Rewrite everything else to index.php with query string
+    RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
 </IfModule>
 
 <IfModule mod_mime.c>

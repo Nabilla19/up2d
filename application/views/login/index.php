@@ -23,6 +23,100 @@
     .branding img { height: 48px; }
     .branding .title { font-weight: 700; letter-spacing: .5px; }
     .credit { position: absolute; bottom: 16px; right: 20px; color: rgba(255,255,255,.85); font-size: 12px; z-index: 2; }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .split-wrapper { 
+        flex-direction: column; 
+        min-height: 100vh;
+      }
+      
+      /* Hide slideshow on mobile, show as header instead */
+      .split-left {
+        flex: none;
+        height: 200px;
+        min-height: 200px;
+      }
+      
+      /* Make form container full width */
+      .split-right {
+        width: 100%;
+        flex: 1;
+        padding: 1.5rem 1rem;
+        box-shadow: none;
+        display: flex;
+        align-items: flex-start;
+        padding-top: 2rem;
+      }
+      
+      /* Adjust branding for mobile */
+      .branding {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+      }
+      
+      .branding img {
+        height: 60px;
+      }
+      
+      .branding .title {
+        font-size: 1.2rem;
+      }
+      
+      /* Adjust credit position */
+      .credit {
+        bottom: 10px;
+        right: 50%;
+        transform: translateX(50%);
+        font-size: 10px;
+      }
+      
+      /* Make form card more compact */
+      .card-body {
+        padding: 1.5rem !important;
+      }
+      
+      /* Adjust text sizes */
+      .card-body h4 {
+        font-size: 1.3rem !important;
+      }
+      
+      .card-body .text-sm {
+        font-size: 0.875rem !important;
+      }
+      
+      /* Make buttons larger for touch */
+      .btn {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem !important;
+      }
+      
+      /* Adjust form inputs */
+      .form-control {
+        padding: 0.625rem 0.75rem !important;
+        font-size: 0.95rem !important;
+      }
+      
+      /* Stack remember me and forgot password on very small screens */
+      @media (max-width: 400px) {
+        .d-flex.justify-content-between {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 0.5rem;
+        }
+      }
+    }
+    
+    /* Tablet adjustments */
+    @media (min-width: 769px) and (max-width: 991px) {
+      .split-right {
+        width: 420px;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-100">

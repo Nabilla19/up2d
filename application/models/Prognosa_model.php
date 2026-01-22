@@ -6,69 +6,89 @@ class Prognosa_model extends CI_Model
     // view yang kamu punya di DB
     private $view = 'vw_prognosa';
 
-    private function _apply_filter($jenis, $rekap, $keyword)
+    private function _apply_filter($jenis, $rekap, $search)
     {
         if ($jenis !== '') {
-            $this->db->where('jenis_anggaran', $jenis);
+            // Use COLLATE to avoid collation mismatch
+            $this->db->where("jenis_anggaran COLLATE utf8mb4_general_ci = ", $jenis);
         }
         if ($rekap !== '') {
-            $this->db->where('rekap', $rekap);
+            $this->db->where("rekap COLLATE utf8mb4_general_ci = ", $rekap);
         }
 
-        if ($keyword !== '') {
-            $kw = trim($keyword);
-            $this->db->group_start()
-                ->like('jenis_anggaran', $kw)
-                ->or_like('rekap', $kw)
-                ->group_end();
+        if ($search !== '') {
+            $kw = $this->db->escape_like_str(trim($search));
+            $this->db->where("(jenis_anggaran COLLATE utf8mb4_general_ci LIKE '%{$kw}%' OR rekap COLLATE utf8mb4_general_ci LIKE '%{$kw}%')", NULL, FALSE);
         }
     }
 
-    public function count_all($jenis = '', $rekap = '', $keyword = '')
+    public function count_all($jenis = '', $rekap = '', $search = '')
     {
-        $this->db->from($this->view);
-        $this->_apply_filter((string)$jenis, (string)$rekap, (string)$keyword);
-        return (int)$this->db->count_all_results();
+        // Use raw SQL to avoid collation issues
+        $where_clauses = [];
+        $params = [];
+        
+        if ((string)$jenis !== '') {
+            $where_clauses[] = "jenis_anggaran COLLATE utf8mb4_general_ci = ?";
+            $params[] = $jenis;
+        }
+        
+        if ((string)$rekap !== '') {
+            $where_clauses[] = "rekap COLLATE utf8mb4_general_ci = ?";
+            $params[] = $rekap;
+        }
+        
+        if ((string)$search !== '') {
+            $kw = '%' . $search . '%';
+            $where_clauses[] = "(jenis_anggaran COLLATE utf8mb4_general_ci LIKE ? OR rekap COLLATE utf8mb4_general_ci LIKE ?)";
+            $params[] = $kw;
+            $params[] = $kw;
+        }
+        
+        $where_sql = empty($where_clauses) ? '' : 'WHERE ' . implode(' AND ', $where_clauses);
+        $sql = "SELECT COUNT(*) as total FROM {$this->view} {$where_sql}";
+        
+        $query = $this->db->query($sql, $params);
+        $result = $query->row_array();
+        return (int)($result['total'] ?? 0);
     }
 
-    public function get_paginated($limit, $offset, $jenis = '', $rekap = '', $keyword = '', $sort_by = '', $sort_dir = '')
+    public function get_paginated($limit, $offset, $jenis = '', $rekap = '', $search = '', $sort_by = '', $sort_dir = '')
     {
-        $this->db->from($this->view);
-        $this->_apply_filter((string)$jenis, (string)$rekap, (string)$keyword);
-
-        // whitelist sort kolom agar aman + tidak error trim(null)
-        $allowed = [
-            'jenis_anggaran',
-            'rekap',
-            'jan_25',
-            'feb_25',
-            'mar_25',
-            'apr_25',
-            'mei_25',
-            'jun_25',
-            'jul_25',
-            'aug_25',
-            'sep_25',
-            'okt_25',
-            'nov_25',
-            'des_25'
-        ];
-
-        $sort_by  = (string)($sort_by ?? '');
-        $sort_dir = strtoupper((string)($sort_dir ?? ''));
-
-        if (!in_array($sort_by, $allowed, true)) {
-            $sort_by = 'jenis_anggaran';
+        // Use raw SQL to avoid collation issues with CodeIgniter query builder
+        $where_clauses = [];
+        $params = [];
+        
+        if ((string)$jenis !== '') {
+            $where_clauses[] = "jenis_anggaran COLLATE utf8mb4_general_ci = ?";
+            $params[] = $jenis;
         }
-        if (!in_array($sort_dir, ['ASC', 'DESC'], true)) {
-            $sort_dir = 'ASC';
+        
+        if ((string)$rekap !== '') {
+            $where_clauses[] = "rekap COLLATE utf8mb4_general_ci = ?";
+            $params[] = $rekap;
         }
-
-        $this->db->order_by($sort_by, $sort_dir);
-        $this->db->order_by('rekap', 'ASC');
-
-        $this->db->limit((int)$limit, (int)$offset);
-        return $this->db->get()->result_array();
+        
+        if ((string)$search !== '') {
+            $kw = '%' . $search . '%';
+            $where_clauses[] = "(jenis_anggaran COLLATE utf8mb4_general_ci LIKE ? OR rekap COLLATE utf8mb4_general_ci LIKE ?)";
+            $params[] = $kw;
+            $params[] = $kw;
+        }
+        
+        $where_sql = empty($where_clauses) ? '' : 'WHERE ' . implode(' AND ', $where_clauses);
+        
+        // Whitelist sort
+        $allowed = ['jenis_anggaran', 'rekap', 'jan_25', 'feb_25', 'mar_25', 'apr_25', 'mei_25', 'jun_25', 'jul_25', 'aug_25', 'sep_25', 'okt_25', 'nov_25', 'des_25'];
+        $sort_by = in_array($sort_by, $allowed) ? $sort_by : 'jenis_anggaran';
+        $sort_dir = in_array(strtoupper($sort_dir), ['ASC', 'DESC']) ? strtoupper($sort_dir) : 'ASC';
+        
+        $sql = "SELECT * FROM {$this->view} {$where_sql} ORDER BY {$sort_by} {$sort_dir}, rekap ASC LIMIT ? OFFSET ?";
+        $params[] = (int)$limit;
+        $params[] = (int)$offset;
+        
+        $query = $this->db->query($sql, $params);
+        return $query->result_array();
     }
 
     public function get_jenis_list()

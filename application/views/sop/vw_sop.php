@@ -32,7 +32,7 @@
                 <div class="px-3 mt-3 mb-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         <label class="mb-0 me-2 text-sm">Tampilkan:</label>
-                        <select id="perPageSelectSop" class="form-select form-select-sm" style="width: 80px; padding-right: 2rem;" onchange="changePerPageSop(this.value)">
+                        <select id="perPageSelectSop" class="form-select form-select-sm" style="width: 80px; padding-right: 2rem;" onchange="changePerPageGlobal(this.value)">
                             <option value="5" <?= ($per_page == 5) ? 'selected' : ''; ?>>5</option>
                             <option value="10" <?= ($per_page == 10) ? 'selected' : ''; ?>>10</option>
                             <option value="25" <?= ($per_page == 25) ? 'selected' : ''; ?>>25</option>
@@ -42,7 +42,13 @@
                         </select>
                         <span class="ms-3 text-sm">dari <?= $total_rows ?? 0; ?> data</span>
                     </div>
-                    <input type="text" id="searchInputSop" onkeyup="searchTableSop()" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari SOP...">
+                    <form method="get" action="<?= site_url('sop/index/1'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= site_url('sop/index/1'); ?>', 'searchInputSop', 'search');">
+                        <input type="text" id="searchInputSop" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari SOP...">
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                        <?php if (!empty($search)): ?>
+                            <a href="<?= base_url('sop/index/1?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                        <?php endif; ?>
+                    </form>
                 </div>
 
                 <div class="table-responsive p-0">

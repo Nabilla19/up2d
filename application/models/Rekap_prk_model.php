@@ -5,20 +5,19 @@ class Rekap_prk_model extends CI_Model
 {
     private $view = 'vw_rkp_prk';
 
-    private function apply_search($keyword)
+    private function apply_search($search)
     {
-        if (!$keyword || trim($keyword) === '') return;
-        $kw = trim($keyword);
+        if (!$search || trim($search) === '') return;
+        $kw = trim($search);
 
         $this->db->group_start()
             ->like('jenis_anggaran', $kw)
             ->or_like('nomor_prk', $kw)
             ->or_like('uraian_prk', $kw)
-            ->or_like('nomor_skk_io', $kw)
             ->group_end();
     }
 
-    public function count_all($keyword = null, $jenis_anggaran = null)
+    public function count_all($search = null, $jenis_anggaran = null)
     {
         $this->db->from($this->view);
 
@@ -26,11 +25,11 @@ class Rekap_prk_model extends CI_Model
             $this->db->where('jenis_anggaran', $jenis_anggaran);
         }
 
-        $this->apply_search($keyword);
+        $this->apply_search($search);
         return (int)$this->db->count_all_results();
     }
 
-    public function get_paginated($limit, $offset, $keyword = null, $jenis_anggaran = null)
+    public function get_paginated($limit, $offset, $search = null, $jenis_anggaran = null)
     {
         $this->db->from($this->view);
 
@@ -38,7 +37,7 @@ class Rekap_prk_model extends CI_Model
             $this->db->where('jenis_anggaran', $jenis_anggaran);
         }
 
-        $this->apply_search($keyword);
+        $this->apply_search($search);
 
         // urut: jenis -> nomor -> uraian (biar stabil)
         $this->db->order_by('jenis_anggaran', 'ASC');
@@ -74,7 +73,7 @@ class Rekap_prk_model extends CI_Model
             ->result_array();
     }
 
-    public function export_all($keyword = null, $jenis_anggaran = null)
+    public function export_all($search = null, $jenis_anggaran = null)
     {
         $this->db->from($this->view);
 
@@ -82,7 +81,7 @@ class Rekap_prk_model extends CI_Model
             $this->db->where('jenis_anggaran', $jenis_anggaran);
         }
 
-        $this->apply_search($keyword);
+        $this->apply_search($search);
 
         $this->db->order_by('jenis_anggaran', 'ASC');
         $this->db->order_by('nomor_prk', 'ASC');

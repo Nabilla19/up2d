@@ -251,15 +251,15 @@ class Data_kontrak extends CI_Controller
 
         // --- 1. HANDLING FILTER & PAGINATION PERSISTENCE ---
         
-        // Search Query (q)
-        if ($this->input->get('q') !== null) {
-            $q = $this->input->get('q');
-            $this->session->set_userdata('kontrak_q', $q);
+        // Search Query (search)
+        if ($this->input->get('search') !== null) {
+            $search = $this->input->get('search');
+            $this->session->set_userdata('kontrak_search', $search);
         } else {
-            if ($this->session->userdata('kontrak_q')) {
-                $q = $this->session->userdata('kontrak_q');
+            if ($this->session->userdata('kontrak_search')) {
+                $search = $this->session->userdata('kontrak_search');
             } else {
-                $q = '';
+                $search = '';
             }
         }
 
@@ -279,7 +279,7 @@ class Data_kontrak extends CI_Controller
         $this->load->library('pagination');
         
         $config['base_url'] = base_url('data_kontrak/index');
-        $config['total_rows'] = $this->M_data_kontrak->count_all($q);
+        $config['total_rows'] = $this->M_data_kontrak->count_all($search);
         $config['per_page'] = $per_page;
         $config['uri_segment'] = 3; // segment 3 is $start (offset)
         $config['reuse_query_string'] = TRUE;
@@ -308,10 +308,10 @@ class Data_kontrak extends CI_Controller
         $this->pagination->initialize($config);
 
         // --- 3. FETCH DATA ---
-        $data['kontrak'] = $this->M_data_kontrak->get_limit($per_page, $start, $q);
+        $data['kontrak'] = $this->M_data_kontrak->get_limit($per_page, $start, $search);
         
         // Metadata for View
-        $data['q'] = $q;
+        $data['search'] = $search;
         $data['per_page'] = $per_page;
         $data['start_no'] = $start + 1;
         $data['total_rows'] = $config['total_rows'];
@@ -697,7 +697,8 @@ class Data_kontrak extends CI_Controller
             return;
         }
 
-        $rows = $this->M_data_kontrak->get_all();
+        $search = $this->input->get('search') ?: $this->session->userdata('kontrak_search');
+        $rows = $this->M_data_kontrak->get_all($search);
 
         $filename = 'data_kontrak_' . date('Ymd_His') . '.csv';
         header('Content-Type: text/csv; charset=UTF-8');

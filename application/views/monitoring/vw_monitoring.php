@@ -62,28 +62,15 @@ if (!function_exists('nf')) {
                         </select>
                         <span class="ms-3 text-sm">dari <?= (int)($total_rows ?? 0); ?> data</span>
                     </div>
-
-                    <form method="get" action="<?= base_url('monitoring'); ?>" class="d-flex" style="gap:8px;">
-                        <input type="hidden" name="per_page" value="<?= (int)$per_page; ?>">
-
-                        <?php
-                        // ✅ Agar saat search keyword, filter kolom tetap kebawa
-                        $column_filters = $column_filters ?? [];
-                        if (is_array($column_filters)) {
-                            foreach ($column_filters as $k => $v) {
-                                $k = trim((string)$k);
-                                $v = trim((string)$v);
-                                if ($k === '' || $v === '') continue;
-                                echo '<input type="hidden" name="f[' . e($k) . ']" value="' . e($v) . '">';
-                            }
-                        }
-                        ?>
-
-                        <input type="text" name="keyword" value="<?= e($keyword ?? '') ?>"
-                            class="form-control form-control-sm rounded-3" style="max-width: 320px;"
-                            placeholder="Cari (PRK, DRP, vendor, status, dll)...">
-                        <button class="btn btn-sm btn-secondary">Cari</button>
-                    </form>
+                    <div class="d-flex align-items-center">
+                        <form method="get" action="<?= base_url('monitoring'); ?>" class="d-flex align-items-center" onsubmit="event.preventDefault(); searchSubmit('<?= base_url('monitoring'); ?>', 'searchInputMonitoring', 'search');">
+                            <input type="text" id="searchInputMonitoring" name="search" value="<?= htmlspecialchars($search ?? '', ENT_QUOTES, 'UTF-8'); ?>" class="form-control form-control-sm rounded-3" style="max-width: 300px;" placeholder="Cari data monitoring...">
+                            <button type="submit" class="btn btn-sm btn-primary ms-2">Cari</button>
+                            <?php if (!empty($search)): ?>
+                                <a href="<?= base_url('monitoring?per_page=' . (int)($per_page ?? 5)); ?>" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+                            <?php endif; ?>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="table-responsive p-0" style="max-height: 650px; overflow:auto;">

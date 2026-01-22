@@ -37,13 +37,18 @@ class Spln extends CI_Controller
 
         // Konfigurasi pagination
         $config['base_url'] = site_url('spln/index');
-    $config['total_rows'] = $this->splnModel->count_all_spln();
-    // support per_page via query string (allowed values)
-    $allowedPer = [5,10,25,50,100,500];
-    $reqPer = (int) $this->input->get('per_page', TRUE);
-    $perPage = in_array($reqPer, $allowedPer) ? $reqPer : 5; // default 5
-    $config['per_page'] = $perPage;
-    $config['reuse_query_string'] = TRUE;
+        
+        // Ambil kata kunci pencarian dari query string
+        $search = $this->input->get('search', TRUE);
+        
+        $config['total_rows'] = $this->splnModel->count_all_spln($search);
+        
+        // support per_page via query string (allowed values)
+        $allowedPer = [5,10,25,50,100,500];
+        $reqPer = (int) $this->input->get('per_page', TRUE);
+        $perPage = in_array($reqPer, $allowedPer) ? $reqPer : 5; // default 5
+        $config['per_page'] = $perPage;
+        $config['reuse_query_string'] = TRUE;
         $config['uri_segment'] = 3;
         $config['use_page_numbers'] = TRUE;
 
@@ -67,9 +72,12 @@ class Spln extends CI_Controller
 
         $this->pagination->initialize($config);
 
-        $data['spln'] = $this->splnModel->get_spln($config['per_page'], $offset);
+        $data['spln'] = $this->splnModel->get_spln($config['per_page'], $offset, $search);
         $data['pagination'] = $this->pagination->create_links();
         $data['start_no'] = $offset + 1;
+        $data['per_page'] = $perPage;
+        $data['total_rows'] = $config['total_rows'];
+        $data['search'] = $search;
 
         $this->load->view('layout/header', $data);
         $this->load->view('spln/vw_spln', $data);

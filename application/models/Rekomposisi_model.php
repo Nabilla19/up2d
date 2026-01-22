@@ -3,7 +3,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Rekomposisi_model extends CI_Model
 {
-    protected $table = 'master_rekomposisi';
+    protected $table = 'rekomposisi';
 
     /* =========================
        SANITIZE ANGKA (1.234.567 -> 1234567)
@@ -19,17 +19,17 @@ class Rekomposisi_model extends CI_Model
     /* =========================
        FILTER SEARCH
        ========================= */
-    private function _apply_search($keyword)
+    private function _apply_search($search)
     {
-        if ($keyword && trim($keyword) !== '') {
-            $kw = trim($keyword);
+        if ($search && trim($search) !== '') {
+            $kw = trim($search);
 
             $this->db->group_start()
-                ->like('jenis_anggaran', $kw)
-                ->or_like('nomor_prk', $kw)
-                ->or_like('nomor_skk_io', $kw)
-                ->or_like('uraian_prk', $kw)
-                ->or_like('judul_drp', $kw)
+                ->like('JENIS_ANGGARAN', $kw)
+                ->or_like('NOMOR_PRK', $kw)
+                ->or_like('NOMOR_SKK_IO', $kw)
+                ->or_like('PRK', $kw)  // Changed from uraian_prk to PRK
+                ->or_like('JUDUL_DRP', $kw)
                 ->group_end();
         }
     }
@@ -37,23 +37,36 @@ class Rekomposisi_model extends CI_Model
     /* =========================
        COUNT ALL (UNTUK PAGINATION)
        ========================= */
-    public function count_all($keyword = null)
+    public function count_all($search = null)
     {
         $this->db->from($this->table);
-        $this->_apply_search($keyword);
+        $this->_apply_search($search);
         return (int)$this->db->count_all_results();
     }
 
     /* =========================
        GET PAGINATED
        ========================= */
-    public function get_paginated($limit, $offset, $keyword = null)
+    public function get_paginated($limit, $offset, $search = null)
     {
         $this->db->from($this->table);
-        $this->_apply_search($keyword);
-        $this->db->order_by('id', 'DESC');
+        $this->_apply_search($search);
+        $this->db->order_by('ID_REKOMPOSISI', 'DESC');
         $this->db->limit((int)$limit, (int)$offset);
-        return $this->db->get()->result_array();
+        $result = $this->db->get()->result_array();
+        
+        // Map uppercase columns to lowercase for view compatibility
+        return array_map(function($row) {
+            return [
+                'id' => $row['ID_REKOMPOSISI'] ?? null,
+                'jenis_anggaran' => $row['JENIS_ANGGARAN'] ?? '',
+                'nomor_prk' => $row['NOMOR_PRK'] ?? '',
+                'nomor_skk_io' => $row['NOMOR_SKK_IO'] ?? '',
+                'uraian_prk' => $row['PRK'] ?? '',
+                'pagu_skk_io' => $row['SKKI_O'] ?? 0,
+                'judul_drp' => $row['JUDUL_DRP'] ?? '',
+            ];
+        }, $result);
     }
 
     /* =========================
