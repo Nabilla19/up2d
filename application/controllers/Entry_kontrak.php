@@ -30,14 +30,14 @@ class Entry_kontrak extends CI_Controller
     {
         $r = strtolower(trim((string)$role_raw));
 
-        if ($r === 'pemeliharaan' || $r === 'har') return 'HAR';
-        if ($r === 'fasilitas operasi' || $r === 'fasop') return 'FASOP';
-        if ($r === 'operasi sistem distribusi' || $r === 'opdist') return 'OPDIST';
+        if ($r === 'pemeliharaan' || $r === 'har' || $r === 'asmen pemeliharaan') return 'HAR';
+        if ($r === 'fasilitas operasi' || $r === 'fasop' || $r === 'asmen fasop') return 'FASOP';
+        if ($r === 'operasi sistem distribusi' || $r === 'opdist' || $r === 'asmen operasi') return 'OPDIST';
         if ($r === 'k3l & kam' || $r === 'k3l&kam') return 'K3L&KAM';
 
         if ($r === 'pengadaan keuangan' || $r === 'pengadaan') return 'PENGADAAN';
 
-        if ($r === 'perencanaan') return 'PERENCANAAN';
+        if ($r === 'perencanaan' || $r === 'asmen perencanaan') return 'PERENCANAAN';
         if ($r === 'kku') return 'KKU';
         if ($r === 'admin' || $r === 'administrator') return 'ADMIN';
 
@@ -52,7 +52,8 @@ class Entry_kontrak extends CI_Controller
 
     private function _is_perencanaan($role_raw)
     {
-        return (strtolower(trim((string)$role_raw)) === 'perencanaan');
+        $r = strtolower(trim((string)$role_raw));
+        return ($r === 'perencanaan' || $r === 'asmen perencanaan');
     }
 
     private function _is_pengadaan($role_raw)
@@ -74,6 +75,9 @@ class Entry_kontrak extends CI_Controller
             'operasi sistem distribusi',
             'fasilitas operasi',
             'k3l & kam',
+            'asmen pemeliharaan',
+            'asmen operasi',
+            'asmen fasop',
         ], true);
     }
 

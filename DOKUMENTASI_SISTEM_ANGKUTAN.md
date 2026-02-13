@@ -57,11 +57,11 @@ Sistem Permohonan Angkutan Kendaraan adalah aplikasi berbasis web yang dibangun 
 - Upload foto dokumentasi (driver & odometer)
 - Kalkulasi jarak tempuh dan durasi
 
-### 5. **Reporting & Export**
-- Laporan riwayat perjalanan
-- Export ke PDF
-- Dashboard monitoring
-- Detail tracking per permohonan
+### 6. **Digital Validation & Security**
+- QR Code Signature yang tertaut langsung ke detail digital permohonan.
+- Tanda tangan digital menampilkan **Nama User** dan **Timestamp** real-time untuk validasi yang lebih kuat.
+- Penghapusan fitur pendaftaran (Sign-Up) mandiri untuk menjaga integritas database user.
+- Filter kendaraan berdasarkan Brand (Toyota/Daihatsu) untuk mempermudah operasional.
 
 ---
 
@@ -626,10 +626,10 @@ md5('ASMEN-' . $request_id . '-' . uniqid() . '-' . time())
 md5('FLEET-' . $request_id . '-' . uniqid() . '-' . time())
 ```
 
-### Input Sanitization
-- Menggunakan `$this->input->post()` untuk sanitasi input
-- XSS filtering otomatis oleh CodeIgniter
-- Database query menggunakan Query Builder (mencegah SQL Injection)
+### Digital Signature & QR Verification
+- QR Code pada PDF tidak lagi menggunakan kode acak (hash), melainkan teks deskriptif: *"Validasi Digital: Permohonan [Action] oleh [Nama] pada [Waktu]"*.
+- Data ini diambil langsung dari database saat scan dilakukan untuk memastikan keaslian dokumen.
+- QR Code utama pada header (jika diaktifkan) tertaut langsung ke URL detail permohonan.
 
 ### File Upload Security
 - Validasi tipe file (hanya image)
@@ -711,8 +711,8 @@ Untuk pertanyaan atau bantuan lebih lanjut mengenai sistem ini, silakan hubungi:
 
 ---
 
-**Dokumentasi ini terakhir diupdate**: 20 Januari 2026  
-**Versi Sistem**: 1.0.0  
+**Dokumentasi ini terakhir diupdate**: 26 Januari 2026 (Refinement & Digital Signature Update)  
+**Versi Sistem**: 1.1.0  
 **Framework**: CodeIgniter 3.x  
 
 ---

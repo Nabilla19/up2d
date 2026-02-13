@@ -246,4 +246,50 @@ class Rekomposisi extends CI_Controller
         $num = preg_replace('/[^\d]/', '', (string)$str);
         return $num === '' ? 0 : (float)$num;
     }
+
+    public function export_csv()
+    {
+        if (function_exists('is_guest') && is_guest()) {
+            $this->session->set_flashdata('error', 'Akses ditolak. Silakan login untuk mengunduh data.');
+            redirect('rekomposisi');
+            return;
+        }
+
+        $search = $this->input->get('search', true);
+        $rows = $this->rekom->get_all_filtered($search);
+
+        $filename = 'rekomposisi_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
+
+        fputcsv($output, [
+            'No',
+            'Jenis Anggaran',
+            'Nomor PRK',
+            'Nomor SKKI/O',
+            'Uraian PRK',
+            'Judul DRP',
+            'Pagu SKKI/O'
+        ]);
+
+        $no = 1;
+        foreach ($rows as $r) {
+            fputcsv($output, [
+                $no++,
+                (string)($r['jenis_anggaran'] ?? ''),
+                (string)($r['nomor_prk'] ?? ''),
+                (string)($r['nomor_skk_io'] ?? ''),
+                (string)($r['uraian_prk'] ?? ''),
+                (string)($r['judul_drp'] ?? ''),
+                (string)($r['pagu_skk_io'] ?? ''),
+            ]);
+        }
+
+        fclose($output);
+        exit;
+    }
 }

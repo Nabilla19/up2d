@@ -83,7 +83,7 @@
                                     </div>
                                     <div class="col ms-2">
                                         <h6 class="text-sm font-weight-bolder mb-0"><?= $fleet['mobil'] ?> (<?= $fleet['plat_nomor'] ?>)</h6>
-                                        <p class="text-xs text-secondary mb-0">Driver: <strong><?= $fleet['pengemudi'] ?></strong></p>
+                                        <p class="text-xs text-secondary mb-0">Brand: <strong><?= $request['vehicle_brand'] ?: '-' ?></strong> | Driver: <strong><?= $fleet['pengemudi'] ?></strong></p>
                                     </div>
                                 </div>
                             </div>
@@ -98,31 +98,34 @@
                                     <i class="fas fa-qrcode fa-2x text-secondary"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xxs font-weight-bold text-secondary text-uppercase mb-0">Barcode Pemohon</p>
-                                    <code class="text-dark font-weight-bolder text-xs"><?= substr($request['barcode_pemohon'], 0, 16) ?>...</code>
+                                    <p class="text-xxs font-weight-bold text-secondary text-uppercase mb-0">Diajukan Oleh (Pemohon)</p>
+                                    <span class="text-dark font-weight-bolder text-xs"><?= $request['nama'] ?></span><br>
+                                    <small class="text-xs text-muted"><?= date('d/m/Y H:i', strtotime($request['created_at'])) ?></small>
                                 </div>
                             </div>
 
-                            <?php if ($approval): ?>
+                            <?php if ($request['approved_at']): ?>
                             <div class="barcode-item p-2 mb-3 bg-white border border-radius-md d-flex align-items-center border-success">
                                 <div class="icon-box bg-success p-2 border-radius-sm me-3 text-center text-white" style="min-width: 50px;">
                                     <i class="fas fa-shield-check fa-2x"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xxs font-weight-bold text-success text-uppercase mb-0">Barcode Asmen / KKU (OK)</p>
-                                    <code class="text-success font-weight-bolder text-xs"><?= substr($approval['barcode_asmen'], 0, 16) ?>...</code>
+                                    <p class="text-xxs font-weight-bold text-success text-uppercase mb-0">Disetujui Oleh (Asmen/KKU)</p>
+                                    <span class="text-success font-weight-bolder text-xs"><?= $request['asmen_name'] ?: 'DISETUJUI (SYSTEM)' ?></span><br>
+                                    <small class="text-xs text-muted"><?= date('d/m/Y H:i', strtotime($request['approved_at'])) ?></small>
                                 </div>
                             </div>
                             <?php endif; ?>
 
-                            <?php if ($fleet): ?>
+                            <?php if ($request['fleet_assigned_at']): ?>
                             <div class="barcode-item p-2 mb-3 bg-white border border-radius-md d-flex align-items-center border-warning">
                                 <div class="icon-box bg-warning p-2 border-radius-sm me-3 text-center text-white" style="min-width: 50px;">
                                     <i class="fas fa-ticket-alt fa-2x"></i>
                                 </div>
                                 <div>
-                                    <p class="text-xxs font-weight-bold text-warning text-uppercase mb-0">Barcode KKU (Validasi)</p>
-                                    <code class="text-warning font-weight-bolder text-xs"><?= substr($fleet['barcode_fleet'], 0, 16) ?>...</code>
+                                    <p class="text-xxs font-weight-bold text-warning text-uppercase mb-0">Divalidasi Oleh (Fleet)</p>
+                                    <span class="text-warning font-weight-bolder text-xs"><?= $request['fleet_user_name'] ?: 'VALIDASI FLEET' ?></span><br>
+                                    <small class="text-xs text-muted"><?= date('d/m/Y H:i', strtotime($request['fleet_assigned_at'])) ?></small>
                                 </div>
                             </div>
                             <?php endif; ?>

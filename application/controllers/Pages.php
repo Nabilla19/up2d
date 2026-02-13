@@ -25,13 +25,4 @@ class Pages extends CI_Controller
         $this->load->view('layout/footer');
     }
 
-    public function sign_up()
-    {
-        // minimal sign-up placeholder (can be extended)
-        $data['page_title'] = 'Sign Up';
-        $data['page_icon'] = 'fas fa-user-plus';
-        $this->load->view('layout/header', $data);
-        $this->load->view('pages/sign_up', $data);
-        $this->load->view('layout/footer');
-    }
 }

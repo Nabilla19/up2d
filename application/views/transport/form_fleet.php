@@ -24,7 +24,10 @@
                                             <option value="" disabled>TIDAK ADA MOBIL TERSEDIA</option>
                                         <?php else: ?>
                                             <?php foreach($vehicles as $v): ?>
-                                                <option value="<?= $v['nama_mobil'] ?>"><?= $v['nama_mobil'] ?></option>
+                                                <?php $is_match = (strcasecmp($v['brand'], $request['macam_kendaraan']) == 0); ?>
+                                                <option value="<?= $v['nama_mobil'] ?>" <?= $is_match ? 'class="text-primary font-weight-bold"' : '' ?>>
+                                                    <?= $v['nama_mobil'] ?> - <?= $v['brand'] ?>
+                                                </option>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </select>
@@ -39,7 +42,10 @@
                                             <option value="" disabled>TIDAK ADA MOBIL TERSEDIA</option>
                                         <?php else: ?>
                                             <?php foreach($vehicles as $v): ?>
-                                                <option value="<?= $v['plat_nomor'] ?>"><?= $v['plat_nomor'] ?></option>
+                                                <?php $is_match = (strcasecmp($v['brand'], $request['macam_kendaraan']) == 0); ?>
+                                                <option value="<?= $v['plat_nomor'] ?>" <?= $is_match ? 'class="text-primary font-weight-bold"' : '' ?>>
+                                                    <?= $v['plat_nomor'] ?> (<?= $v['brand'] ?>)
+                                                </option>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </select>

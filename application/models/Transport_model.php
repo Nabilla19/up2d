@@ -1,3 +1,6 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
 /**
  * Model Transport_model
  * Menangani seluruh interaksi database untuk modul E-Transport.
@@ -17,7 +20,12 @@ class Transport_model extends CI_Model {
      */
     public function get_requests($id = null) {
         if ($id) {
-            return $this->db->get_where('transport_requests', ['id' => $id])->row_array();
+            $this->db->select('tr.*, tv.brand as vehicle_brand');
+            $this->db->from('transport_requests tr');
+            $this->db->join('transport_fleet tf', 'tf.request_id = tr.id', 'left');
+            $this->db->join('transport_vehicles tv', 'tv.plat_nomor = tf.plat_nomor', 'left');
+            $this->db->where('tr.id', $id);
+            return $this->db->get()->row_array();
         }
         return $this->db->get('transport_requests')->result_array();
     }
@@ -108,11 +116,14 @@ class Transport_model extends CI_Model {
      * Digunakan untuk dashboard detail dan export
      */
     public function get_all_requests_detailed() {
-        $this->db->select('tr.*, tf.mobil, tf.plat_nomor, tf.pengemudi, tf.created_at as fleet_assigned_at, ts.km_awal, ts.km_akhir, ts.jam_berangkat as log_jam_berangkat, ts.jam_kembali as log_jam_kembali, ts.lama_waktu, ts.jarak_tempuh, ts.foto_driver_berangkat, ts.foto_km_berangkat, ts.foto_driver_kembali, ts.foto_km_kembali, ta.asmen_id, ta.is_approved, ta.catatan as catatan_asmen, ta.approved_at, tr.barcode_pemohon, ta.barcode_asmen, tf.barcode_fleet');
+        $this->db->select('tr.*, tf.mobil, tf.plat_nomor, tf.pengemudi, tf.created_at as fleet_assigned_at, ts.km_awal, ts.km_akhir, ts.jam_berangkat as log_jam_berangkat, ts.jam_kembali as log_jam_kembali, ts.lama_waktu, ts.jarak_tempuh, ts.foto_driver_berangkat, ts.foto_km_berangkat, ts.foto_driver_kembali, ts.foto_km_kembali, ta.asmen_id, ta.is_approved, ta.catatan as catatan_asmen, ta.approved_at, tr.barcode_pemohon, ta.barcode_asmen, tf.barcode_fleet, tv.brand as vehicle_brand, u_asmen.name as asmen_name, u_fleet.name as fleet_user_name');
         $this->db->from('transport_requests tr');
         $this->db->join('transport_approvals ta', 'ta.request_id = tr.id', 'left');
         $this->db->join('transport_fleet tf', 'tf.request_id = tr.id', 'left');
+        $this->db->join('transport_vehicles tv', 'tv.plat_nomor = tf.plat_nomor', 'left');
         $this->db->join('transport_security_logs ts', 'ts.request_id = tr.id', 'left');
+        $this->db->join('users u_asmen', 'u_asmen.id = ta.asmen_id', 'left');
+        $this->db->join('users u_fleet', 'u_fleet.id = tf.admin_id', 'left');
         $this->db->order_by('tr.created_at', 'DESC');
         return $this->db->get()->result_array();
     }

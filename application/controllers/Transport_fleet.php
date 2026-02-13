@@ -54,7 +54,7 @@ class Transport_fleet extends CI_Controller {
         $request = $this->Transport_model->get_requests($id);
         $data['request'] = $request;
         
-        // FILTER: Mengambil kendaraan yang tersedia (Available) dan sesuai merk/jenis yang diminta pemohon
+        // Mengambil kendaraan yang tersedia (Available) dan SESUAI dengan macam_kendaraan yang diminta
         $data['vehicles'] = $this->Transport_model->get_available_vehicles($request['macam_kendaraan']);
         
         // Aturan validasi

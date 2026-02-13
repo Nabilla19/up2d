@@ -153,7 +153,7 @@ class Entry_kontrak_model extends CI_Model
         if ($r === 'admin' || $r === 'administrator') {
             return $this->count_all_filtered($search, 'admin', null);
         }
-        if ($r === 'perencanaan') {
+        if ($r === 'perencanaan' || $r === 'asmen perencanaan') {
             return $this->count_all_filtered($search, 'perencanaan', null);
         }
         if ($r === 'pengadaan' || $r === 'pengadaan keuangan') {
@@ -173,7 +173,7 @@ class Entry_kontrak_model extends CI_Model
         if ($r === 'admin' || $r === 'administrator') {
             return $this->get_paginated_filtered($limit, $offset, $search, 'admin', null);
         }
-        if ($r === 'perencanaan') {
+        if ($r === 'perencanaan' || $r === 'asmen perencanaan') {
             return $this->get_paginated_filtered($limit, $offset, $search, 'perencanaan', null);
         }
         if ($r === 'pengadaan' || $r === 'pengadaan keuangan') {

@@ -79,7 +79,7 @@
         <img src="<?= base_url('assets/assets/img/logo_pln.png') ?>" alt="PLN Logo" style="height: 60px; position: absolute; left: 0; top: 0;">
         <h2>PT PLN (PERSERO) UP2D RIAU</h2>
         <p>FORMULIR PEMINJAMAN KENDARAAN OPERASIONAL</p>
-        <div class="qr-main">
+        <div class="qr-main" style="display:none">
             <div id="qr-request"></div>
             <small>ID: #<?= count($requests) == 1 ? $requests[0]['id'] : '-' ?></small>
         </div>
@@ -113,6 +113,7 @@
                     <div class="grid-item"><span class="label">Catatan Asmen / KKU:</span> <span class="value"><?= $r['catatan_asmen'] ?: '-' ?></span></div>
                     <div class="grid-item" style="width: 100%; border-top: 1px dashed #eee; margin: 5px 0; padding-top: 5px;"></div>
                     <div class="grid-item"><span class="label">Nama Mobil:</span> <span class="value"><?= $r['mobil'] ?: 'Menunggu' ?></span></div>
+                    <div class="grid-item"><span class="label">Brand Mobil:</span> <span class="value"><?= $r['vehicle_brand'] ?: '-' ?></span></div>
                     <div class="grid-item"><span class="label">Plat Nomor:</span> <span class="value"><?= $r['plat_nomor'] ?: '-' ?></span></div>
                     <div class="grid-item"><span class="label">Nama Pengemudi:</span> <span class="value"><?= $r['pengemudi'] ?: '-' ?></span></div>
                 </div>
@@ -139,19 +140,19 @@
                 <div class="sig-label">TANDA TANGAN DIGITAL PEMOHON</div>
                 <div id="sig-pemohon" class="qr-sig"></div>
                 <div class="sig-name"><?= $r['nama'] ?></div>
-                <div class="sig-val"><?= substr($r['barcode_pemohon'], 0, 16) ?></div>
+                <div class="sig-val"><?= date('d/m/Y H:i', strtotime($r['created_at'])) ?></div>
             </div>
             <div class="sig-block">
                 <div class="sig-label">TANDA TANGAN DIGITAL ASMEN / KKU</div>
                 <div id="sig-asmen" class="qr-sig"></div>
-                <div class="sig-name"><?= $r['is_approved'] ? 'DISETUJUI (SYSTEM)' : '-' ?></div>
-                <div class="sig-val"><?= $r['barcode_asmen'] ? substr($r['barcode_asmen'], 0, 16) : 'PENDING' ?></div>
+                <div class="sig-name"><?= $r['is_approved'] ? $r['asmen_name'] : 'PENDING' ?></div>
+                <div class="sig-val"><?= $r['approved_at'] ? date('d/m/Y H:i', strtotime($r['approved_at'])) : '-' ?></div>
             </div>
             <div class="sig-block">
-                <div class="sig-label">KEUANGAN & KOMUNIKASI UMUM (KKU)</div>
+                <div class="sig-label">TANDA TANGAN DIGITAL KEUANGAN (KKU)</div>
                 <div id="sig-security" class="qr-sig"></div>
-                <div class="sig-name">VALIDASI FLEET</div>
-                <div class="sig-val"><?= $r['barcode_fleet'] ? substr($r['barcode_fleet'], 0, 16) : 'PENDING' ?></div>
+                <div class="sig-name"><?= $r['fleet_user_name'] ?: 'VALIDASI FLEET' ?></div>
+                <div class="sig-val"><?= $r['fleet_assigned_at'] ? date('d/m/Y H:i', strtotime($r['fleet_assigned_at'])) : '-' ?></div>
             </div>
         </div>
 
@@ -201,15 +202,22 @@
 
         <script>
             window.onload = function() {
-                new QRCode(document.getElementById("qr-request"), { text: "REQ-<?= $r['id'] ?>", width: 50, height: 50 });
-                new QRCode(document.getElementById("sig-pemohon"), { text: "<?= $r['barcode_pemohon'] ?>", width: 70, height: 70 });
+                // Main QR Code (HIDDEN)
+                // const mainText = "Validasi E-Transport: Permohonan #<?= $r['id'] ?> - Tujuan: <?= addslashes($r['tujuan']) ?> (Oleh: <?= addslashes($r['nama']) ?>)";
+                // new QRCode(document.getElementById("qr-request"), { text: mainText, width: 50, height: 50 });
+
+                // Signature QR Codes
+                const textPemohon = "Validasi Digital: Permohonan diajukan oleh <?= addslashes($r['nama']) ?> pada <?= date('d/m/Y H:i', strtotime($r['created_at'])) ?>";
+                new QRCode(document.getElementById("sig-pemohon"), { text: textPemohon, width: 70, height: 70 });
                 
                 <?php if ($r['barcode_asmen']): ?>
-                    new QRCode(document.getElementById("sig-asmen"), { text: "<?= $r['barcode_asmen'] ?>", width: 70, height: 70 });
+                    const textAsmen = "Validasi Digital: Disetujui oleh <?= addslashes($r['asmen_name']) ?> pada <?= date('d/m/Y H:i', strtotime($r['approved_at'])) ?>";
+                    new QRCode(document.getElementById("sig-asmen"), { text: textAsmen, width: 70, height: 70 });
                 <?php endif; ?>
                 
                 <?php if ($r['barcode_fleet']): ?>
-                    new QRCode(document.getElementById("sig-security"), { text: "<?= $r['barcode_fleet'] ?>", width: 70, height: 70 });
+                    const textFleet = "Validasi Digital: Divalidasi oleh <?= addslashes($r['fleet_user_name'] ?: 'Fleet Officer') ?> pada <?= date('d/m/Y H:i', strtotime($r['fleet_assigned_at'])) ?>";
+                    new QRCode(document.getElementById("sig-security"), { text: textFleet, width: 70, height: 70 });
                 <?php endif; ?>
                 
                 if (!isSingle) window.print();

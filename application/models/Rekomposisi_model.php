@@ -69,6 +69,26 @@ class Rekomposisi_model extends CI_Model
         }, $result);
     }
 
+    public function get_all_filtered($search = null)
+    {
+        $this->db->from($this->table);
+        $this->_apply_search($search);
+        $this->db->order_by('ID_REKOMPOSISI', 'DESC');
+        $result = $this->db->get()->result_array();
+
+        return array_map(function($row) {
+            return [
+                'id' => $row['ID_REKOMPOSISI'] ?? null,
+                'jenis_anggaran' => $row['JENIS_ANGGARAN'] ?? '',
+                'nomor_prk' => $row['NOMOR_PRK'] ?? '',
+                'nomor_skk_io' => $row['NOMOR_SKK_IO'] ?? '',
+                'uraian_prk' => $row['PRK'] ?? '',
+                'pagu_skk_io' => $row['SKKI_O'] ?? 0,
+                'judul_drp' => $row['JUDUL_DRP'] ?? '',
+            ];
+        }, $result);
+    }
+
     /* =========================
        GET BY ID
        ========================= */

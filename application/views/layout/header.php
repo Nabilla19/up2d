@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="<?= base_url('assets/assets/css/sidebar.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/assets/css/sidebar-collapsed.css'); ?>">
   <link rel="stylesheet" href="<?= base_url('assets/assets/css/pln-theme.css'); ?>">
-  <link rel="stylesheet" href="<?= base_url('assets/assets/css/responsive.css'); ?>">>>
+  <link rel="stylesheet" href="<?= base_url('assets/assets/css/responsive.css'); ?>">
 
   <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -596,14 +596,6 @@
           </a>
         </li>
 
-        <li class="nav-item">
-          <a class="nav-link" href="<?= base_url('pages/sign-up'); ?>">
-            <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="fas fa-user-plus text-dark text-sm opacity-10" aria-hidden="true"></i>
-            </div>
-            <span class="nav-link-text ms-1">Sign Up</span>
-          </a>
-        </li>
 
         <?php if (isset($this->session) && $this->session->userdata('logged_in')): ?>
           <li class="nav-item">
